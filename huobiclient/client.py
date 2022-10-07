@@ -66,15 +66,15 @@ class HuobiClient:
 
     async def get_all_supported_trading_symbols(
             self,
-            timestamp: Optional[int] = None,
+            timestamp_milliseconds: Optional[int] = None,
     ) -> SupportedTradingSymbolsResponse:
         """
         Get all Supported Trading Symbol.
         API Key Permission：Read.
         """
         path = '/v2/settings/common/symbols'
-        if timestamp is not None:
-            request = SupportedTradingSymbolsRequest(ts=timestamp)
+        if timestamp_milliseconds is not None:
+            request = SupportedTradingSymbolsRequest(ts=timestamp_milliseconds)
         else:
             request = BaseHuobiRequest()
         return await self.request(
