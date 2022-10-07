@@ -6,6 +6,8 @@ from yarl import URL
 from .config import huobi_client_config as config
 from .schemas.account.response import AccountBalanceResponse, AccountsResponse
 from .schemas.base import BaseHuobiRequest, BaseHuobiResponse
+from .schemas.common.request import SupportedTradingSymbolsRequest
+from .schemas.common.response import SupportedTradingSymbolsResponse
 
 ResponseModelType = TypeVar('ResponseModelType', bound=BaseHuobiResponse)
 
@@ -60,4 +62,24 @@ class HuobiClient:
             path=path,
             params=BaseHuobiRequest().to_request(path, 'GET'),
             response_model=AccountBalanceResponse,
+        )
+
+    async def get_all_supported_trading_symbols(
+            self,
+            timestamp: Optional[int] = None,
+    ) -> SupportedTradingSymbolsResponse:
+        """
+        Get all Supported Trading Symbol.
+        API Key Permission：Read.
+        """
+        path = '/v2/settings/common/symbols'
+        if timestamp is not None:
+            request = SupportedTradingSymbolsRequest(ts=timestamp)
+        else:
+            request = BaseHuobiRequest()
+        return await self.request(
+            method='GET',
+            path=path,
+            params=request.to_request(path, 'GET'),
+            response_model=SupportedTradingSymbolsResponse,
         )
