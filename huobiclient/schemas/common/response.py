@@ -7,6 +7,10 @@ from huobiclient.enums import SymbolStatus
 from huobiclient.schemas.base import BaseHuobiResponse
 
 
+class CurrentTimestampResponse(BaseHuobiResponse):
+    data: int
+
+
 class SupportedTradingSymbol(BaseModel):
     symbol_code: str = Field(alias='sc')
     display_name: str = Field(alias='dn')

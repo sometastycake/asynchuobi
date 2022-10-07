@@ -7,7 +7,7 @@ from .config import huobi_client_config as config
 from .schemas.account.response import AccountBalanceResponse, AccountsResponse
 from .schemas.base import BaseHuobiRequest, BaseHuobiResponse
 from .schemas.common.request import SupportedTradingSymbolsRequest
-from .schemas.common.response import SupportedTradingSymbolsResponse
+from .schemas.common.response import CurrentTimestampResponse, SupportedTradingSymbolsResponse
 
 ResponseModelType = TypeVar('ResponseModelType', bound=BaseHuobiResponse)
 
@@ -45,6 +45,17 @@ class HuobiClient:
             },
         )
         return response_model.parse_raw(await response.text())
+
+    async def get_current_timestamp(self) -> CurrentTimestampResponse:
+        """
+        This endpoint returns the current timestamp, i.e. the number of milliseconds that
+        have elapsed since 00:00:00 UTC on 1 January 1970.
+        """
+        return await self.request(
+            method='GET',
+            path='/v1/common/timestamp',
+            response_model=CurrentTimestampResponse,
+        )
 
     async def accounts(self) -> AccountsResponse:
         """
