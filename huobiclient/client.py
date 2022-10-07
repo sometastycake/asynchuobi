@@ -81,13 +81,13 @@ class HuobiClient:
         API Key Permission：Read.
         """
         path = '/v2/settings/common/symbols'
-        if timestamp_milliseconds is not None:
-            request = SupportedTradingSymbolsRequest(ts=timestamp_milliseconds)
+        if timestamp_milliseconds is None:
+            data = BaseHuobiRequest()
         else:
-            request = BaseHuobiRequest()
+            data = SupportedTradingSymbolsRequest(ts=timestamp_milliseconds)
         return await self.request(
             method='GET',
             path=path,
-            params=request.to_request(path, 'GET'),
+            params=data.to_request(path, 'GET'),
             response_model=SupportedTradingSymbolsResponse,
         )
