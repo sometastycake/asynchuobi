@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from huobiclient.enums import AccountState, AccountType
+from huobiclient.enums import AccountState, AccountType, BalanceType
 from huobiclient.schemas.base import BaseHuobiResponse
 
 
@@ -20,15 +20,15 @@ class AccountsResponse(BaseHuobiResponse):
 
 class AccountBalance(BaseModel):
     currency: str
-    balance_type: str = Field(alias='type')
+    balance_type: BalanceType = Field(alias='type')
     balance: Decimal
     seq_num: int = Field(alias='seq-num')
 
 
 class AccountBalanceData(BaseModel):
     account_id: int = Field(alias='id')
-    account_type: str = Field(alias='type')
-    state: str
+    account_type: AccountType = Field(alias='type')
+    state: AccountState
     balances: List[AccountBalance] = Field(alias='list')
 
 

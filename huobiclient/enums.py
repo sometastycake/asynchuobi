@@ -24,6 +24,18 @@ class AccountType(Enum):
     super_margin = 'super-margin'
     investment = 'investment'
     borrow = 'borrow'
+    minepool = 'minepool'
+    etf = 'etf'
+    crypto_loans = 'crypto-loans'
     grid_trading = 'grid-trading'
     deposit_earning = 'deposit-earning'
     otc_options = 'otc-options'
+
+
+class BalanceType(Enum):
+    trade = 'trade'
+    frozen = 'frozen'
+    loan = 'loan'
+    interest = 'interest'
+    lock = 'lock'
+    bank = 'bank'

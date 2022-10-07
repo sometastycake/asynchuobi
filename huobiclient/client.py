@@ -60,6 +60,10 @@ class HuobiClient:
         )
 
     async def account_balance(self, account_id: int) -> AccountBalanceResponse:
+        """
+        Get Account Balance of a Specific Account.
+        API Key Permission：Read.
+        """
         path = f'/v1/account/accounts/{account_id}/balance'
         return await self.request(
             method='GET',
