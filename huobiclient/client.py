@@ -47,6 +47,10 @@ class HuobiClient:
         return response_model.parse_raw(await response.text())
 
     async def accounts(self) -> AccountsResponse:
+        """
+        Get all Accounts of the Current User.
+        API Key Permission：Read.
+        """
         path = '/v1/account/accounts'
         return await self.request(
             method='GET',

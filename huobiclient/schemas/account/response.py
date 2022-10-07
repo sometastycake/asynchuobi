@@ -3,14 +3,15 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
+from huobiclient.enums import AccountState, AccountType
 from huobiclient.schemas.base import BaseHuobiResponse
 
 
 class Account(BaseModel):
     account_id: int = Field(alias='id')
-    account_type: str = Field(alias='type')
+    account_type: AccountType = Field(alias='type')
     subtype: str
-    state: str
+    state: AccountState
 
 
 class AccountsResponse(BaseHuobiResponse):
