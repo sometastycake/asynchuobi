@@ -13,6 +13,7 @@ from .schemas.common.response import (
     MarketStatusResponse,
     SupportedCurrenciesResponse,
     SupportedTradingSymbolsResponse,
+    SystemStatusResponse,
 )
 
 ResponseModelType = TypeVar('ResponseModelType', bound=BaseModel)
@@ -65,13 +66,25 @@ class HuobiClient:
 
     async def get_market_status(self) -> MarketStatusResponse:
         """
-        The endpoint returns current market status
+        The endpoint returns current market status.
         """
         return await self.request(
             method='GET',
             path='/v2/market-status',
             response_model=MarketStatusResponse,
         )
+
+    async def get_system_status(self) -> SystemStatusResponse:
+        """
+        This endpoint allows users to get system status, Incidents and planned maintenance.
+        """
+        response = await self._session.get(
+            url='https://status.huobigroup.com/api/v2/summary.json',
+            headers={
+                'Content-Type': 'application/json',
+            },
+        )
+        return SystemStatusResponse.parse_raw(await response.text())
 
     async def accounts(self) -> AccountsResponse:
         """
@@ -124,7 +137,7 @@ class HuobiClient:
             timestamp_milliseconds: Optional[int] = None,
     ) -> SupportedCurrenciesResponse:
         """
-        Get all Supported Currencies
+        Get all Supported Currencies.
         API Key Permission：Read.
         """
         path = '/v2/settings/common/currencies'

@@ -1,5 +1,6 @@
+from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from pydantic import BaseModel, Field
 
@@ -90,3 +91,34 @@ class SupportedCurrenciesResponse(BaseHuobiResponse):
     data: List[SupportedCurrencies]
     timestamp: int = Field(alias='ts')
     full: int
+
+
+class SystemStatusPage(BaseModel):
+    system_status_page_id: str = Field(alias='id')
+    name: str
+    url: str
+    time_zone: str
+    updated_at: datetime
+
+
+class SystemStatusComponent(BaseModel):
+    component_id: str = Field(alias='id')
+    name: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    position: int
+    description: Optional[str]
+    showcase: bool
+    start_date: Optional[datetime]
+    group_id: Optional[str]
+    page_id: Optional[str]
+    group: bool
+    only_show_if_degraded: bool
+
+
+class SystemStatusResponse(BaseModel):
+    page: SystemStatusPage
+    components: List[SystemStatusComponent]
+    incidents: List[Dict]
+    scheduled_maintenances: List[Dict]
