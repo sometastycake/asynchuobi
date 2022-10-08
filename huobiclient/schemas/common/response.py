@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from huobiclient.enums import MarketHaltReason, MarketStatus, SymbolStatus
+from huobiclient.enums import AssetType, MarketHaltReason, MarketStatus, SymbolStatus
 from huobiclient.schemas.base import BaseHuobiResponse
 
 
@@ -53,5 +53,40 @@ class SupportedTradingSymbol(BaseModel):
 
 class SupportedTradingSymbolsResponse(BaseHuobiResponse):
     data: List[SupportedTradingSymbol]
+    timestamp: int = Field(alias='ts')
+    full: int
+
+
+class SupportedCurrencies(BaseModel):
+    currency_code: str = Field(alias='cc')
+    display_name: str = Field(alias='dn')
+    full_name: str = Field(alias='fn')
+    asset_type: AssetType = Field(alias='at')
+    withdraw_precision: int = Field(alias='wp')
+    fee_type: str = Field(alias='ft')
+    deposit_min_amount: Decimal = Field(alias='dma')
+    withdraw_min_amount: Decimal = Field(alias='wma')
+    show_precision: int = Field(alias='sp')
+    weight: int = Field(alias='w')
+    quote_currency: bool = Field(alias='qc')
+    state: SymbolStatus
+    visible: bool = Field(alias='v')
+    white_enabled: bool = Field(alias='whe')
+    country_disabled: bool = Field(alias='cd')
+    deposit_enabled: bool = Field(alias='de')
+    withdraw_enabled: bool = Field(alias='wed')
+    currency_addr_with_tag: bool = Field(alias='cawt')
+    fast_confirms: int = Field(alias='fc')
+    safe_confirms: int = Field(alias='sc')
+    suspend_withdraw_desc: Optional[str] = Field(alias='swd')
+    withdraw_desc: Optional[str] = Field(alias='wd')
+    suspend_deposit_desc: Optional[str] = Field(alias='sdd')
+    deposit_desc: Optional[str] = Field(alias='dd')
+    suspend_visible_desc: Optional[str] = Field(alias='svd')
+    tags: str
+
+
+class SupportedCurrenciesResponse(BaseHuobiResponse):
+    data: List[SupportedCurrencies]
     timestamp: int = Field(alias='ts')
     full: int

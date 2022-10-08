@@ -7,8 +7,13 @@ from yarl import URL
 from .config import huobi_client_config as config
 from .schemas.account.response import AccountBalanceResponse, AccountsResponse
 from .schemas.base import BaseHuobiRequest
-from .schemas.common.request import SupportedTradingSymbolsRequest
-from .schemas.common.response import CurrentTimestampResponse, MarketStatusResponse, SupportedTradingSymbolsResponse
+from .schemas.common.request import SupportedCurrenciesRequest, SupportedTradingSymbolsRequest
+from .schemas.common.response import (
+    CurrentTimestampResponse,
+    MarketStatusResponse,
+    SupportedCurrenciesResponse,
+    SupportedTradingSymbolsResponse,
+)
 
 ResponseModelType = TypeVar('ResponseModelType', bound=BaseModel)
 
@@ -112,4 +117,24 @@ class HuobiClient:
             path=path,
             params=data.to_request(path, 'GET'),
             response_model=SupportedTradingSymbolsResponse,
+        )
+
+    async def get_all_supported_currencies(
+            self,
+            timestamp_milliseconds: Optional[int] = None,
+    ) -> SupportedCurrenciesResponse:
+        """
+        Get all Supported Currencies
+        API Key Permission：Read.
+        """
+        path = '/v2/settings/common/currencies'
+        if timestamp_milliseconds is None:
+            data = BaseHuobiRequest()
+        else:
+            data = SupportedCurrenciesRequest(ts=timestamp_milliseconds)
+        return await self.request(
+            method='GET',
+            path=path,
+            params=data.to_request(path, 'GET'),
+            response_model=SupportedCurrenciesResponse,
         )

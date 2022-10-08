@@ -50,3 +50,8 @@ class MarketStatus(IntEnum):
 class MarketHaltReason(IntEnum):
     emergency_maintenance = 2
     scheduled_maintenance = 3
+
+
+class AssetType(IntEnum):
+    virtual_currency = 1
+    fiat_currency = 2
