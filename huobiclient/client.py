@@ -1,15 +1,16 @@
 from typing import Any, Dict, Optional, Type, TypeVar
 
 import aiohttp
+from pydantic import BaseModel
 from yarl import URL
 
 from .config import huobi_client_config as config
 from .schemas.account.response import AccountBalanceResponse, AccountsResponse
-from .schemas.base import BaseHuobiRequest, BaseHuobiResponse
+from .schemas.base import BaseHuobiRequest
 from .schemas.common.request import SupportedTradingSymbolsRequest
-from .schemas.common.response import CurrentTimestampResponse, SupportedTradingSymbolsResponse
+from .schemas.common.response import CurrentTimestampResponse, MarketStatusResponse, SupportedTradingSymbolsResponse
 
-ResponseModelType = TypeVar('ResponseModelType', bound=BaseHuobiResponse)
+ResponseModelType = TypeVar('ResponseModelType', bound=BaseModel)
 
 
 class HuobiClient:
@@ -55,6 +56,16 @@ class HuobiClient:
             method='GET',
             path='/v1/common/timestamp',
             response_model=CurrentTimestampResponse,
+        )
+
+    async def get_market_status(self) -> MarketStatusResponse:
+        """
+        The endpoint returns current market status
+        """
+        return await self.request(
+            method='GET',
+            path='/v2/market-status',
+            response_model=MarketStatusResponse,
         )
 
     async def accounts(self) -> AccountsResponse:

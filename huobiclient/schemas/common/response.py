@@ -3,8 +3,22 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from huobiclient.enums import SymbolStatus
+from huobiclient.enums import MarketHaltReason, MarketStatus, SymbolStatus
 from huobiclient.schemas.base import BaseHuobiResponse
+
+
+class MarketStatusData(BaseModel):
+    marketStatus: MarketStatus
+    haltStartTime: Optional[int]
+    haltEndTime: Optional[int]
+    haltReason: Optional[MarketHaltReason]
+    affectedSymbols: Optional[str]
+
+
+class MarketStatusResponse(BaseModel):
+    code: int
+    message: Optional[str]
+    data: MarketStatusData
 
 
 class CurrentTimestampResponse(BaseHuobiResponse):

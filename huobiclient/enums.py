@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class SymbolStatus(Enum):
@@ -39,3 +39,14 @@ class BalanceType(Enum):
     interest = 'interest'
     lock = 'lock'
     bank = 'bank'
+
+
+class MarketStatus(IntEnum):
+    normal = 1
+    halted = 2
+    cancel_only = 3
+
+
+class MarketHaltReason(IntEnum):
+    emergency_maintenance = 2
+    scheduled_maintenance = 3
