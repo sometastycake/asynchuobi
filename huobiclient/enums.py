@@ -64,3 +64,24 @@ class ChainType(Enum):
     new = 'new'
     legal = 'legal'
     tooold = 'tooold'
+
+
+class InstrumentStatus(Enum):
+    normal = 'normal'
+    delisted = 'delisted'
+
+
+class DepositStatus(Enum):
+    allowed = 'allowed'
+    prohibited = 'prohibited'
+
+
+class WithdrawStatus(Enum):
+    allowed = 'allowed'
+    prohibited = 'prohibited'
+
+
+class WithdrawFeeType(Enum):
+    fixed = 'fixed'
+    circulated = 'circulated'
+    ratio = 'ratio'

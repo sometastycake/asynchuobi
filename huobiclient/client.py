@@ -11,6 +11,7 @@ from .schemas.common.request import GetChainsInformationRequest
 from .schemas.common.response import (
     CurrentTimestampResponse,
     GetChainsInformationResponse,
+    GetChainsInformationV2Response,
     MarketStatusResponse,
     SupportedCurrenciesResponse,
     SupportedTradingSymbolsResponse,
@@ -170,4 +171,25 @@ class HuobiClient:
             path='/v1/settings/common/chains',
             params=request_data.dict(by_alias=True, exclude_none=True),
             response_model=GetChainsInformationResponse,
+        )
+
+    async def get_chains_information_v2(
+            self,
+            currency: Optional[str] = None,
+            authorized_user: bool = True,
+    ) -> GetChainsInformationV2Response:
+        """
+        API user could query static reference information for each currency,
+        as well as its corresponding chain(s)
+        """
+        params = {
+            'authorizedUser': str(authorized_user).lower(),
+        }
+        if currency is not None:
+            params['currency'] = currency.lower()
+        return await self.request(
+            method='GET',
+            path='/v2/reference/currencies',
+            params=params,
+            response_model=GetChainsInformationV2Response,
         )

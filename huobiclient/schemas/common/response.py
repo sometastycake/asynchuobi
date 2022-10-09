@@ -4,7 +4,17 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from huobiclient.enums import AssetType, ChainType, MarketHaltReason, MarketStatus, SymbolStatus
+from huobiclient.enums import (
+    AssetType,
+    ChainType,
+    DepositStatus,
+    InstrumentStatus,
+    MarketHaltReason,
+    MarketStatus,
+    SymbolStatus,
+    WithdrawFeeType,
+    WithdrawStatus,
+)
 from huobiclient.schemas.base import BaseHuobiResponse
 
 
@@ -161,3 +171,97 @@ class ChainInformation(BaseModel):
 
 class GetChainsInformationResponse(BaseHuobiResponse):
     data: List[ChainInformation]
+
+
+class GetChainsInformationV2(BaseModel):
+    chain: str = Field(
+        description='Chain name',
+    )
+    display_name: str = Field(
+        alias='displayName',
+        description='Chain display name',
+    )
+    base_chain: Optional[str] = Field(
+        alias='baseChain',
+        description='Base chain name',
+    )
+    base_chain_protocol: Optional[str] = Field(
+        alias='baseChainProtocol',
+        description='Base chain protocol',
+    )
+    is_dynamic: Optional[bool] = Field(
+        alias='isDynamic',
+        description='Is dynamic fee type or not',
+    )
+    num_of_confirmations: int = Field(
+        alias='numOfConfirmations',
+        description='Number of confirmations required for deposit success',
+    )
+    num_of_fast_confirmations: int = Field(
+        alias='numOfFastConfirmations',
+        description='Number of confirmations required for quick success',
+    )
+    min_deposit_amount: Decimal = Field(
+        alias='minDepositAmt',
+        description='Minimal deposit amount in each request',
+    )
+    deposit_status: DepositStatus = Field(
+        alias='depositStatus',
+    )
+    min_withdraw_amount: Decimal = Field(
+        alias='minWithdrawAmt',
+        description='Minimal withdraw amount in each request',
+    )
+    max_withdraw_amount: Decimal = Field(
+        alias='maxWithdrawAmt',
+        description='Maximum withdraw amount in each request',
+    )
+    withdraw_quota_per_day: Decimal = Field(
+        alias='withdrawQuotaPerDay',
+        description='Maximum withdraw amount in a day (Singapore timezone)',
+    )
+    withdraw_quota_per_year: Optional[Decimal] = Field(
+        alias='withdrawQuotaPerYear',
+        description='Maximum withdraw amount in a year',
+    )
+    withdraw_quota_total: Optional[Decimal] = Field(
+        alias='withdrawQuotaTotal',
+        description='Maximum withdraw amount in total',
+    )
+    withdraw_precision: int = Field(
+        alias='withdrawPrecision',
+        description='Withdraw amount precision',
+    )
+    withdraw_fee_type: WithdrawFeeType = Field(
+        alias='withdrawFeeType',
+        description='Type of withdraw fee',
+    )
+    transact_fee_withdraw: Optional[Decimal] = Field(
+        alias='transactFeeWithdraw',
+        description='Withdraw fee in each request',
+    )
+    min_transact_fee_withdraw: Optional[Decimal] = Field(
+        alias='minTransactFeeWithdraw',
+        description='Minimal withdraw fee in each request',
+    )
+    max_transact_fee_withdraw: Optional[Decimal] = Field(
+        alias='maxTransactFeeWithdraw',
+        description='Maximum withdraw fee in each request',
+    )
+    transact_fee_rate_withdraw: Optional[Decimal] = Field(
+        alias='transactFeeRateWithdraw',
+        description='Withdraw fee in each request',
+    )
+    withdraw_status: WithdrawStatus = Field(alias='withdrawStatus')
+
+
+class GetChainsInformationV2Data(BaseModel):
+    currency: str
+    instrument_status: InstrumentStatus = Field(alias='instStatus')
+    chains: List[GetChainsInformationV2]
+
+
+class GetChainsInformationV2Response(BaseModel):
+    code: int
+    message: Optional[str]
+    data: List[GetChainsInformationV2Data]
