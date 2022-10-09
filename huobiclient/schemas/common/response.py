@@ -1,10 +1,10 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from huobiclient.enums import AssetType, MarketHaltReason, MarketStatus, SymbolStatus
+from huobiclient.enums import AssetType, ChainType, MarketHaltReason, MarketStatus, SymbolStatus
 from huobiclient.schemas.base import BaseHuobiResponse
 
 
@@ -122,3 +122,42 @@ class SystemStatusResponse(BaseModel):
     components: List[SystemStatusComponent]
     incidents: List[Dict]
     scheduled_maintenances: List[Dict]
+
+
+class ChainInformation(BaseModel):
+    addr_deposit_tag: bool = Field(alias='adt')
+    address_chain: str = Field(alias='ac')
+    addr_oneoff: bool = Field(alias='ao')
+    addr_with_tag: bool = Field(alias='awt')
+    chain: str
+    chain_type: ChainType = Field(alias='ct')
+    code: str
+    currency: str
+    deposit_desc: Optional[str] = Field(alias='deposit-desc')
+    deposit_enable: bool = Field(alias='de')
+    deposit_min_amount: Decimal = Field(alias='dma')
+    deposit_tips_desc: Optional[str] = Field(alias='deposit-tips-desc')
+    display_name: str = Field(alias='dn')
+    fast_confirms: int = Field(alias='fc')
+    fee_type: str = Field(alias='ft')
+    is_default: int = Field(alias='default')
+    replace_chain_info_desc: Optional[str] = Field(alias='replace-chain-info-desc')
+    replace_chain_notification_desc: Optional[str] = Field(alias='replace-chain-notification-desc')
+    replace_chain_popup_desc: Optional[str] = Field(alias='replace-chain-popup-desc')
+    safe_confirms: int = Field(alias='sc')
+    suspend_deposit_announcement: Optional[str] = Field(alias='sda')
+    suspend_deposit_desc: Optional[str] = Field(alias='suspend-deposit-desc')
+    suspend_withdraw_announcement: Optional[str] = Field(alias='swa')
+    suspend_withdraw_desc: Optional[str] = Field(alias='suspend-withdraw-desc')
+    visible: bool = Field(alias='v')
+    withdraw_desc: Optional[str] = Field(alias='withdraw-desc')
+    withdraw_enable: bool = Field(alias='we')
+    withdraw_min_amount: Decimal = Field(alias='wma')
+    withraw_precision: int = Field(alias='wp')
+    full_name: str = Field(alias='fn')
+    withdraw_tips_desc: Optional[str] = Field(alias='withdraw-tips-desc')
+    suspend_visible_desc: Optional[str] = Field(alias='suspend-visible-desc')
+
+
+class GetChainsInformationResponse(BaseHuobiResponse):
+    data: List[ChainInformation]

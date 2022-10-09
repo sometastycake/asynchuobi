@@ -55,3 +55,12 @@ class MarketHaltReason(IntEnum):
 class AssetType(IntEnum):
     virtual_currency = 1
     fiat_currency = 2
+
+
+class ChainType(Enum):
+    plain = 'plain'
+    live = 'live'
+    old = 'old'
+    new = 'new'
+    legal = 'legal'
+    tooold = 'tooold'

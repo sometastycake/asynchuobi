@@ -7,9 +7,10 @@ from yarl import URL
 from .config import huobi_client_config as config
 from .schemas.account.response import AccountBalanceResponse, AccountsResponse
 from .schemas.base import BaseHuobiRequest
-from .schemas.common.request import SupportedCurrenciesRequest, SupportedTradingSymbolsRequest
+from .schemas.common.request import GetChainsInformationRequest
 from .schemas.common.response import (
     CurrentTimestampResponse,
+    GetChainsInformationResponse,
     MarketStatusResponse,
     SupportedCurrenciesResponse,
     SupportedTradingSymbolsResponse,
@@ -118,17 +119,14 @@ class HuobiClient:
     ) -> SupportedTradingSymbolsResponse:
         """
         Get all Supported Trading Symbol.
-        API Key Permission：Read.
         """
-        path = '/v2/settings/common/symbols'
-        if timestamp_milliseconds is None:
-            data = BaseHuobiRequest()
-        else:
-            data = SupportedTradingSymbolsRequest(ts=timestamp_milliseconds)
+        params = {}
+        if timestamp_milliseconds is not None:
+            params['ts'] = timestamp_milliseconds
         return await self.request(
             method='GET',
-            path=path,
-            params=data.to_request(path, 'GET'),
+            path='/v2/settings/common/symbols',
+            params=params,
             response_model=SupportedTradingSymbolsResponse,
         )
 
@@ -138,16 +136,38 @@ class HuobiClient:
     ) -> SupportedCurrenciesResponse:
         """
         Get all Supported Currencies.
-        API Key Permission：Read.
         """
-        path = '/v2/settings/common/currencies'
-        if timestamp_milliseconds is None:
-            data = BaseHuobiRequest()
-        else:
-            data = SupportedCurrenciesRequest(ts=timestamp_milliseconds)
+        params = {}
+        if timestamp_milliseconds is not None:
+            params['ts'] = timestamp_milliseconds
         return await self.request(
             method='GET',
-            path=path,
-            params=data.to_request(path, 'GET'),
+            path='/v2/settings/common/currencies',
+            params=params,
             response_model=SupportedCurrenciesResponse,
+        )
+
+    async def get_chains_information(
+            self,
+            show_desc: Optional[int] = None,
+            timestamp_milliseconds: Optional[int] = None,
+            currency: Optional[str] = None,
+    ) -> GetChainsInformationResponse:
+        """
+        Get Chains Information.
+
+        :param show_desc: show desc, 0: no, 1: all, 2: suspend deposit/withdrawal and chain exchange
+        :param timestamp_milliseconds: timestamp to get incremental data
+        :param currency: currency
+        """
+        request_data = GetChainsInformationRequest(
+            show_desc=show_desc,
+            ts=timestamp_milliseconds,
+            currency=currency,
+        )
+        return await self.request(
+            method='GET',
+            path='/v1/settings/common/chains',
+            params=request_data.dict(by_alias=True, exclude_none=True),
+            response_model=GetChainsInformationResponse,
         )

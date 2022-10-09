@@ -1,9 +1,12 @@
-from huobiclient.schemas.base import BaseHuobiRequest
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
-class SupportedTradingSymbolsRequest(BaseHuobiRequest):
-    ts: int
+class GetChainsInformationRequest(BaseModel):
+    show_desc: Optional[int] = Field(default=None, alias='show-desc')
+    ts: Optional[int] = None
+    currency: Optional[str] = None
 
-
-class SupportedCurrenciesRequest(BaseHuobiRequest):
-    ts: int
+    class Config:
+        allow_population_by_field_name = True
