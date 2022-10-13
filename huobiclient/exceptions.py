@@ -6,3 +6,7 @@ class HuobiError(Exception):
 
     def __str__(self) -> str:
         return f'Error code "{self.err_code}" with message "{self.err_msg}"'
+
+
+class WsHuobiError(HuobiError):
+    ...

@@ -1,4 +1,4 @@
-from pydantic import BaseSettings
+from pydantic import BaseSettings, Field
 
 
 class BaseHuobiClientConfig(BaseSettings):
@@ -6,6 +6,16 @@ class BaseHuobiClientConfig(BaseSettings):
     HUOBI_SECRET_KEY: str
     HUOBI_ACCESS_KEY: str
     HUOBI_API_URL: str = 'https://api.huobi.pro'
+
+    HUOBI_WS_MARKET_URL: str = Field(
+        default='wss://api.huobi.pro/ws',
+        description='Websocket Market Feed (excluding MBP incremental channel & its REQ channel)',
+    )
+
+    HUOBI_WS_MARKET_FEED_URL: str = Field(
+        default='wss://api.huobi.pro/feed',
+        description='MBP incremental channel & its REQ channel',
+    )
 
     class Config:
         case_sensitive = True
