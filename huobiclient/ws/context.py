@@ -37,7 +37,8 @@ class WebsocketContextManager:
 
     async def __aexit__(self, exc_type, exc_vval, exc_tb) -> None:  # noqa:U100
         for request in self._request:
-            await self._ws.send(request.unsubscribe())
+            if not self._ws.closed:
+                await self._ws.send(request.unsubscribe())
 
     async def __aiter__(self) -> AsyncGenerator[BaseModel, None]:
         async for msg in self._ws.recv(decompress=True):

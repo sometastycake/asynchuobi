@@ -1,6 +1,5 @@
 import gzip
 import json
-import time
 from typing import AsyncGenerator, Dict, Optional
 
 import aiohttp
@@ -45,6 +44,12 @@ class HuobiWebsocket:
             self._ws = await self._connect()
         await self._ws.send_json(message)
 
+    @property
+    def closed(self) -> bool:
+        if self._ws is None:
+            raise RuntimeError('WS is not initialized')
+        return self._ws.closed
+
     def _decode_msg(self, msg: WSMessage, decompress: bool = False) -> Dict:
         if decompress:
             return json.loads(gzip.decompress(msg.data))
@@ -57,10 +62,10 @@ class HuobiWebsocket:
                 err_msg=response['err-msg'],
             )
 
-    async def _ping(self) -> None:
+    async def _pong(self, value: int) -> None:
         if self._ws is None:
             raise RuntimeError('WS is not initialized')
-        await self._ws.send_json({'pong': int(time.time() * 1000)})
+        await self._ws.send_json({'pong': value})
 
     async def recv(self, decompress: bool = False) -> AsyncGenerator[Dict, None]:
         if self._ws is None:
@@ -68,7 +73,8 @@ class HuobiWebsocket:
         async for msg in self._ws:
             response: Dict = self._decode_msg(msg, decompress)  # type:ignore
             self._check_message_error(response)
-            if response.get('ping'):
-                await self._ping()
+            ping = response.get('ping')
+            if ping:
+                await self._pong(ping)
                 continue
             yield response
