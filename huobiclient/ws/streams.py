@@ -5,6 +5,7 @@ from huobiclient.schemas.ws.market.request import (
     MarketBestBidOfferRequest,
     MarketCandleRequest,
     MarketDetailRequest,
+    MarketEtpRealTimeNavRequest,
     MarketOrderbookRequest,
     MarketTickerRequest,
     MarketTradeDetailRequest,
@@ -13,6 +14,7 @@ from huobiclient.schemas.ws.market.response import (
     MarketBestBidOfferResponse,
     MarketCandleResponse,
     MarketDetailResponse,
+    MarketEtpRealTimeNavResponse,
     MarketOrderbookResponse,
     MarketTickerResponse,
     MarketTradeDetailResponse,
@@ -22,6 +24,7 @@ from huobiclient.ws.context import (
     _WebsocketContextManager_MarketBestBidOfferResponse,
     _WebsocketContextManager_MarketCandleResponse,
     _WebsocketContextManager_MarketDetailResponse,
+    _WebsocketContextManager_MarketEtpRealTimeNavResponse,
     _WebsocketContextManager_MarketOrderbookResponse,
     _WebsocketContextManager_MarketTickerResponse,
     _WebsocketContextManager_MarketTradeDetailResponse,
@@ -116,4 +119,16 @@ def market_best_bid_offer_stream(
         ),
         request=request,
         response=MarketBestBidOfferResponse,
+    )
+
+
+def etp_real_time_nav_stream(
+        request: Union[MarketEtpRealTimeNavRequest, List[MarketEtpRealTimeNavRequest]],
+) -> _WebsocketContextManager_MarketEtpRealTimeNavResponse:
+    return _WebsocketContextManager_MarketEtpRealTimeNavResponse(
+        ws=HuobiWebsocket(
+            ws_url=cfg.HUOBI_WS_MARKET_URL,
+        ),
+        request=request,
+        response=MarketEtpRealTimeNavResponse,
     )

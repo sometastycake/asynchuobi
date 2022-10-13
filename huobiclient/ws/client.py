@@ -1,4 +1,3 @@
-import asyncio
 import gzip
 import json
 import time
@@ -70,6 +69,6 @@ class HuobiWebsocket:
             response: Dict = self._decode_msg(msg, decompress)  # type:ignore
             self._check_message_error(response)
             if response.get('ping'):
-                asyncio.create_task(self._ping())
+                await self._ping()
                 continue
             yield response

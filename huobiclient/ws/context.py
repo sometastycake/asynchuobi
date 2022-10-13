@@ -7,6 +7,7 @@ from huobiclient.schemas.ws.market.response import (
     MarketBestBidOfferResponse,
     MarketCandleResponse,
     MarketDetailResponse,
+    MarketEtpRealTimeNavResponse,
     MarketOrderbookResponse,
     MarketTickerResponse,
     MarketTradeDetailResponse,
@@ -84,3 +85,9 @@ class _WebsocketContextManager_MarketBestBidOfferResponse(WebsocketContextManage
     async def __aiter__(self) -> AsyncGenerator[MarketBestBidOfferResponse, None]:
         async for msg in super().__aiter__():
             yield cast(MarketBestBidOfferResponse, msg)
+
+class _WebsocketContextManager_MarketEtpRealTimeNavResponse(WebsocketContextManager):  # noqa
+
+    async def __aiter__(self) -> AsyncGenerator[MarketEtpRealTimeNavResponse, None]:
+        async for msg in super().__aiter__():
+            yield cast(MarketEtpRealTimeNavResponse, msg)

@@ -17,12 +17,12 @@ class Candle(BaseModel):
 
 
 class MarketCandle(Candle):
-    tick_id: int = Field(alias='id', description='UNIX epoch timestamp in second as response id')
+    tick_id: int = Field(alias='id')
 
 
 class MarketCandleResponse(BaseModel):
     ch: str
-    ts: int = Field(description='Time of Respond Generation')
+    ts: int
     tick: MarketCandle
 
 
@@ -37,7 +37,7 @@ class MarketTicker(Candle):
 
 class MarketTickerResponse(BaseModel):
     ch: str
-    ts: int = Field(description='Time of Respond Generation')
+    ts: int
     tick: MarketTicker
 
 
@@ -48,7 +48,7 @@ class MarketOrderbook(BaseModel):
 
 class MarketOrderbookResponse(BaseModel):
     ch: str
-    ts: int = Field(description='Time of Respond Generation')
+    ts: int
     tick: MarketOrderbook
 
 
@@ -66,13 +66,13 @@ class MarketTradeDetail(BaseModel):
 
 class MarketTradeDetailTick(BaseModel):
     global_transaction_id: int = Field(alias='id')
-    ts: int = Field(description='Latest Creation Time')
+    ts: int
     data: List[MarketTradeDetail]
 
 
 class MarketTradeDetailResponse(BaseModel):
     ch: str
-    ts: int = Field(description='Time of Respond Generation')
+    ts: int
     tick: MarketTradeDetailTick
 
 
@@ -88,5 +88,26 @@ class MarketBestBidOffer(BaseModel):
 
 class MarketBestBidOfferResponse(BaseModel):
     ch: str
-    ts: int = Field(description='Time of Respond Generation, Unit: Millisecond')
+    ts: int
     tick: MarketBestBidOffer
+
+
+class MarketEtpRealTimeNavBasket(BaseModel):
+    amount: Decimal
+    currency: str
+
+
+class MarketEtpRealTimeNavTick(BaseModel):
+    actual_leverage: Decimal = Field(alias='actualLeverage')
+    nav: Decimal
+    outstanding: Decimal
+    symbol: str
+    nav_time: int = Field(alias='navTime')
+    basket: List[MarketEtpRealTimeNavBasket]
+
+
+class MarketEtpRealTimeNavResponse(BaseModel):
+    ch: str
+    ts: int
+    status: str
+    tick: MarketEtpRealTimeNavTick

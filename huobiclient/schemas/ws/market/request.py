@@ -68,3 +68,10 @@ class MarketBestBidOfferRequest(BaseMarketWebsocketRequest):
     @property
     def topic(self) -> str:
         return f'market.{self._symbol}.bbo'
+
+
+class MarketEtpRealTimeNavRequest(BaseMarketWebsocketRequest):
+
+    @property
+    def topic(self) -> str:
+        return f'market.{self._symbol}.etp'
