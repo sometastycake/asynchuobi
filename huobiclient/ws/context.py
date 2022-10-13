@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from huobiclient.schemas.ws.abstract import AbstractWebsocketRequest
 from huobiclient.schemas.ws.market.response import (
     MarketBestBidOfferResponse,
+    MarketByPriceRefreshUpdateResponse,
     MarketCandleResponse,
     MarketDetailResponse,
     MarketEtpRealTimeNavResponse,
@@ -91,3 +92,9 @@ class _WebsocketContextManager_MarketEtpRealTimeNavResponse(WebsocketContextMana
     async def __aiter__(self) -> AsyncGenerator[MarketEtpRealTimeNavResponse, None]:
         async for msg in super().__aiter__():
             yield cast(MarketEtpRealTimeNavResponse, msg)
+
+class _WebsocketContextManager_MarketByPriceRefreshUpdateResponse(WebsocketContextManager):  # noqa
+
+    async def __aiter__(self) -> AsyncGenerator[MarketByPriceRefreshUpdateResponse, None]:
+        async for msg in super().__aiter__():
+            yield cast(MarketByPriceRefreshUpdateResponse, msg)

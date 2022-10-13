@@ -1,7 +1,7 @@
 import uuid
 from typing import Dict
 
-from huobiclient.enums import CandleInterval, MarketDepth
+from huobiclient.enums import CandleInterval, MarketDepth, PriceLevel
 from huobiclient.schemas.ws.abstract import AbstractWebsocketRequest
 
 
@@ -75,3 +75,14 @@ class MarketEtpRealTimeNavRequest(BaseMarketWebsocketRequest):
     @property
     def topic(self) -> str:
         return f'market.{self._symbol}.etp'
+
+
+class MarketByPriceRefreshUpdateRequest(BaseMarketWebsocketRequest):
+
+    def __init__(self, symbol: str, price_level: PriceLevel):
+        super().__init__(symbol)
+        self._price_level = price_level
+
+    @property
+    def topic(self) -> str:
+        return f'market.{self._symbol}.mbp.refresh.{self._price_level.value}'

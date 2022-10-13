@@ -3,6 +3,7 @@ from typing import List, Union
 from huobiclient.config import huobi_client_config as cfg
 from huobiclient.schemas.ws.market.request import (
     MarketBestBidOfferRequest,
+    MarketByPriceRefreshUpdateRequest,
     MarketCandleRequest,
     MarketDetailRequest,
     MarketEtpRealTimeNavRequest,
@@ -12,6 +13,7 @@ from huobiclient.schemas.ws.market.request import (
 )
 from huobiclient.schemas.ws.market.response import (
     MarketBestBidOfferResponse,
+    MarketByPriceRefreshUpdateResponse,
     MarketCandleResponse,
     MarketDetailResponse,
     MarketEtpRealTimeNavResponse,
@@ -22,6 +24,7 @@ from huobiclient.schemas.ws.market.response import (
 from huobiclient.ws.client import HuobiWebsocket
 from huobiclient.ws.context import (
     _WebsocketContextManager_MarketBestBidOfferResponse,
+    _WebsocketContextManager_MarketByPriceRefreshUpdateResponse,
     _WebsocketContextManager_MarketCandleResponse,
     _WebsocketContextManager_MarketDetailResponse,
     _WebsocketContextManager_MarketEtpRealTimeNavResponse,
@@ -131,4 +134,20 @@ def etp_real_time_nav_stream(
         ),
         request=request,
         response=MarketEtpRealTimeNavResponse,
+    )
+
+
+def market_by_price_refresh_update_stream(
+        request: Union[MarketByPriceRefreshUpdateRequest, List[MarketByPriceRefreshUpdateRequest]],
+) -> _WebsocketContextManager_MarketByPriceRefreshUpdateResponse:
+    """
+    User could subscribe to this channel to receive refresh update of Market By Price order book.
+    The update interval is around 100ms.
+    """
+    return _WebsocketContextManager_MarketByPriceRefreshUpdateResponse(
+        ws=HuobiWebsocket(
+            ws_url=cfg.HUOBI_WS_MARKET_URL,
+        ),
+        request=request,
+        response=MarketByPriceRefreshUpdateResponse,
     )

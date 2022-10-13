@@ -111,3 +111,9 @@ class MarketDepth(Enum):
 class TradeDirection(Enum):
     buy = 'buy'
     sell = 'sell'
+
+
+class PriceLevel(IntEnum):
+    level_5 = 5
+    level_10 = 10
+    level_20 = 20

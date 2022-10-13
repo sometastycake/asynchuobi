@@ -111,3 +111,15 @@ class MarketEtpRealTimeNavResponse(BaseModel):
     ts: int
     status: str
     tick: MarketEtpRealTimeNavTick
+
+
+class MarketByPriceRefreshUpdateTick(BaseModel):
+    seq_num: int = Field(alias='seqNum')
+    bids: List[List[Decimal]]
+    asks: List[List[Decimal]]
+
+
+class MarketByPriceRefreshUpdateResponse(BaseModel):
+    ch: str
+    ts: int
+    tick: MarketByPriceRefreshUpdateTick
