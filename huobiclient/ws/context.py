@@ -13,7 +13,7 @@ from huobiclient.schemas.ws.market.response import (
     MarketTickerResponse,
     MarketTradeDetailResponse,
 )
-from huobiclient.ws.client import HuobiWebsocket
+from huobiclient.ws.client import HuobiMarketWebsocket
 
 BaseRequestModel = TypeVar('BaseRequestModel', bound=AbstractWebsocketRequest)
 
@@ -22,7 +22,7 @@ class WebsocketContextManager:
 
     def __init__(
         self,
-        ws: HuobiWebsocket,
+        ws: HuobiMarketWebsocket,
         request: Union[BaseRequestModel, List[BaseRequestModel]],
         response: Type[BaseModel],
     ):
@@ -41,7 +41,7 @@ class WebsocketContextManager:
                 await self._ws.send(request.unsubscribe())
 
     async def __aiter__(self) -> AsyncGenerator[BaseModel, None]:
-        async for msg in self._ws.recv(decompress=True):
+        async for msg in self._ws.recv():
             if 'ch' not in msg:
                 continue
             yield self._response.parse_obj(msg)

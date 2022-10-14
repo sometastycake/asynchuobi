@@ -17,6 +17,11 @@ class BaseHuobiClientConfig(BaseSettings):
         description='MBP incremental channel & its REQ channel',
     )
 
+    HUOBI_WS_ASSET_AND_ORDER_URL: str = Field(
+        default='wss://api.huobi.pro/ws/v2',
+        description='Websocket Asset and Order',
+    )
+
     class Config:
         case_sensitive = True
         env_file = '.env'

@@ -8,7 +8,7 @@ from aiohttp import WSMessage
 from huobiclient.exceptions import WsHuobiError
 
 
-class HuobiWebsocket:
+class BaseHuobiWebsocket:
 
     def __init__(self, ws_url: str):
         self._ws_url = ws_url
@@ -20,13 +20,6 @@ class HuobiWebsocket:
     def __del__(self) -> None:
         if self._session.connector and not self._session.closed:
             self._session.connector.close()
-
-    async def __aenter__(self) -> 'HuobiWebsocket':
-        self._ws = await self._connect()
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:  # noqa:U100
-        await self._close()
 
     async def _close(self) -> None:
         if self._ws is not None:
@@ -50,11 +43,6 @@ class HuobiWebsocket:
             raise RuntimeError('WS is not initialized')
         return self._ws.closed
 
-    def _decode_msg(self, msg: WSMessage, decompress: bool = False) -> Dict:
-        if decompress:
-            return json.loads(gzip.decompress(msg.data))
-        return json.loads(msg.data)
-
     def _check_message_error(self, response: Dict) -> None:
         if response.get('status', '') == 'error':
             raise WsHuobiError(
@@ -62,19 +50,49 @@ class HuobiWebsocket:
                 err_msg=response['err-msg'],
             )
 
-    async def _pong(self, value: int) -> None:
-        if self._ws is None:
-            raise RuntimeError('WS is not initialized')
-        await self._ws.send_json({'pong': value})
 
-    async def recv(self, decompress: bool = False) -> AsyncGenerator[Dict, None]:
+class HuobiMarketWebsocket(BaseHuobiWebsocket):
+
+    def _decode_msg(self, msg: WSMessage) -> Dict:
+        return json.loads(gzip.decompress(msg.data))
+
+    async def _pong(self, value: int) -> None:
+        await self.send({'pong': value})
+
+    async def recv(self) -> AsyncGenerator[Dict, None]:
         if self._ws is None:
             raise RuntimeError('WS is not initialized')
         async for msg in self._ws:
-            response: Dict = self._decode_msg(msg, decompress)  # type:ignore
+            response: Dict = self._decode_msg(msg)  # type:ignore
             self._check_message_error(response)
             ping = response.get('ping')
             if ping:
                 await self._pong(ping)
+                continue
+            yield response
+
+
+class HuobiAccountOrderWebsocket(BaseHuobiWebsocket):
+
+    def _decode_msg(self, msg: WSMessage) -> Dict:
+        return json.loads(msg.data)
+
+    async def _pong(self, timestamp: int) -> None:
+        await self.send({
+            'action': 'pong',
+            'data': {
+                'ts': timestamp,
+            },
+        })
+
+    async def recv(self) -> AsyncGenerator[Dict, None]:
+        if self._ws is None:
+            raise RuntimeError('WS is not initialized')
+        async for msg in self._ws:
+            response: Dict = self._decode_msg(msg)  # type:ignore
+            self._check_message_error(response)
+            action = response.get('action', '')
+            if action == 'ping':
+                await self._pong(response['data']['ts'])
                 continue
             yield response

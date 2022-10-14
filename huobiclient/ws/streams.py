@@ -21,7 +21,7 @@ from huobiclient.schemas.ws.market.response import (
     MarketTickerResponse,
     MarketTradeDetailResponse,
 )
-from huobiclient.ws.client import HuobiWebsocket
+from huobiclient.ws.client import HuobiMarketWebsocket
 from huobiclient.ws.context import (
     _WebsocketContextManager_MarketBestBidOfferResponse,
     _WebsocketContextManager_MarketByPriceRefreshUpdateResponse,
@@ -41,7 +41,7 @@ def market_ticker_stream(
     Retrieve the market ticker,data is pushed every 100ms.
     """
     return _WebsocketContextManager_MarketTickerResponse(
-        ws=HuobiWebsocket(
+        ws=HuobiMarketWebsocket(
             ws_url=cfg.HUOBI_WS_MARKET_URL,
         ),
         request=request,
@@ -56,7 +56,7 @@ def market_candle_stream(
     This topic sends a new candlestick whenever it is available.
     """
     return _WebsocketContextManager_MarketCandleResponse(
-        ws=HuobiWebsocket(
+        ws=HuobiMarketWebsocket(
             ws_url=cfg.HUOBI_WS_MARKET_URL,
         ),
         request=request,
@@ -71,7 +71,7 @@ def market_orderbook_stream(
     This topic sends the latest market by price order book in snapshot mode at 1-second interval.
     """
     return _WebsocketContextManager_MarketOrderbookResponse(
-        ws=HuobiWebsocket(
+        ws=HuobiMarketWebsocket(
             ws_url=cfg.HUOBI_WS_MARKET_URL,
         ),
         request=request,
@@ -87,7 +87,7 @@ def market_stats_stream(
     in frequency of no more than 10 times per second.
     """
     return _WebsocketContextManager_MarketDetailResponse(
-        ws=HuobiWebsocket(
+        ws=HuobiMarketWebsocket(
             ws_url=cfg.HUOBI_WS_MARKET_URL,
         ),
         request=request,
@@ -102,7 +102,7 @@ def market_trade_detail_stream(
     This topic sends the latest completed trades. It updates in tick by tick mode.
     """
     return _WebsocketContextManager_MarketTradeDetailResponse(
-        ws=HuobiWebsocket(
+        ws=HuobiMarketWebsocket(
             ws_url=cfg.HUOBI_WS_MARKET_URL,
         ),
         request=request,
@@ -117,7 +117,7 @@ def market_best_bid_offer_stream(
     User can receive BBO (Best Bid/Offer) update in tick by tick mode.
     """
     return _WebsocketContextManager_MarketBestBidOfferResponse(
-        ws=HuobiWebsocket(
+        ws=HuobiMarketWebsocket(
             ws_url=cfg.HUOBI_WS_MARKET_URL,
         ),
         request=request,
@@ -129,7 +129,7 @@ def etp_real_time_nav_stream(
         request: Union[MarketEtpRealTimeNavRequest, List[MarketEtpRealTimeNavRequest]],
 ) -> _WebsocketContextManager_MarketEtpRealTimeNavResponse:
     return _WebsocketContextManager_MarketEtpRealTimeNavResponse(
-        ws=HuobiWebsocket(
+        ws=HuobiMarketWebsocket(
             ws_url=cfg.HUOBI_WS_MARKET_URL,
         ),
         request=request,
@@ -145,7 +145,7 @@ def market_by_price_refresh_update_stream(
     The update interval is around 100ms.
     """
     return _WebsocketContextManager_MarketByPriceRefreshUpdateResponse(
-        ws=HuobiWebsocket(
+        ws=HuobiMarketWebsocket(
             ws_url=cfg.HUOBI_WS_MARKET_URL,
         ),
         request=request,
