@@ -5,6 +5,7 @@ from typing import AsyncGenerator, Dict, Optional
 import aiohttp
 from aiohttp import WSMessage
 
+from huobiclient.config import huobi_client_config as cfg
 from huobiclient.exceptions import WsHuobiError
 
 
@@ -43,41 +44,47 @@ class BaseHuobiWebsocket:
             raise RuntimeError('WS is not initialized')
         return self._ws.closed
 
-    def _check_message_error(self, response: Dict) -> None:
-        if response.get('status', '') == 'error':
-            raise WsHuobiError(
-                err_code=response['err-code'],
-                err_msg=response['err-msg'],
-            )
-
 
 class HuobiMarketWebsocket(BaseHuobiWebsocket):
 
-    def _decode_msg(self, msg: WSMessage) -> Dict:
-        return json.loads(gzip.decompress(msg.data))
+    def __init__(self, ws_url: str = cfg.HUOBI_WS_MARKET_URL):
+        super().__init__(ws_url=ws_url)
 
-    async def _pong(self, value: int) -> None:
-        await self.send({'pong': value})
+    def _decode_msg(self, message: WSMessage) -> Dict:
+        return json.loads(gzip.decompress(message.data))
+
+    async def _send_pong(self, timestamp: int) -> None:
+        await self.send({'pong': timestamp})
+
+    def _check_error(self, message: Dict) -> None:
+        if message.get('status', '') == 'error':
+            raise WsHuobiError(
+                err_code=message['err-code'],
+                err_msg=message['err-msg'],
+            )
 
     async def recv(self) -> AsyncGenerator[Dict, None]:
         if self._ws is None:
             raise RuntimeError('WS is not initialized')
         async for msg in self._ws:
             response: Dict = self._decode_msg(msg)  # type:ignore
-            self._check_message_error(response)
-            ping = response.get('ping')
+            self._check_error(response)
+            ping: Optional[int] = response.get('ping')
             if ping:
-                await self._pong(ping)
+                await self._send_pong(ping)
                 continue
             yield response
 
 
 class HuobiAccountOrderWebsocket(BaseHuobiWebsocket):
 
-    def _decode_msg(self, msg: WSMessage) -> Dict:
-        return json.loads(msg.data)
+    def __init__(self, ws_url: str = cfg.HUOBI_WS_ASSET_AND_ORDER_URL):
+        super().__init__(ws_url=ws_url)
 
-    async def _pong(self, timestamp: int) -> None:
+    def _decode_msg(self, message: WSMessage) -> Dict:
+        return json.loads(message.data)
+
+    async def _send_pong(self, timestamp: int) -> None:
         await self.send({
             'action': 'pong',
             'data': {
@@ -85,14 +92,21 @@ class HuobiAccountOrderWebsocket(BaseHuobiWebsocket):
             },
         })
 
+    def _check_error(self, message: Dict) -> None:
+        if message.get('code', -1) != 200:
+            raise WsHuobiError(
+                err_code=message['code'],
+                err_msg=message['message'],
+            )
+
     async def recv(self) -> AsyncGenerator[Dict, None]:
         if self._ws is None:
             raise RuntimeError('WS is not initialized')
         async for msg in self._ws:
             response: Dict = self._decode_msg(msg)  # type:ignore
-            self._check_message_error(response)
-            action = response.get('action', '')
+            self._check_error(response)
+            action: Optional[str] = response.get('action', '')
             if action == 'ping':
-                await self._pong(response['data']['ts'])
+                await self._send_pong(response['data']['ts'])
                 continue
             yield response

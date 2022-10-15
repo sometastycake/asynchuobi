@@ -4,9 +4,9 @@ import aiohttp
 from pydantic import BaseModel
 from yarl import URL
 
+from .auth import APIAuth
 from .config import huobi_client_config as config
 from .schemas.account.response import AccountBalanceResponse, AccountsResponse
-from .schemas.base import BaseHuobiRequest
 from .schemas.common.request import GetChainsInformationRequest
 from .schemas.common.response import (
     CurrentTimestampResponse,
@@ -97,7 +97,7 @@ class HuobiClient:
         return await self.request(
             method='GET',
             path=path,
-            params=BaseHuobiRequest().to_request(path, 'GET'),
+            params=APIAuth().to_request(path, 'GET'),
             response_model=AccountsResponse,
         )
 
@@ -110,7 +110,7 @@ class HuobiClient:
         return await self.request(
             method='GET',
             path=path,
-            params=BaseHuobiRequest().to_request(path, 'GET'),
+            params=APIAuth().to_request(path, 'GET'),
             response_model=AccountBalanceResponse,
         )
 
