@@ -2,10 +2,10 @@ import uuid
 from typing import Dict
 
 from huobiclient.enums import CandleInterval, MarketDepth, PriceLevel
-from huobiclient.schemas.ws.abstract import AbstractWebsocketRequest
+from huobiclient.ws.request.abstract import AbstractWebsocketRequest
 
 
-class BaseMarketWebsocketRequest(AbstractWebsocketRequest):
+class BaseMarketWS(AbstractWebsocketRequest):
 
     def __init__(self, symbol: str):
         self._symbol = symbol
@@ -20,7 +20,7 @@ class BaseMarketWebsocketRequest(AbstractWebsocketRequest):
         return {'unsub': self.topic, 'id': str(uuid.uuid4())}
 
 
-class MarketCandleRequest(BaseMarketWebsocketRequest):
+class WSMarketCandle(BaseMarketWS):
 
     def __init__(self, symbol: str, interval: CandleInterval):
         super().__init__(symbol)
@@ -31,14 +31,14 @@ class MarketCandleRequest(BaseMarketWebsocketRequest):
         return f'market.{self._symbol}.kline.{self._interval.value}'
 
 
-class MarketTickerRequest(BaseMarketWebsocketRequest):
+class WSMarketTicker(BaseMarketWS):
 
     @property
     def topic(self) -> str:
         return f'market.{self._symbol}.ticker'
 
 
-class MarketOrderbookRequest(BaseMarketWebsocketRequest):
+class WSMarketOrderbook(BaseMarketWS):
 
     def __init__(self, symbol: str, depth: MarketDepth):
         super().__init__(symbol)
@@ -49,35 +49,35 @@ class MarketOrderbookRequest(BaseMarketWebsocketRequest):
         return f'market.{self._symbol}.depth.{self._depth.value}'
 
 
-class MarketDetailRequest(BaseMarketWebsocketRequest):
+class WSMarketStats(BaseMarketWS):
 
     @property
     def topic(self) -> str:
         return f'market.{self._symbol}.detail'
 
 
-class MarketTradeDetailRequest(BaseMarketWebsocketRequest):
+class WSMarketTradeDetail(BaseMarketWS):
 
     @property
     def topic(self) -> str:
         return f'market.{self._symbol}.trade.detail'
 
 
-class MarketBestBidOfferRequest(BaseMarketWebsocketRequest):
+class WSMarketBBO(BaseMarketWS):
 
     @property
     def topic(self) -> str:
         return f'market.{self._symbol}.bbo'
 
 
-class MarketEtpRealTimeNavRequest(BaseMarketWebsocketRequest):
+class WSMarketETP(BaseMarketWS):
 
     @property
     def topic(self) -> str:
         return f'market.{self._symbol}.etp'
 
 
-class MarketByPriceRefreshUpdateRequest(BaseMarketWebsocketRequest):
+class WSMarketPriceRefreshUpdate(BaseMarketWS):
 
     def __init__(self, symbol: str, price_level: PriceLevel):
         super().__init__(symbol)

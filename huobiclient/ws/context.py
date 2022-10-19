@@ -1,101 +1,85 @@
-from typing import AsyncGenerator, List, Type, TypeVar, Union, cast
+from typing import Any, AsyncGenerator, Dict, List, Optional, TypeVar, Union, cast
 
-from pydantic import BaseModel
+from aiohttp import WSMessage
 
-from huobiclient.schemas.ws.abstract import AbstractWebsocketRequest
-from huobiclient.schemas.ws.market.response import (
-    MarketBestBidOfferResponse,
-    MarketByPriceRefreshUpdateResponse,
-    MarketCandleResponse,
-    MarketDetailResponse,
-    MarketEtpRealTimeNavResponse,
-    MarketOrderbookResponse,
-    MarketTickerResponse,
-    MarketTradeDetailResponse,
+from huobiclient.ws.client import HuobiAccountOrderWebsocket, HuobiMarketWebsocket
+from huobiclient.ws.handlers.abstract import AbstractWebsocketMessageHandler
+from huobiclient.ws.handlers.handlers import MarketWebsocketMessageHandler
+from huobiclient.ws.request.abstract import AbstractWebsocketRequest
+
+BaseRequestModelType = TypeVar(
+    'BaseRequestModelType',
+    bound=AbstractWebsocketRequest,
 )
-from huobiclient.ws.client import HuobiMarketWebsocket
-
-BaseRequestModel = TypeVar('BaseRequestModel', bound=AbstractWebsocketRequest)
 
 
-class WebsocketContextManager:
+class WebsocketMarketContextManager:
 
     def __init__(
         self,
         ws: HuobiMarketWebsocket,
-        request: Union[BaseRequestModel, List[BaseRequestModel]],
-        response: Type[BaseModel],
+        request: Union[BaseRequestModelType, List[BaseRequestModelType]],
+        handler: AbstractWebsocketMessageHandler = MarketWebsocketMessageHandler(),
     ):
-        self._ws = ws
-        self._request = request if isinstance(request, list) else [request]
-        self._response = response
+        self._websocket: HuobiMarketWebsocket = ws
+        self._request: List[BaseRequestModelType] = request if isinstance(request, list) else [request]
+        self._handler = handler
 
-    async def __aenter__(self) -> 'WebsocketContextManager':
+    async def __aenter__(self) -> 'WebsocketMarketContextManager':
+        await self._websocket.connect()
         for request in self._request:
-            await self._ws.send(request.subscribe())
+            await self._websocket.ws.send_json(request.subscribe())
         return self
 
     async def __aexit__(self, exc_type, exc_vval, exc_tb) -> None:  # noqa:U100
+        if self._websocket.ws.closed:
+            return
         for request in self._request:
-            if not self._ws.closed:
-                await self._ws.send(request.unsubscribe())
+            await self._websocket.ws.send_json(request.unsubscribe())
+        await self._websocket.close()
 
-    async def __aiter__(self) -> AsyncGenerator[BaseModel, None]:
-        async for msg in self._ws.recv():
-            if 'ch' not in msg:
+    async def __aiter__(self) -> AsyncGenerator[Any, None]:
+        async for message in self._websocket.ws:
+            message = cast(WSMessage, message)
+            timestamp: Optional[int] = self._handler.is_ping(message)
+            if timestamp:
+                await self._websocket.send_pong(timestamp)
                 continue
-            yield self._response.parse_obj(msg)
+            yield self._handler(message)
 
 
-class _WebsocketContextManager_MarketTickerResponse(WebsocketContextManager):  # noqa
+class WebsocketAccountOrderContextManager:
 
-    async def __aiter__(self) -> AsyncGenerator[MarketTickerResponse, None]:
-        async for msg in super().__aiter__():
-            yield cast(MarketTickerResponse, msg)
+    def __init__(
+        self,
+        ws: HuobiAccountOrderWebsocket,
+        request: Union[BaseRequestModelType, List[BaseRequestModelType]],
+        handler: AbstractWebsocketMessageHandler,
+    ):
+        self._websocket: HuobiAccountOrderWebsocket = ws
+        self._request: List[BaseRequestModelType] = request if isinstance(request, list) else [request]
+        self._handler = handler
 
+    async def __aenter__(self) -> 'WebsocketAccountOrderContextManager':
+        await self._websocket.connect()
+        await self._websocket.auth()
+        message: Dict = await self._websocket.ws.receive_json()
+        self._handler.check_error(message)
+        for request in self._request:
+            await self._websocket.ws.send_json(request.subscribe())
+        return self
 
-class _WebsocketContextManager_MarketCandleResponse(WebsocketContextManager):  # noqa
+    async def __aexit__(self, exc_type, exc_vval, exc_tb) -> None:  # noqa:U100
+        if self._websocket.ws.closed:
+            return
+        for request in self._request:
+            await self._websocket.ws.send_json(request.unsubscribe())
 
-    async def __aiter__(self) -> AsyncGenerator[MarketCandleResponse, None]:
-        async for msg in super().__aiter__():
-            yield cast(MarketCandleResponse, msg)
-
-
-class _WebsocketContextManager_MarketOrderbookResponse(WebsocketContextManager):  # noqa
-
-    async def __aiter__(self) -> AsyncGenerator[MarketOrderbookResponse, None]:
-        async for msg in super().__aiter__():
-            yield cast(MarketOrderbookResponse, msg)
-
-
-class _WebsocketContextManager_MarketDetailResponse(WebsocketContextManager):  # noqa
-
-    async def __aiter__(self) -> AsyncGenerator[MarketDetailResponse, None]:
-        async for msg in super().__aiter__():
-            yield cast(MarketDetailResponse, msg)
-
-
-class _WebsocketContextManager_MarketTradeDetailResponse(WebsocketContextManager):  # noqa
-
-    async def __aiter__(self) -> AsyncGenerator[MarketTradeDetailResponse, None]:
-        async for msg in super().__aiter__():
-            yield cast(MarketTradeDetailResponse, msg)
-
-
-class _WebsocketContextManager_MarketBestBidOfferResponse(WebsocketContextManager):  # noqa
-
-    async def __aiter__(self) -> AsyncGenerator[MarketBestBidOfferResponse, None]:
-        async for msg in super().__aiter__():
-            yield cast(MarketBestBidOfferResponse, msg)
-
-class _WebsocketContextManager_MarketEtpRealTimeNavResponse(WebsocketContextManager):  # noqa
-
-    async def __aiter__(self) -> AsyncGenerator[MarketEtpRealTimeNavResponse, None]:
-        async for msg in super().__aiter__():
-            yield cast(MarketEtpRealTimeNavResponse, msg)
-
-class _WebsocketContextManager_MarketByPriceRefreshUpdateResponse(WebsocketContextManager):  # noqa
-
-    async def __aiter__(self) -> AsyncGenerator[MarketByPriceRefreshUpdateResponse, None]:
-        async for msg in super().__aiter__():
-            yield cast(MarketByPriceRefreshUpdateResponse, msg)
+    async def __aiter__(self) -> AsyncGenerator[Any, None]:
+        async for message in self._websocket.ws:
+            message = cast(WSMessage, message)
+            timestamp: Optional[int] = self._handler.is_ping(message)
+            if timestamp:
+                await self._websocket.send_pong(timestamp)
+                continue
+            yield self._handler(message)
