@@ -8,5 +8,5 @@ class HuobiError(Exception):
         return f'Error code "{self.err_code}" with message "{self.err_msg}"'
 
 
-class WsHuobiError(HuobiError):
+class WSHuobiError(HuobiError):
     ...

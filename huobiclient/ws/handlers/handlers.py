@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Optional, Union
 
 from aiohttp import WSMessage
 
-from huobiclient.exceptions import WsHuobiError
+from huobiclient.exceptions import WSHuobiError
 from huobiclient.ws.handlers.abstract import AbstractWebsocketMessageHandler
 
 JSONDecoder = Callable[[Union[str, bytes]], Any]
@@ -20,7 +20,7 @@ class MarketWebsocketMessageHandler(AbstractWebsocketMessageHandler):
 
     def check_error(self, message: Dict) -> None:
         if message.get('status', '') == 'error':
-            raise WsHuobiError(
+            raise WSHuobiError(
                 err_code=message['err-code'],
                 err_msg=message['err-msg'],
             )
@@ -44,7 +44,7 @@ class AccountOrderWebsocketMessageHandler(AbstractWebsocketMessageHandler):
 
     def check_error(self, message: Dict) -> None:
         if message.get('code', -1) != 200:
-            raise WsHuobiError(
+            raise WSHuobiError(
                 err_code=message['code'],
                 err_msg=message['message'],
             )
