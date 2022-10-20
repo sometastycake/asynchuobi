@@ -53,19 +53,6 @@ class HuobiClient:
             self._check_error(data)
         return data
 
-    async def get_current_timestamp(self) -> Dict:
-        """
-        This endpoint returns the current timestamp, i.e. the number of milliseconds that
-        have elapsed since 00:00:00 UTC on 1 January 1970.
-        """
-        return await self.request(method='GET', path='/v1/common/timestamp')
-
-    async def get_market_status(self) -> Dict:
-        """
-        The endpoint returns current market status.
-        """
-        return await self.request(method='GET', path='/v2/market-status')
-
     async def get_system_status(self) -> Dict:
         """
         This endpoint allows users to get system status, Incidents and planned maintenance.
@@ -78,29 +65,11 @@ class HuobiClient:
         )
         return await response.json()
 
-    async def accounts(self) -> Dict:
+    async def get_market_status(self) -> Dict:
         """
-        Get all Accounts of the Current User.
-        API Key Permission：Read.
+        The endpoint returns current market status.
         """
-        path = '/v1/account/accounts'
-        return await self.request(
-            method='GET',
-            path=path,
-            params=APIAuth().to_request(path, 'GET'),
-        )
-
-    async def account_balance(self, account_id: int) -> Dict:
-        """
-        Get Account Balance of a Specific Account.
-        API Key Permission：Read.
-        """
-        path = f'/v1/account/accounts/{account_id}/balance'
-        return await self.request(
-            method='GET',
-            path=path,
-            params=APIAuth().to_request(path, 'GET'),
-        )
+        return await self.request(method='GET', path='/v2/market-status')
 
     async def get_all_supported_trading_symbols(
             self,
@@ -176,4 +145,35 @@ class HuobiClient:
             method='GET',
             path='/v2/reference/currencies',
             params=params,
+        )
+
+    async def get_current_timestamp(self) -> Dict:
+        """
+        This endpoint returns the current timestamp, i.e. the number of milliseconds that
+        have elapsed since 00:00:00 UTC on 1 January 1970.
+        """
+        return await self.request(method='GET', path='/v1/common/timestamp')
+
+    async def accounts(self) -> Dict:
+        """
+        Get all Accounts of the Current User.
+        API Key Permission：Read.
+        """
+        path = '/v1/account/accounts'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=APIAuth().to_request(path, 'GET'),
+        )
+
+    async def account_balance(self, account_id: int) -> Dict:
+        """
+        Get Account Balance of a Specific Account.
+        API Key Permission：Read.
+        """
+        path = f'/v1/account/accounts/{account_id}/balance'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=APIAuth().to_request(path, 'GET'),
         )
