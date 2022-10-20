@@ -43,7 +43,7 @@ class WebsocketMarketContextManager:
             message = cast(WSMessage, message)
             timestamp: Optional[int] = self._handler.is_ping(message)
             if timestamp:
-                await self._websocket.send_pong(timestamp)
+                await self._websocket.pong(timestamp)
                 continue
             yield self._handler(message)
 
@@ -80,6 +80,6 @@ class WebsocketAccountOrderContextManager:
             message = cast(WSMessage, message)
             timestamp: Optional[int] = self._handler.is_ping(message)
             if timestamp:
-                await self._websocket.send_pong(timestamp)
+                await self._websocket.pong(timestamp)
                 continue
             yield self._handler(message)
