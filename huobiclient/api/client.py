@@ -8,7 +8,12 @@ from huobiclient.config import huobi_client_config as config
 from huobiclient.enums import CandleInterval, MarketDepthAggregationLevel
 from huobiclient.exceptions import HuobiError
 
-from .dto import _GetChainsInformationRequest, _GetMarketSymbolsSettings
+from .dto import (
+    _GetChainsInformationRequest,
+    _GetMarketSymbolsSettings,
+    _GetTotalValuation,
+    _GetTotalValuationPlatformAssets,
+)
 
 
 class HuobiClient:
@@ -339,4 +344,46 @@ class HuobiClient:
             method='GET',
             path=path,
             params=APIAuth().to_request(path, 'GET'),
+        )
+
+    async def get_total_valuation_of_platform_assets(
+            self,
+            account_type: Optional[str] = None,
+            valuation_currency: Optional[str] = None,
+    ) -> Dict:
+        """
+        Obtain the total asset valuation of the platform account according
+        to the BTC or legal currency denominated unit.
+        """
+        params = _GetTotalValuationPlatformAssets(
+            accountType=account_type,
+            valuationCurrency=valuation_currency,
+        )
+        path = '/v2/account/valuation'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def get_asset_valuation(
+            self,
+            account_type: str,
+            valuation_currency: Optional[str] = None,
+            sub_uid: Optional[int] = None,
+    ) -> Dict:
+        """
+        This endpoint returns the valuation of the total assets of
+        the account in btc or fiat currency.
+        """
+        params = _GetTotalValuation(
+            accountType=account_type,
+            valuationCurrency=valuation_currency,
+            subUid=sub_uid,
+        )
+        path = '/v2/account/asset-valuation'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
         )
