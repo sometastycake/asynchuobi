@@ -7,7 +7,7 @@ from huobiclient.auth import APIAuth
 from huobiclient.config import huobi_client_config as config
 from huobiclient.exceptions import HuobiError
 
-from .dto import _GetChainsInformationRequest
+from .dto import _GetChainsInformationRequest, _GetMarketSymbolsSettings
 
 
 class HuobiClient:
@@ -101,6 +101,56 @@ class HuobiClient:
             method='GET',
             path='/v2/settings/common/currencies',
             params=params,
+        )
+
+    async def get_currencies_settings(
+            self,
+            timestamp_milliseconds: Optional[int] = None,
+    ) -> Dict:
+        """
+        Get Currencys Settings
+        """
+        params = {}
+        if timestamp_milliseconds is not None:
+            params['ts'] = timestamp_milliseconds
+        return await self.request(
+            method='GET',
+            path='/v1/settings/common/currencys',
+            params=params,
+        )
+
+    async def get_symbols_settings(
+            self,
+            timestamp_milliseconds: Optional[int] = None,
+    ) -> Dict:
+        """
+        Get Currencys Settings
+        """
+        params = {}
+        if timestamp_milliseconds is not None:
+            params['ts'] = timestamp_milliseconds
+        return await self.request(
+            method='GET',
+            path='/v1/settings/common/symbols',
+            params=params,
+        )
+
+    async def get_market_symbols_settings(
+            self,
+            symbols: Optional[str] = None,
+            timestamp_milliseconds: Optional[int] = None,
+    ) -> Dict:
+        """
+        Get Currencys Settings
+        """
+        params = _GetMarketSymbolsSettings(
+            ts=timestamp_milliseconds,
+            symbols=symbols,
+        )
+        return await self.request(
+            method='GET',
+            path='/v1/settings/common/market-symbols',
+            params=params.dict(exclude_none=True),
         )
 
     async def get_chains_information(

@@ -10,3 +10,8 @@ class _GetChainsInformationRequest(BaseModel):
 
     class Config:
         allow_population_by_field_name = True
+
+
+class _GetMarketSymbolsSettings(BaseModel):
+    ts: Optional[int] = None
+    symbols: Optional[str] = None
