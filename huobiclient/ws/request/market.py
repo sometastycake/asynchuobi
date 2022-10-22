@@ -1,7 +1,7 @@
 import uuid
 from typing import Dict
 
-from huobiclient.enums import CandleInterval, MarketDepth, PriceLevel
+from huobiclient.enums import CandleInterval, MarketDepthAggregationLevel, PriceLevel
 from huobiclient.ws.request.abstract import AbstractWebsocketRequest
 
 
@@ -40,7 +40,7 @@ class WSMarketTicker(BaseMarketWS):
 
 class WSMarketOrderbook(BaseMarketWS):
 
-    def __init__(self, symbol: str, depth: MarketDepth):
+    def __init__(self, symbol: str, depth: MarketDepthAggregationLevel):
         super().__init__(symbol)
         self._depth = depth
 

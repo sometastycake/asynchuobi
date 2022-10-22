@@ -5,6 +5,7 @@ from yarl import URL
 
 from huobiclient.auth import APIAuth
 from huobiclient.config import huobi_client_config as config
+from huobiclient.enums import CandleInterval, MarketDepthAggregationLevel
 from huobiclient.exceptions import HuobiError
 
 from .dto import _GetChainsInformationRequest, _GetMarketSymbolsSettings
@@ -199,10 +200,122 @@ class HuobiClient:
 
     async def get_current_timestamp(self) -> Dict:
         """
-        This endpoint returns the current timestamp, i.e. the number of milliseconds that
-        have elapsed since 00:00:00 UTC on 1 January 1970.
+        This endpoint returns the current timestamp, i.e. the number of
+        milliseconds that have elapsed since 00:00:00 UTC on 1 January 1970.
         """
         return await self.request(method='GET', path='/v1/common/timestamp')
+
+    async def get_candles(self, symbol: str, interval: CandleInterval, size: int = 150) -> Dict:
+        """
+        Market data APIs provide public market information such as varies of candlestick,
+        depth and trade information.
+        The market data is updated once per second.
+        """
+        if size < 1 or size > 2000:
+            raise ValueError(f'Wrong value "{size}"')
+        return await self.request(
+            method='GET',
+            path='/market/history/kline',
+            params={
+                'symbol': symbol,
+                'period': interval.value,
+                'size': size,
+            },
+        )
+
+    async def get_latest_aggregated_ticker(self, symbol: str) -> Dict:
+        """
+        This endpoint retrieves the latest ticker with some important 24h
+        aggregated market data.
+        """
+        return await self.request(
+            method='GET',
+            path='/market/detail/merged',
+            params={
+                'symbol': symbol,
+            },
+        )
+
+    async def get_latest_tickers_for_all_pairs(self) -> Dict:
+        """
+        This endpoint retrieves the latest tickers for all supported pairs.
+        """
+        return await self.request(method='GET', path='/market/tickers')
+
+    async def get_market_depth(
+        self,
+        symbol: str,
+        depth: int = 20,
+        aggregation_level: MarketDepthAggregationLevel = MarketDepthAggregationLevel.step0,
+    ):
+        """
+        This endpoint retrieves the current order book of a specific pair.
+        """
+        if depth not in (5, 10, 20):
+            raise ValueError(f'Wrong market depth value "{depth}"')
+        return await self.request(
+            method='GET',
+            path='/market/depth',
+            params={
+                'symbol': symbol,
+                'depth': depth,
+                'type': aggregation_level.value,
+            },
+        )
+
+    async def get_last_trade(self, symbol: str) -> Dict:
+        """
+        This endpoint retrieves the latest trade with its price,
+        volume, and direction.
+        """
+        return await self.request(
+            method='GET',
+            path='/market/trade',
+            params={
+                'symbol': symbol,
+            },
+        )
+
+    async def get_most_recent_trades(self, symbol: str, size: int = 1) -> Dict:
+        """
+        This endpoint retrieves the most recent trades with their price,
+        volume, and direction.
+        """
+        if size < 1 or size > 2000:
+            raise ValueError(f'Wrong value "{size}"')
+        return await self.request(
+            method='GET',
+            path='/market/history/trade',
+            params={
+                'symbol': symbol,
+                'size': size,
+            },
+        )
+
+    async def get_last_market_summary(self, symbol: str) -> Dict:
+        """
+        This endpoint retrieves the summary of trading in the market
+        for the last 24 hours.
+        """
+        return await self.request(
+            method='GET',
+            path='/market/detail/',
+            params={
+                'symbol': symbol,
+            },
+        )
+
+    async def get_real_time_nav(self, symbol: str) -> Dict:
+        """
+        This endpoint returns real time NAV for ETP.
+        """
+        return await self.request(
+            method='GET',
+            path='/market/etp',
+            params={
+                'symbol': symbol,
+            },
+        )
 
     async def accounts(self) -> Dict:
         """
