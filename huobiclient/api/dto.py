@@ -28,3 +28,60 @@ class _GetTotalValuation(APIAuth):
     accountType: str
     valuationCurrency: Optional[str]
     subUid: Optional[int]
+
+
+class _AssetTransfer(BaseModel):
+    from_user: int = Field(alias='from-user')
+    from_account_type: str = Field(alias='from-account-type')
+    from_account: int = Field(alias='from-account')
+    to_user: int = Field(alias='to-user')
+    to_account_type: str = Field(alias='to-account-type')
+    to_account: int = Field(alias='to-account')
+    currency: str
+    amount: str
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _GetAccountHistory(APIAuth):
+    account_id: str = Field(alias='account-id')
+    currency: Optional[str]
+    size: int = Field(default=100, ge=1, le=500)
+    from_id: Optional[int] = Field(alias='from-id')
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _GetPointBalance(APIAuth):
+    subUid: Optional[str] = None
+
+
+class _GetAccountLedger(APIAuth):
+    accountId: str
+    currency: Optional[str]
+    transactTypes: Optional[str]
+    startTime: Optional[int]
+    endTime: Optional[int]
+    sorting: Optional[str] = Field(alias='sort')
+    fromId: Optional[int]
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _TransferFundBetweenSpotAndFutures(BaseModel):
+    currency: str
+    amount: float
+    transfer_type: str = Field(alias='type')
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _PointTransfer(BaseModel):
+    fromUid: str
+    toUid: str
+    groupId: int
+    amount: str

@@ -9,10 +9,16 @@ from huobiclient.enums import CandleInterval, MarketDepthAggregationLevel
 from huobiclient.exceptions import HuobiError
 
 from .dto import (
+    _AssetTransfer,
+    _GetAccountHistory,
+    _GetAccountLedger,
     _GetChainsInformationRequest,
     _GetMarketSymbolsSettings,
+    _GetPointBalance,
     _GetTotalValuation,
     _GetTotalValuationPlatformAssets,
+    _PointTransfer,
+    _TransferFundBetweenSpotAndFutures,
 )
 
 
@@ -49,8 +55,8 @@ class HuobiClient:
             method=method,
             params=kwargs.get('params'),
             data=kwargs.get('data'),
+            json=kwargs.get('json'),
             headers={
-                'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
         )
@@ -386,4 +392,138 @@ class HuobiClient:
             method='GET',
             path=path,
             params=params.to_request(path, 'GET'),
+        )
+
+    async def asset_transfer(
+            self,
+            from_user: int,
+            from_account_type: str,
+            from_account: int,
+            to_user: int,
+            to_account_type: str,
+            to_account: int,
+            currency: str,
+            amount: str,
+    ) -> Dict:
+        params = _AssetTransfer(
+            from_user=from_user,
+            from_account_type=from_account_type,
+            from_account=from_account,
+            to_user=to_user,
+            to_account_type=to_account_type,
+            to_account=to_account,
+            currency=currency,
+            amount=amount,
+        )
+        path = '/v1/account/transfer'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=params.dict(by_alias=True),
+        )
+
+    async def get_account_history(
+            self,
+            account_id: str,
+            currency: Optional[str] = None,
+            size: int = 100,
+            from_id: Optional[int] = None,
+    ) -> Dict:
+        """
+        This endpoint returns the amount changes of a specified user's account.
+        """
+        params = _GetAccountHistory(
+            account_id=account_id,
+            currency=currency,
+            size=size,
+            from_id=from_id,
+        )
+        path = '/v1/account/history'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def get_account_ledger(
+            self,
+            account_id: str,
+            currency: Optional[str] = None,
+            transact_types: Optional[str] = None,
+            start_time: Optional[int] = None,
+            end_time: Optional[int] = None,
+            sorting: Optional[str] = None,
+            from_id: Optional[int] = None,
+    ):
+        params = _GetAccountLedger(
+            accountId=account_id,
+            currency=currency,
+            transactTypes=transact_types,
+            startTime=start_time,
+            endTime=end_time,
+            sorting=sorting,
+            fromId=from_id,
+        )
+        path = '/v2/account/ledger'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def transfer_fund_between_spot_and_futures(
+            self,
+            currency: str,
+            amount: float,
+            transfer_type: str,
+    ) -> Dict:
+        """
+        Transferring from a spot account to a contract account, the type
+        is pro-to-futures; transferring from a contract account to a spot account,
+        the type is futures-to-pro
+        """
+        params = _TransferFundBetweenSpotAndFutures(
+            currency=currency,
+            amount=amount,
+            transfer_type=transfer_type,
+        )
+        path = '/v1/futures/transfer'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=params.dict(by_alias=True),
+        )
+
+    async def get_point_balance(self, sub_user_id: Optional[str] = None) -> Dict:
+        params = _GetPointBalance(
+            subUid=sub_user_id,
+        )
+        path = '/v2/point/account'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def point_transfer(
+            self,
+            from_uid: str,
+            to_uid: str,
+            group_id: int,
+            amount: str,
+    ) -> Dict:
+        params = _PointTransfer(
+            fromUid=from_uid,
+            toUid=to_uid,
+            groupId=group_id,
+            amount=amount,
+        )
+        path = '/v2/point/transfer'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=params.dict(),
         )

@@ -31,7 +31,13 @@ class APIAuth(BaseModel):
     Signature: Optional[str]
 
     def _sign(self, path: str, method: str, api_url: str) -> str:
-        params = self.dict(exclude={'Signature'}, exclude_none=True)
+        params = self.dict(
+            exclude={
+                'Signature',
+            },
+            exclude_none=True,
+            by_alias=True,
+        )
         payload = '%s\n%s\n%s\n%s' % (  # noqa:FS001
             method,
             urlparse(api_url).hostname,
@@ -46,7 +52,7 @@ class APIAuth(BaseModel):
             method=method,
             api_url=cfg.HUOBI_API_URL,
         )
-        return self.dict(exclude_none=True)
+        return self.dict(exclude_none=True, by_alias=True)
 
 
 class WebsocketAuth(BaseModel):
@@ -58,7 +64,14 @@ class WebsocketAuth(BaseModel):
     signature: Optional[str]
 
     def _sign(self, path: str, method: str, api_url: str) -> str:
-        params = self.dict(exclude={'signature', 'authType'}, exclude_none=True)
+        params = self.dict(
+            exclude={
+                'signature',
+                'authType'
+            },
+            exclude_none=True,
+            by_alias=True,
+        )
         payload = '%s\n%s\n%s\n%s' % (  # noqa:FS001
             method,
             urlparse(api_url).hostname,
@@ -73,4 +86,4 @@ class WebsocketAuth(BaseModel):
             method='GET',
             api_url=cfg.HUOBI_WS_ASSET_AND_ORDER_URL,
         )
-        return self.dict(exclude_none=True)
+        return self.dict(exclude_none=True, by_alias=True)
