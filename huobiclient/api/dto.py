@@ -71,17 +71,45 @@ class _GetAccountLedger(APIAuth):
         allow_population_by_field_name = True
 
 
-class _TransferFundBetweenSpotAndFutures(BaseModel):
+class _QueryDepositAddress(APIAuth):
     currency: str
-    amount: float
-    transfer_type: str = Field(alias='type')
+
+
+class _QueryWithdrawQuota(APIAuth):
+    currency: str
+
+
+class _QueryWithdrawAddress(APIAuth):
+    currency: str
+    chain: Optional[str]
+    note: Optional[str]
+    limit: Optional[str]
+    fromId: Optional[int]
+
+
+class _CreateWithdrawRequest(BaseModel):
+    address: str
+    currency: str
+    amount: str
+    fee: Optional[float] = None
+    chain: Optional[str] = None
+    addr_tag: Optional[str] = Field(default=None, alias='addr-tag')
+    client_order_id: Optional[str] = Field(default=None, alias='client-order-id')
 
     class Config:
         allow_population_by_field_name = True
 
 
-class _PointTransfer(BaseModel):
-    fromUid: str
-    toUid: str
-    groupId: int
-    amount: str
+class _QueryWithdrawalOrderByClientOrderId(APIAuth):
+    clientOrderId: str
+
+
+class _SearchExistedWithdrawsAndDeposits(APIAuth):
+    currency: Optional[str]
+    transfer_type: str = Field(alias='type')
+    from_transfer_id: Optional[str] = Field(alias='from')
+    size: Optional[str]
+    direct: Optional[str]
+
+    class Config:
+        allow_population_by_field_name = True

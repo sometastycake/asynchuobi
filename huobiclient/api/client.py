@@ -10,6 +10,7 @@ from huobiclient.exceptions import HuobiError
 
 from .dto import (
     _AssetTransfer,
+    _CreateWithdrawRequest,
     _GetAccountHistory,
     _GetAccountLedger,
     _GetChainsInformationRequest,
@@ -17,8 +18,11 @@ from .dto import (
     _GetPointBalance,
     _GetTotalValuation,
     _GetTotalValuationPlatformAssets,
-    _PointTransfer,
-    _TransferFundBetweenSpotAndFutures,
+    _QueryDepositAddress,
+    _QueryWithdrawAddress,
+    _QueryWithdrawalOrderByClientOrderId,
+    _QueryWithdrawQuota,
+    _SearchExistedWithdrawsAndDeposits,
 )
 
 
@@ -483,17 +487,16 @@ class HuobiClient:
         is pro-to-futures; transferring from a contract account to a spot account,
         the type is futures-to-pro
         """
-        params = _TransferFundBetweenSpotAndFutures(
-            currency=currency,
-            amount=amount,
-            transfer_type=transfer_type,
-        )
         path = '/v1/futures/transfer'
         return await self.request(
             method='POST',
             path=path,
             params=APIAuth().to_request(path, 'POST'),
-            json=params.dict(by_alias=True),
+            json={
+                'currency': currency,
+                'amount': amount,
+                'type': transfer_type,
+            }
         )
 
     async def get_point_balance(self, sub_user_id: Optional[str] = None) -> Dict:
@@ -514,16 +517,127 @@ class HuobiClient:
             group_id: int,
             amount: str,
     ) -> Dict:
-        params = _PointTransfer(
-            fromUid=from_uid,
-            toUid=to_uid,
-            groupId=group_id,
-            amount=amount,
-        )
         path = '/v2/point/transfer'
         return await self.request(
             method='POST',
             path=path,
             params=APIAuth().to_request(path, 'POST'),
-            json=params.dict(),
+            json={
+                'fromUid': from_uid,
+                'toUid': to_uid,
+                'groupId': group_id,
+                'amount': amount,
+            },
+        )
+
+    async def query_deposit_address(self, currency: str) -> Dict:
+        params = _QueryDepositAddress(
+            currency=currency,
+        )
+        path = '/v2/account/deposit/address'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def query_withdraw_quota(self, currency: str) -> Dict:
+        params = _QueryWithdrawQuota(
+            currency=currency
+        )
+        path = '/v2/account/withdraw/quota'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def query_withdraw_address(
+            self,
+            currency: str,
+            chain: Optional[str] = None,
+            note: Optional[str] = None,
+            limit: Optional[str] = None,
+            fromId: Optional[int] = None
+    ) -> Dict:
+        params = _QueryWithdrawAddress(
+            currency=currency,
+            chain=chain,
+            note=note,
+            limit=limit,
+            fromId=fromId,
+        )
+        path = '/v2/account/withdraw/address'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def create_withdraw_request(
+            self,
+            address: str,
+            currency: str,
+            amount: str,
+            fee: Optional[float] = None,
+            chain: Optional[str] = None,
+            addr_tag: Optional[str] = None,
+            client_order_id: Optional[str] = None,
+    ) -> Dict:
+        params = _CreateWithdrawRequest(
+            address=address,
+            currency=currency,
+            amount=amount,
+            fee=fee,
+            chain=chain,
+            addr_tag=addr_tag,
+            client_order_id=client_order_id,
+        )
+        path = '/v1/dw/withdraw/api/create'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=params.dict(by_alias=True, exclude_none=True),
+        )
+
+    async def query_withdrawal_order_by_client_order_id(self, client_order_id: str) -> Dict:
+        params = _QueryWithdrawalOrderByClientOrderId(
+            clientOrderId=client_order_id,
+        )
+        path = '/v1/query/withdraw/client-order-id'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def cancel_withdraw_request(self, withdraw_id: int) -> Dict:
+        path = f'/v1/dw/withdraw-virtual/{withdraw_id}/cancel'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+        )
+
+    async def search_for_existed_withraws_and_deposits(
+            self,
+            transfer_type: str,
+            currency: Optional[str] = None,
+            from_trasfer_id: Optional[str] = None,
+            size: Optional[str] = None,
+            direct: Optional[str] = None,
+    ) -> Dict:
+        params = _SearchExistedWithdrawsAndDeposits(
+            currency=currency,
+            transfer_type=transfer_type,
+            from_transfer_id=from_trasfer_id,
+            size=size,
+            direct=direct,
+        )
+        path = '/v1/query/deposit-withdraw'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
         )
