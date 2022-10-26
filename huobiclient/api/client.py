@@ -18,15 +18,19 @@ from .dto import (
     _GetChainsInformationRequest,
     _GetMarketSymbolsSettings,
     _GetPointBalance,
+    _GetSubUsersAccountList,
     _GetSubUsersList,
     _GetSubUserStatus,
     _GetTotalValuation,
     _GetTotalValuationPlatformAssets,
     _QueryDepositAddress,
+    _QueryDepositAddressOfSubUser,
     _QueryWithdrawAddress,
     _QueryWithdrawalOrderByClientOrderId,
     _QueryWithdrawQuota,
     _SearchExistedWithdrawsAndDeposits,
+    _SubUserApiKeyCreation,
+    _SubUserApiKeyModification,
 )
 
 
@@ -715,6 +719,143 @@ class HuobiClient:
             subUid=sub_uid,
         )
         path = '/v2/sub-user/user-state'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def set_tradable_market_for_sub_users(
+            self,
+            sub_uids: str,
+            account_type: str,
+            activation: str,
+    ) -> Dict:
+        path = '/v2/sub-user/tradable-market'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json={
+                'subUids': sub_uids,
+                'accountType': account_type,
+                'activation': activation,
+            },
+        )
+
+    async def set_asset_transfer_permission_for_sub_users(
+            self,
+            sub_uids: str,
+            transferrable: bool,
+            account_type: str = 'spot',
+    ) -> Dict:
+        path = '/v2/sub-user/transferability'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json={
+                'subUids': sub_uids,
+                'accountType': account_type,
+                'transferrable': str(transferrable).lower(),
+            },
+        )
+
+    async def get_sub_users_account_list(self, sub_uid: int) -> Dict:
+        params = _GetSubUsersAccountList(
+            subUid=sub_uid,
+        )
+        path = '/v2/sub-user/account-list'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def sub_user_api_key_creation(
+            self,
+            sub_uid: int,
+            note: str,
+            permission: str,
+            ip_addresses: Optional[str] = None,
+            otp_token: Optional[str] = None
+    ) -> Dict:
+        params = _SubUserApiKeyCreation(
+            otpToken=otp_token,
+            subUid=sub_uid,
+            note=note,
+            permission=permission,
+            ipAddresses=ip_addresses,
+        )
+        path = '/v2/sub-user/api-key-generation'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=params.dict(exclude_none=True),
+        )
+
+    async def sub_user_api_key_modification(
+            self,
+            sub_uid: int,
+            access_key: str,
+            note: Optional[str] = None,
+            permission: Optional[str] = None,
+            ip_addresses: Optional[str] = None,
+    ) -> Dict:
+        params = _SubUserApiKeyModification(
+            accessKey=access_key,
+            subUid=sub_uid,
+            note=note,
+            permission=permission,
+            ipAddresses=ip_addresses,
+        )
+        path = '/v2/sub-user/api-key-modification'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=params.dict(exclude_none=True),
+        )
+
+    async def sub_user_api_key_deletion(self, sub_uid: int, access_key: str) -> Dict:
+        path = '/v2/sub-user/api-key-deletion'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json={
+                'subUid': sub_uid,
+                'accessKey': access_key,
+            },
+        )
+
+    async def transfer_asset_between_parent_and_sub_user(
+            self,
+            sub_uid: int,
+            currency: str,
+            amount: float,
+            transfer_type: str,
+    ) -> Dict:
+        path = '/v1/subuser/transfer'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json={
+                'sub-uid': sub_uid,
+                'currency': currency,
+                'amount': amount,
+                'type': transfer_type,
+            },
+        )
+
+    async def query_deposit_address_of_sub_user(self, sub_uid: int, currency: str) -> Dict:
+        params = _QueryDepositAddressOfSubUser(
+            subUid=sub_uid,
+            currency=currency,
+        )
+        path = '/v2/sub-user/deposit-address'
         return await self.request(
             method='GET',
             path=path,

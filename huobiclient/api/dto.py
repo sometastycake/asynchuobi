@@ -135,3 +135,28 @@ class _GetSubUsersList(APIAuth):
 
 class _GetSubUserStatus(APIAuth):
     subUid: int
+
+
+class _GetSubUsersAccountList(APIAuth):
+    subUid: int
+
+
+class _SubUserApiKeyCreation(BaseModel):
+    otpToken: Optional[str]
+    subUid: int
+    note: str
+    permission: str
+    ipAddresses: Optional[str]
+
+
+class _SubUserApiKeyModification(BaseModel):
+    subUid: int
+    accessKey: str
+    note: Optional[str]
+    permission: Optional[str]
+    ipAddresses: Optional[str]
+
+
+class _QueryDepositAddressOfSubUser(APIAuth):
+    subUid: int
+    currency: str
