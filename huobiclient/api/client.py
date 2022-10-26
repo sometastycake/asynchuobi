@@ -9,6 +9,8 @@ from huobiclient.enums import CandleInterval, MarketDepthAggregationLevel
 from huobiclient.exceptions import HuobiError
 
 from .dto import (
+    SubUserCreation,
+    _APIKeyQuery,
     _AssetTransfer,
     _CreateWithdrawRequest,
     _GetAccountHistory,
@@ -16,6 +18,8 @@ from .dto import (
     _GetChainsInformationRequest,
     _GetMarketSymbolsSettings,
     _GetPointBalance,
+    _GetSubUsersList,
+    _GetSubUserStatus,
     _GetTotalValuation,
     _GetTotalValuationPlatformAssets,
     _QueryDepositAddress,
@@ -636,6 +640,81 @@ class HuobiClient:
             direct=direct,
         )
         path = '/v1/query/deposit-withdraw'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def set_deduction_for_parent_and_sub_user(self, sub_uids: str, deduct_mode: str) -> Dict:
+        path = '/v2/sub-user/deduct-mode'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json={
+                'subUids': sub_uids,
+                'deductMode': deduct_mode,
+            },
+        )
+
+    async def api_key_query(self, uid: int, access_key: Optional[str] = None) -> Dict:
+        params = _APIKeyQuery(
+            uid=uid,
+            accessKey=access_key,
+        )
+        path = '/v2/user/api-key'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def get_uid(self) -> Dict:
+        path = '/v2/user/uid'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=APIAuth().to_request(path, 'GET'),
+        )
+
+    async def sub_user_creation(self, request: SubUserCreation) -> Dict:
+        path = '/v2/sub-user/creation'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=request.dict(exclude_none=True),
+        )
+
+    async def get_sub_users_list(self, from_id: Optional[int] = None) -> Dict:
+        params = _GetSubUsersList(
+            fromId=from_id,
+        )
+        path = '/v2/sub-user/user-list'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def lock_unlock_sub_user(self, sub_uid: int, action: str) -> Dict:
+        path = '/v2/sub-user/management'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json={
+                'subUid': sub_uid,
+                'action': action,
+            },
+        )
+
+    async def get_sub_user_status(self, sub_uid: int) -> Dict:
+        params = _GetSubUserStatus(
+            subUid=sub_uid,
+        )
+        path = '/v2/sub-user/user-state'
         return await self.request(
             method='GET',
             path=path,

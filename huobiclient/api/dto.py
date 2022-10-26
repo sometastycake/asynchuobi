@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -113,3 +113,25 @@ class _SearchExistedWithdrawsAndDeposits(APIAuth):
 
     class Config:
         allow_population_by_field_name = True
+
+
+class _APIKeyQuery(APIAuth):
+    uid: int
+    accessKey: Optional[str]
+
+
+class SubUser(BaseModel):
+    userName: str
+    note: Optional[str]
+
+
+class SubUserCreation(BaseModel):
+    userList: List[SubUser]
+
+
+class _GetSubUsersList(APIAuth):
+    fromId: Optional[int]
+
+
+class _GetSubUserStatus(APIAuth):
+    subUid: int
