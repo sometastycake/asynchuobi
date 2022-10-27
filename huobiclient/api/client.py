@@ -15,6 +15,7 @@ from .dto import (
     _CreateWithdrawRequest,
     _GetAccountHistory,
     _GetAccountLedger,
+    _GetBalanceOfSubUser,
     _GetChainsInformationRequest,
     _GetMarketSymbolsSettings,
     _GetPointBalance,
@@ -25,6 +26,7 @@ from .dto import (
     _GetTotalValuationPlatformAssets,
     _QueryDepositAddress,
     _QueryDepositAddressOfSubUser,
+    _QueryDepositHistoryOfSubUser,
     _QueryWithdrawAddress,
     _QueryWithdrawalOrderByClientOrderId,
     _QueryWithdrawQuota,
@@ -850,12 +852,61 @@ class HuobiClient:
             },
         )
 
-    async def query_deposit_address_of_sub_user(self, sub_uid: int, currency: str) -> Dict:
+    async def query_deposit_address_of_sub_user(
+            self,
+            sub_uid: int,
+            currency: str,
+    ) -> Dict:
         params = _QueryDepositAddressOfSubUser(
             subUid=sub_uid,
             currency=currency,
         )
         path = '/v2/sub-user/deposit-address'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def query_deposit_history_of_sub_user(
+            self,
+            sub_uid: int,
+            currency: Optional[str] = None,
+            start_time: Optional[int] = None,
+            end_time: Optional[int] = None,
+            sorting: str = 'asc',
+            limit: int = 100,
+            from_id: Optional[int] = None,
+    ) -> Dict:
+        params = _QueryDepositHistoryOfSubUser(
+            subUid=sub_uid,
+            currency=currency,
+            startTime=start_time,
+            endTime=end_time,
+            sorting=sorting,
+            limit=limit,
+            fromId=from_id,
+        )
+        path = '/v2/sub-user/query-deposit'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def get_aggregated_balance_of_all_sub_users(self) -> Dict:
+        path = '/v1/subuser/aggregate-balance'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=APIAuth().to_request(path, 'GET'),
+        )
+
+    async def get_balance_of_sub_user(self, sub_uid: int) -> Dict:
+        params = _GetBalanceOfSubUser(
+            sub_uid=sub_uid,
+        )
+        path = f'/v1/account/accounts/{sub_uid}'
         return await self.request(
             method='GET',
             path=path,

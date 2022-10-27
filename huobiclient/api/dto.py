@@ -158,5 +158,25 @@ class _SubUserApiKeyModification(BaseModel):
 
 
 class _QueryDepositAddressOfSubUser(APIAuth):
-    subUid: int
     currency: str
+    subUid: int
+
+
+class _QueryDepositHistoryOfSubUser(APIAuth):
+    currency: Optional[str]
+    endTime: Optional[int]
+    fromId: Optional[int]
+    limit: int = 100
+    sorting: str = Field(alias='sort', default='asc')
+    startTime: Optional[int]
+    subUid: int
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _GetBalanceOfSubUser(APIAuth):
+    sub_uid: int = Field(alias='sub-uid')
+
+    class Config:
+        allow_population_by_field_name = True
