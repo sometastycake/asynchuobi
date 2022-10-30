@@ -175,7 +175,7 @@ class _QueryDepositHistoryOfSubUser(APIAuth):
         allow_population_by_field_name = True
 
 
-class _GetBalanceOfSubUser(APIAuth):
+class _GetAccountBalanceOfSubUser(APIAuth):
     sub_uid: int = Field(alias='sub-uid')
 
     class Config:

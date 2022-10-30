@@ -1,11 +1,19 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 from yarl import URL
 
 from huobiclient.auth import APIAuth
 from huobiclient.config import huobi_client_config as config
-from huobiclient.enums import CandleInterval, MarketDepthAggregationLevel
+from huobiclient.enums import (
+    ApiKeyPermission,
+    CandleInterval,
+    DeductMode,
+    LockSubUserAction,
+    MarketDepthAggregationLevel,
+    Sort,
+    TransferTypeBetweenParentAndSubUser,
+)
 from huobiclient.exceptions import HuobiError
 
 from .dto import (
@@ -13,9 +21,9 @@ from .dto import (
     _APIKeyQuery,
     _AssetTransfer,
     _CreateWithdrawRequest,
+    _GetAccountBalanceOfSubUser,
     _GetAccountHistory,
     _GetAccountLedger,
-    _GetBalanceOfSubUser,
     _GetChainsInformationRequest,
     _GetMarketSymbolsSettings,
     _GetPointBalance,
@@ -652,19 +660,31 @@ class HuobiClient:
             params=params.to_request(path, 'GET'),
         )
 
-    async def set_deduction_for_parent_and_sub_user(self, sub_uids: str, deduct_mode: str) -> Dict:
+    async def set_deduction_for_parent_and_sub_user(self, sub_uids: List[int], deduct_mode: DeductMode) -> Dict:
+        """
+        This interface is to set the deduction fee for parent and sub user (HT or point)
+        :param sub_uids: sub user's UID list (maximum 50 UIDs, separated by comma)
+        :param deduct_mode: deduct mode
+        """
         path = '/v2/sub-user/deduct-mode'
         return await self.request(
             method='POST',
             path=path,
             params=APIAuth().to_request(path, 'POST'),
             json={
-                'subUids': sub_uids,
-                'deductMode': deduct_mode,
+                'subUids': ','.join([str(sub_uid) for sub_uid in sub_uids]),
+                'deductMode': deduct_mode.value,
             },
         )
 
     async def api_key_query(self, uid: int, access_key: Optional[str] = None) -> Dict:
+        """
+        This endpoint is used by the parent user to query their own API key information,
+        and the parent user to query their sub user's API key information
+        :param uid: parent user uid , sub user uid
+        :param access_key: the access key of the API key, if not specified,
+            it will return all API keys belong to the UID.
+        """
         params = _APIKeyQuery(
             uid=uid,
             accessKey=access_key,
@@ -677,6 +697,9 @@ class HuobiClient:
         )
 
     async def get_uid(self) -> Dict:
+        """
+        This endpoint allow users to view the user ID of the account easily.
+        """
         path = '/v2/user/uid'
         return await self.request(
             method='GET',
@@ -685,6 +708,9 @@ class HuobiClient:
         )
 
     async def sub_user_creation(self, request: SubUserCreation) -> Dict:
+        """
+        This endpoint is used by the parent user to create sub users, up to 50 at a time.
+        """
         path = '/v2/sub-user/creation'
         return await self.request(
             method='POST',
@@ -694,6 +720,10 @@ class HuobiClient:
         )
 
     async def get_sub_users_list(self, from_id: Optional[int] = None) -> Dict:
+        """
+        Via this endpoint parent user is able to query a full list of sub
+        user's UID as well as their status.
+        """
         params = _GetSubUsersList(
             fromId=from_id,
         )
@@ -704,7 +734,10 @@ class HuobiClient:
             params=params.to_request(path, 'GET'),
         )
 
-    async def lock_unlock_sub_user(self, sub_uid: int, action: str) -> Dict:
+    async def lock_unlock_sub_user(self, sub_uid: int, action: LockSubUserAction) -> Dict:
+        """
+        This endpoint allows parent user to lock or unlock a specific sub user.
+        """
         path = '/v2/sub-user/management'
         return await self.request(
             method='POST',
@@ -712,11 +745,15 @@ class HuobiClient:
             params=APIAuth().to_request(path, 'POST'),
             json={
                 'subUid': sub_uid,
-                'action': action,
+                'action': action.value,
             },
         )
 
     async def get_sub_user_status(self, sub_uid: int) -> Dict:
+        """
+        Via this endpoint, parent user is able to query sub user's
+        status by specifying a UID.
+        """
         params = _GetSubUserStatus(
             subUid=sub_uid,
         )
@@ -729,17 +766,22 @@ class HuobiClient:
 
     async def set_tradable_market_for_sub_users(
             self,
-            sub_uids: str,
+            sub_uids: List[str],
             account_type: str,
             activation: str,
     ) -> Dict:
+        """
+        Parent user is able to set tradable market for a batch of sub users through this
+        endpoint. By default, sub user’s trading permission in
+        spot market is activated.
+        """
         path = '/v2/sub-user/tradable-market'
         return await self.request(
             method='POST',
             path=path,
             params=APIAuth().to_request(path, 'POST'),
             json={
-                'subUids': sub_uids,
+                'subUids': ','.join(sub_uids),
                 'accountType': account_type,
                 'activation': activation,
             },
@@ -747,23 +789,36 @@ class HuobiClient:
 
     async def set_asset_transfer_permission_for_sub_users(
             self,
-            sub_uids: str,
+            sub_uids: List[int],
             transferrable: bool,
             account_type: str = 'spot',
     ) -> Dict:
+        """
+        Parent user is able to set asset transfer permission for a batch of sub users.
+        By default, the asset transfer from sub user’s spot account to
+        parent user’s spot account is allowed
+        :param sub_uids: Sub user's UID list
+        :param transferrable: Transferrablility
+        :param account_type: Account type
+        """
         path = '/v2/sub-user/transferability'
         return await self.request(
             method='POST',
             path=path,
             params=APIAuth().to_request(path, 'POST'),
             json={
-                'subUids': sub_uids,
+                'subUids': ','.join([str(sub_uid) for sub_uid in sub_uids]),
                 'accountType': account_type,
                 'transferrable': str(transferrable).lower(),
             },
         )
 
     async def get_sub_users_account_list(self, sub_uid: int) -> Dict:
+        """
+        Via this endpoint parent user is able to query account list of
+        sub user by specifying a UID.
+        :param sub_uid: Sub User's UID
+        """
         params = _GetSubUsersAccountList(
             subUid=sub_uid,
         )
@@ -778,16 +833,21 @@ class HuobiClient:
             self,
             sub_uid: int,
             note: str,
-            permission: str,
-            ip_addresses: Optional[str] = None,
+            permissions: List[ApiKeyPermission],
+            ip_addresses: Optional[List[str]] = None,
             otp_token: Optional[str] = None
     ) -> Dict:
+        """
+        This endpoint is used by the parent user to create the API key of the sub user.
+        """
+        if ApiKeyPermission.readOnly not in permissions:
+            permissions.append(ApiKeyPermission.readOnly)
         params = _SubUserApiKeyCreation(
             otpToken=otp_token,
             subUid=sub_uid,
             note=note,
-            permission=permission,
-            ipAddresses=ip_addresses,
+            permission=','.join([str(perm.value) for perm in permissions]),
+            ipAddresses=','.join(ip_addresses) if ip_addresses else ip_addresses,
         )
         path = '/v2/sub-user/api-key-generation'
         return await self.request(
@@ -802,15 +862,24 @@ class HuobiClient:
             sub_uid: int,
             access_key: str,
             note: Optional[str] = None,
-            permission: Optional[str] = None,
-            ip_addresses: Optional[str] = None,
+            permissions: Optional[List[ApiKeyPermission]] = None,
+            ip_addresses: Optional[List[str]] = None,
     ) -> Dict:
+        """
+        This endpoint is used by the parent user to modify the API key of the sub user
+        :param sub_uid: sub user uid
+        :param access_key: Access key for sub user API key
+        :param note: API keynote for sub user API key
+        :param permissions: API key permission for sub user API key
+        :param ip_addresses: At most 20 IPv4/IPv6 host address(es) and/or
+            IPv4 network address(es) can bind with one API key
+        """
         params = _SubUserApiKeyModification(
             accessKey=access_key,
             subUid=sub_uid,
             note=note,
-            permission=permission,
-            ipAddresses=ip_addresses,
+            permission=','.join([str(perm.value) for perm in permissions]) if permissions else permissions,
+            ipAddresses=','.join(ip_addresses) if ip_addresses else ip_addresses,
         )
         path = '/v2/sub-user/api-key-modification'
         return await self.request(
@@ -821,6 +890,11 @@ class HuobiClient:
         )
 
     async def sub_user_api_key_deletion(self, sub_uid: int, access_key: str) -> Dict:
+        """
+        This endpoint is used by the parent user to delete the API key of the sub user
+        :param sub_uid: sub user uid
+        :param access_key Access key for sub user API key
+        """
         path = '/v2/sub-user/api-key-deletion'
         return await self.request(
             method='POST',
@@ -837,8 +911,15 @@ class HuobiClient:
             sub_uid: int,
             currency: str,
             amount: float,
-            transfer_type: str,
+            transfer_type: TransferTypeBetweenParentAndSubUser,
     ) -> Dict:
+        """
+        This endpoint allows user to transfer asset between parent and subaccount.
+        :param sub_uid: The subaccount's uid to transfer to or from
+        :param currency: The type of currency to transfer
+        :param amount: The amount of asset to transfer
+        :param transfer_type: The type of transfer
+        """
         path = '/v1/subuser/transfer'
         return await self.request(
             method='POST',
@@ -848,7 +929,7 @@ class HuobiClient:
                 'sub-uid': sub_uid,
                 'currency': currency,
                 'amount': amount,
-                'type': transfer_type,
+                'type': transfer_type.value,
             },
         )
 
@@ -857,6 +938,12 @@ class HuobiClient:
             sub_uid: int,
             currency: str,
     ) -> Dict:
+        """
+        Parent user could query sub user's deposit address on corresponding chain,
+        for a specific cryptocurrency (except IOTA)
+        :param sub_uid: Sub user UID
+        :param currency: Cryptocurrency
+        """
         params = _QueryDepositAddressOfSubUser(
             subUid=sub_uid,
             currency=currency,
@@ -874,16 +961,26 @@ class HuobiClient:
             currency: Optional[str] = None,
             start_time: Optional[int] = None,
             end_time: Optional[int] = None,
-            sorting: str = 'asc',
+            sorting: Sort = Sort.asc,
             limit: int = 100,
             from_id: Optional[int] = None,
     ) -> Dict:
+        """
+        Parent user could query sub user's deposit history via this endpoint
+        :param sub_uid: Sub user UID
+        :param currency: Cryptocurrency (default value: all)
+        :param start_time: Farthest time
+        :param end_time: Nearest time
+        :param sorting: Sorting order
+        :param limit: Maximum number of items in one page
+        :param from_id: First record ID in this query
+        """
         params = _QueryDepositHistoryOfSubUser(
             subUid=sub_uid,
             currency=currency,
             startTime=start_time,
             endTime=end_time,
-            sorting=sorting,
+            sorting=str(sorting.value),
             limit=limit,
             fromId=from_id,
         )
@@ -895,6 +992,9 @@ class HuobiClient:
         )
 
     async def get_aggregated_balance_of_all_sub_users(self) -> Dict:
+        """
+        This endpoint returns the aggregated balance from all the sub-users.
+        """
         path = '/v1/subuser/aggregate-balance'
         return await self.request(
             method='GET',
@@ -902,8 +1002,12 @@ class HuobiClient:
             params=APIAuth().to_request(path, 'GET'),
         )
 
-    async def get_balance_of_sub_user(self, sub_uid: int) -> Dict:
-        params = _GetBalanceOfSubUser(
+    async def get_account_balance_of_sub_user(self, sub_uid: int) -> Dict:
+        """
+        This endpoint returns the balance of a sub-user specified by sub-uid
+        :param sub_uid: The specified sub user id to get balance for.
+        """
+        params = _GetAccountBalanceOfSubUser(
             sub_uid=sub_uid,
         )
         path = f'/v1/account/accounts/{sub_uid}'

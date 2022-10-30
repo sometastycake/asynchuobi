@@ -27,3 +27,30 @@ class PriceLevel(IntEnum):
     level_5 = 5
     level_10 = 10
     level_20 = 20
+
+
+class DeductMode(Enum):
+    master = 'master'
+    sub = 'sub'
+
+
+class LockSubUserAction(Enum):
+    lock = 'lock'
+    unlock = 'unlock'
+
+
+class ApiKeyPermission(Enum):
+    readOnly = 'readOnly'
+    trade = 'trade'
+
+
+class Sort(Enum):
+    asc = 'asc'
+    desc = 'desc'
+
+
+class TransferTypeBetweenParentAndSubUser(Enum):
+    master_transfer_in = 'master-transfer-in'
+    master_transfer_out = 'master-transfer-out'
+    master_point_transfer_in = 'master-point-transfer-in'
+    master_point_transfer_out = 'master-point-transfer-out'
