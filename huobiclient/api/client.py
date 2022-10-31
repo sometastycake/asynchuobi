@@ -110,7 +110,8 @@ class HuobiClient:
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
         """
-        Get all Supported Trading Symbol.
+        Get all Supported Trading Symbol
+        :param timestamp_milliseconds: timestamp to get incremental data
         """
         params = {}
         if timestamp_milliseconds is not None:
@@ -126,7 +127,8 @@ class HuobiClient:
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
         """
-        Get all Supported Currencies.
+        Get all Supported Currencies
+        :param timestamp_milliseconds: timestamp to get incremental data
         """
         params = {}
         if timestamp_milliseconds is not None:
@@ -142,7 +144,8 @@ class HuobiClient:
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
         """
-        Get Currencys Settings
+        Get Currencies Settings
+        :param timestamp_milliseconds: timestamp to get incremental data
         """
         params = {}
         if timestamp_milliseconds is not None:
@@ -158,7 +161,8 @@ class HuobiClient:
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
         """
-        Get Currencys Settings
+        Get Symbols Settings
+        :param timestamp_milliseconds: timestamp to get incremental data
         """
         params = {}
         if timestamp_milliseconds is not None:
@@ -171,15 +175,17 @@ class HuobiClient:
 
     async def get_market_symbols_settings(
             self,
-            symbols: Optional[str] = None,
+            symbols: Optional[List[str]] = None,
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
         """
-        Get Currencys Settings
+        Get Market Symbols Setting
+        :param symbols: symbols
+        :param timestamp_milliseconds: timestamp to get incremental data
         """
         params = _GetMarketSymbolsSettings(
             ts=timestamp_milliseconds,
-            symbols=symbols,
+            symbols=','.join(symbols) if isinstance(symbols, list) else symbols,
         )
         return await self.request(
             method='GET',
@@ -194,8 +200,7 @@ class HuobiClient:
             currency: Optional[str] = None,
     ) -> Dict:
         """
-        Get Chains Information.
-
+        Get Chains Information
         :param show_desc: show desc, 0: no, 1: all, 2: suspend deposit/withdrawal and chain exchange
         :param timestamp_milliseconds: timestamp to get incremental data
         :param currency: currency
