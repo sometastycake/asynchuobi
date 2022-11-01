@@ -247,10 +247,13 @@ class HuobiClient:
         """
         Market data APIs provide public market information such as varies of candlestick,
         depth and trade information.
-        The market data is updated once per second.
+        The market data is updated once per second
+        :param symbol: The trading symbol to query
+        :param interval: The period of each candle
+        :param size: The number of data returns
         """
         if size < 1 or size > 2000:
-            raise ValueError(f'Wrong value "{size}"')
+            raise ValueError(f'Wrong size value "{size}"')
         return await self.request(
             method='GET',
             path='/market/history/kline',
@@ -265,6 +268,7 @@ class HuobiClient:
         """
         This endpoint retrieves the latest ticker with some important 24h
         aggregated market data.
+        :param symbol: The trading symbol to query
         """
         return await self.request(
             method='GET',
@@ -287,7 +291,10 @@ class HuobiClient:
         aggregation_level: MarketDepthAggregationLevel = MarketDepthAggregationLevel.step0,
     ):
         """
-        This endpoint retrieves the current order book of a specific pair.
+        This endpoint retrieves the current order book of a specific pair
+        :param symbol: The trading symbol to query
+        :param depth: The number of market depth to return on each side
+        :param aggregation_level: Market depth aggregation level
         """
         if depth not in (5, 10, 20):
             raise ValueError(f'Wrong market depth value "{depth}"')
@@ -304,7 +311,8 @@ class HuobiClient:
     async def get_last_trade(self, symbol: str) -> Dict:
         """
         This endpoint retrieves the latest trade with its price,
-        volume, and direction.
+        volume, and direction
+        :param symbol: The trading symbol to query
         """
         return await self.request(
             method='GET',
@@ -317,10 +325,12 @@ class HuobiClient:
     async def get_most_recent_trades(self, symbol: str, size: int = 1) -> Dict:
         """
         This endpoint retrieves the most recent trades with their price,
-        volume, and direction.
+        volume, and direction
+        :param symbol: The trading symbol to query
+        :param size: The number of data returns
         """
         if size < 1 or size > 2000:
-            raise ValueError(f'Wrong value "{size}"')
+            raise ValueError(f'Wrong size value "{size}"')
         return await self.request(
             method='GET',
             path='/market/history/trade',
@@ -333,7 +343,8 @@ class HuobiClient:
     async def get_last_market_summary(self, symbol: str) -> Dict:
         """
         This endpoint retrieves the summary of trading in the market
-        for the last 24 hours.
+        for the last 24 hours
+        :param symbol: The trading symbol to query
         """
         return await self.request(
             method='GET',
@@ -345,7 +356,8 @@ class HuobiClient:
 
     async def get_real_time_nav(self, symbol: str) -> Dict:
         """
-        This endpoint returns real time NAV for ETP.
+        This endpoint returns real time NAV for ETP
+        :param symbol: ETP trading symbol
         """
         return await self.request(
             method='GET',
