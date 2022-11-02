@@ -89,7 +89,8 @@ class HuobiClient:
 
     async def get_system_status(self) -> Dict:
         """
-        This endpoint allows users to get system status, Incidents and planned maintenance.
+        This endpoint allows users to get system status, Incidents and planned maintenance
+        https://huobiapi.github.io/docs/spot/v1/en/#get-system-status
         """
         response = await self._session.get(
             url='https://status.huobigroup.com/api/v2/summary.json',
@@ -101,7 +102,8 @@ class HuobiClient:
 
     async def get_market_status(self) -> Dict:
         """
-        The endpoint returns current market status.
+        The endpoint returns current market status
+        https://huobiapi.github.io/docs/spot/v1/en/#get-market-status
         """
         return await self.request(method='GET', path='/v2/market-status')
 
@@ -111,6 +113,8 @@ class HuobiClient:
     ) -> Dict:
         """
         Get all Supported Trading Symbol
+        https://huobiapi.github.io/docs/spot/v1/en/#get-all-supported-trading-symbol-v2
+
         :param timestamp_milliseconds: timestamp to get incremental data
         """
         params = {}
@@ -128,6 +132,8 @@ class HuobiClient:
     ) -> Dict:
         """
         Get all Supported Currencies
+        https://huobiapi.github.io/docs/spot/v1/en/#get-all-supported-currencies-v2
+
         :param timestamp_milliseconds: timestamp to get incremental data
         """
         params = {}
@@ -145,6 +151,8 @@ class HuobiClient:
     ) -> Dict:
         """
         Get Currencies Settings
+        https://huobiapi.github.io/docs/spot/v1/en/#get-currencys-settings
+
         :param timestamp_milliseconds: timestamp to get incremental data
         """
         params = {}
@@ -162,6 +170,8 @@ class HuobiClient:
     ) -> Dict:
         """
         Get Symbols Settings
+        https://huobiapi.github.io/docs/spot/v1/en/#get-symbols-setting
+
         :param timestamp_milliseconds: timestamp to get incremental data
         """
         params = {}
@@ -180,6 +190,8 @@ class HuobiClient:
     ) -> Dict:
         """
         Get Market Symbols Setting
+        https://huobiapi.github.io/docs/spot/v1/en/#get-market-symbols-setting
+
         :param symbols: symbols
         :param timestamp_milliseconds: timestamp to get incremental data
         """
@@ -201,6 +213,8 @@ class HuobiClient:
     ) -> Dict:
         """
         Get Chains Information
+        https://huobiapi.github.io/docs/spot/v1/en/#get-chains-information
+
         :param show_desc: show desc, 0: no, 1: all, 2: suspend deposit/withdrawal and chain exchange
         :param timestamp_milliseconds: timestamp to get incremental data
         :param currency: currency
@@ -224,6 +238,7 @@ class HuobiClient:
         """
         API user could query static reference information for each currency,
         as well as its corresponding chain(s)
+        https://huobiapi.github.io/docs/spot/v1/en/#apiv2-currency-amp-chains
         """
         params = {
             'authorizedUser': str(authorized_user).lower(),
@@ -240,14 +255,17 @@ class HuobiClient:
         """
         This endpoint returns the current timestamp, i.e. the number of
         milliseconds that have elapsed since 00:00:00 UTC on 1 January 1970.
+        https://huobiapi.github.io/docs/spot/v1/en/#get-current-timestamp
         """
         return await self.request(method='GET', path='/v1/common/timestamp')
 
     async def get_candles(self, symbol: str, interval: CandleInterval, size: int = 150) -> Dict:
         """
         Market data APIs provide public market information such as varies of candlestick,
-        depth and trade information.
+        depth and trade information
         The market data is updated once per second
+        https://huobiapi.github.io/docs/spot/v1/en/#get-klines-candles
+
         :param symbol: The trading symbol to query
         :param interval: The period of each candle
         :param size: The number of data returns
@@ -267,7 +285,9 @@ class HuobiClient:
     async def get_latest_aggregated_ticker(self, symbol: str) -> Dict:
         """
         This endpoint retrieves the latest ticker with some important 24h
-        aggregated market data.
+        aggregated market data
+        https://huobiapi.github.io/docs/spot/v1/en/#get-latest-aggregated-ticker
+
         :param symbol: The trading symbol to query
         """
         return await self.request(
@@ -280,7 +300,8 @@ class HuobiClient:
 
     async def get_latest_tickers_for_all_pairs(self) -> Dict:
         """
-        This endpoint retrieves the latest tickers for all supported pairs.
+        This endpoint retrieves the latest tickers for all supported pairs
+        https://huobiapi.github.io/docs/spot/v1/en/#get-latest-tickers-for-all-pairs
         """
         return await self.request(method='GET', path='/market/tickers')
 
@@ -292,6 +313,8 @@ class HuobiClient:
     ):
         """
         This endpoint retrieves the current order book of a specific pair
+        https://huobiapi.github.io/docs/spot/v1/en/#get-market-depth
+
         :param symbol: The trading symbol to query
         :param depth: The number of market depth to return on each side
         :param aggregation_level: Market depth aggregation level
@@ -312,6 +335,8 @@ class HuobiClient:
         """
         This endpoint retrieves the latest trade with its price,
         volume, and direction
+        https://huobiapi.github.io/docs/spot/v1/en/#get-the-last-trade
+
         :param symbol: The trading symbol to query
         """
         return await self.request(
@@ -326,6 +351,8 @@ class HuobiClient:
         """
         This endpoint retrieves the most recent trades with their price,
         volume, and direction
+        https://huobiapi.github.io/docs/spot/v1/en/#get-the-most-recent-trades
+
         :param symbol: The trading symbol to query
         :param size: The number of data returns
         """
@@ -344,6 +371,8 @@ class HuobiClient:
         """
         This endpoint retrieves the summary of trading in the market
         for the last 24 hours
+        https://huobiapi.github.io/docs/spot/v1/en/#get-the-last-24h-market-summary
+
         :param symbol: The trading symbol to query
         """
         return await self.request(
@@ -357,6 +386,8 @@ class HuobiClient:
     async def get_real_time_nav(self, symbol: str) -> Dict:
         """
         This endpoint returns real time NAV for ETP
+        https://huobiapi.github.io/docs/spot/v1/en/#get-real-time-nav
+
         :param symbol: ETP trading symbol
         """
         return await self.request(
@@ -686,7 +717,7 @@ class HuobiClient:
         :param chain: Block chain name
         :param note: The note of withdraw address
         :param limit: The number of items to return
-        :param fromId: 	First record ID in this query
+        :param fromId: First record ID in this query
         """
         if limit < 1 or limit > 500:
             raise ValueError(f'Wrong limit value "{limit}"')
