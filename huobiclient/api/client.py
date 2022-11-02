@@ -369,7 +369,8 @@ class HuobiClient:
 
     async def accounts(self) -> Dict:
         """
-        Get all Accounts of the Current User.
+        Get all Accounts of the Current User
+        https://huobiapi.github.io/docs/spot/v1/en/#get-all-accounts-of-the-current-user
         """
         path = '/v1/account/accounts'
         return await self.request(
@@ -381,6 +382,7 @@ class HuobiClient:
     async def account_balance(self, account_id: int) -> Dict:
         """
         Get Account Balance of a Specific Account
+        https://huobiapi.github.io/docs/spot/v1/en/#get-account-balance-of-a-specific-account
 
         :param account_id: The specified account id to get balance for,
             can be found by query '/v1/account/accounts' endpoint.
@@ -400,8 +402,9 @@ class HuobiClient:
         """
         Obtain the total asset valuation of the platform account according
         to the BTC or legal currency denominated unit
-        :param account_type_code: see
-            https://huobiapi.github.io/docs/spot/v1/en/#get-the-total-valuation-of-platform-assets
+        https://huobiapi.github.io/docs/spot/v1/en/#get-the-total-valuation-of-platform-assets
+
+        :param account_type_code: Account type code
         :param valuation_currency: If not filled, the default is BTC
         """
         params = _GetTotalValuationPlatformAssets(
@@ -424,7 +427,9 @@ class HuobiClient:
         """
         This endpoint returns the valuation of the total assets of
         the account in btc or fiat currency
-        :param account_type: See https://huobiapi.github.io/docs/spot/v1/en/#get-asset-valuation
+        See https://huobiapi.github.io/docs/spot/v1/en/#get-asset-valuation
+
+        :param account_type: Account type
         :param valuation_currency: The valuation according to the certain fiat currency
         :param sub_uid: Sub User's UID
         """
@@ -523,6 +528,19 @@ class HuobiClient:
             limit: int = 100,
             from_id: Optional[int] = None,
     ):
+        """
+        This endpoint returns the amount changes of specified user's account
+        https://huobiapi.github.io/docs/spot/v1/en/#get-account-ledger
+
+        :param account_id: Account id
+        :param currency: Cryptocurrency
+        :param transact_types: Transaction types
+        :param start_time: Farthest time
+        :param end_time: Nearest time
+        :param sorting: Sorting order
+        :param limit: Maximum number of items in one page
+        :param from_id: First record ID in this quer
+        """
         if limit < 1 or limit > 500:
             raise ValueError(f'Wrong limit value "{limit}"')
         params = _GetAccountLedger(
@@ -552,6 +570,11 @@ class HuobiClient:
         Transferring from a spot account to a contract account, the type
         is pro-to-futures; transferring from a contract account to a spot account,
         the type is futures-to-pro
+        https://huobiapi.github.io/docs/spot/v1/en/#transfer-fund-between-spot-account-and-future-contract-account
+
+        :param currency: Currency name
+        :param amount: Amount of fund to transfer
+        :param transfer_type: Type of the transfer
         """
         path = '/v1/futures/transfer'
         return await self.request(
@@ -562,10 +585,16 @@ class HuobiClient:
                 'currency': currency,
                 'amount': amount,
                 'type': transfer_type,
-            }
+            },
         )
 
     async def get_point_balance(self, sub_user_id: Optional[str] = None) -> Dict:
+        """
+        https://huobiapi.github.io/docs/spot/v1/en/#get-point-balance
+
+        :param sub_user_id: Sub user’s UID (only valid for scenario of parent user
+            querying sub user’s point balance)
+        """
         params = _GetPointBalance(
             subUid=sub_user_id,
         )
@@ -583,6 +612,16 @@ class HuobiClient:
             group_id: int,
             amount: str,
     ) -> Dict:
+        """
+        Via this endpoint, parent user should be able to transfer points between parent
+        user and sub user, sub user should be able to transfer point to parent user.
+        https://huobiapi.github.io/docs/spot/v1/en/#point-transfer
+
+        :param from_uid: Transferer’s UID
+        :param to_uid: Transferee’s UID
+        :param group_id: Group ID
+        :param amount: Transfer amount (precision: maximum 8 decimal places)
+        """
         path = '/v2/point/transfer'
         return await self.request(
             method='POST',
