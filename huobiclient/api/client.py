@@ -370,7 +370,6 @@ class HuobiClient:
     async def accounts(self) -> Dict:
         """
         Get all Accounts of the Current User.
-        API Key Permission：Read.
         """
         path = '/v1/account/accounts'
         return await self.request(
@@ -381,8 +380,10 @@ class HuobiClient:
 
     async def account_balance(self, account_id: int) -> Dict:
         """
-        Get Account Balance of a Specific Account.
-        API Key Permission：Read.
+        Get Account Balance of a Specific Account
+
+        :param account_id: The specified account id to get balance for,
+            can be found by query '/v1/account/accounts' endpoint.
         """
         path = f'/v1/account/accounts/{account_id}/balance'
         return await self.request(
@@ -393,16 +394,19 @@ class HuobiClient:
 
     async def get_total_valuation_of_platform_assets(
             self,
-            account_type: Optional[str] = None,
+            account_type_code: Optional[int] = None,
             valuation_currency: Optional[str] = None,
     ) -> Dict:
         """
         Obtain the total asset valuation of the platform account according
-        to the BTC or legal currency denominated unit.
+        to the BTC or legal currency denominated unit
+        :param account_type_code: see
+            https://huobiapi.github.io/docs/spot/v1/en/#get-the-total-valuation-of-platform-assets
+        :param valuation_currency: If not filled, the default is BTC
         """
         params = _GetTotalValuationPlatformAssets(
-            accountType=account_type,
-            valuationCurrency=valuation_currency,
+            accountType=str(account_type_code) if account_type_code else account_type_code,
+            valuationCurrency=valuation_currency.upper() if valuation_currency else valuation_currency,
         )
         path = '/v2/account/valuation'
         return await self.request(
@@ -419,11 +423,14 @@ class HuobiClient:
     ) -> Dict:
         """
         This endpoint returns the valuation of the total assets of
-        the account in btc or fiat currency.
+        the account in btc or fiat currency
+        :param account_type: See https://huobiapi.github.io/docs/spot/v1/en/#get-asset-valuation
+        :param valuation_currency: The valuation according to the certain fiat currency
+        :param sub_uid: Sub User's UID
         """
         params = _GetTotalValuation(
             accountType=account_type,
-            valuationCurrency=valuation_currency,
+            valuationCurrency=valuation_currency.upper() if valuation_currency else valuation_currency,
             subUid=sub_uid,
         )
         path = '/v2/account/asset-valuation'
@@ -464,18 +471,38 @@ class HuobiClient:
 
     async def get_account_history(
             self,
-            account_id: str,
+            account_id: int,
             currency: Optional[str] = None,
+            transact_types: Optional[List[str]] = None,
+            start_time: Optional[int] = None,
+            end_time: Optional[int] = None,
             size: int = 100,
+            sorting: Sort = Sort.asc,
             from_id: Optional[int] = None,
     ) -> Dict:
         """
-        This endpoint returns the amount changes of a specified user's account.
+        This endpoint returns the amount changes of a specified user's account
+        https://huobiapi.github.io/docs/spot/v1/en/#get-account-history
+
+        :param account_id: Account id, refer to GET /v1/account/accounts
+        :param currency: Currency name
+        :param transact_types: Transact types
+        :param start_time: The start time of the query window (unix time in millisecond)
+        :param end_time: The end time of the query window (unix time in millisecond)
+        :param size: Maximum number of items in each response
+        :param sorting: Sorting order
+        :param from_id: First record ID in this query
         """
+        if size < 1 or size > 500:
+            raise ValueError(f'Wrong size value "{size}"')
         params = _GetAccountHistory(
             account_id=account_id,
             currency=currency,
             size=size,
+            transact_types=','.join(transact_types) if transact_types else transact_types,
+            start_time=start_time,
+            end_time=end_time,
+            sorting=str(sorting.value),
             from_id=from_id,
         )
         path = '/v1/account/history'
@@ -487,22 +514,26 @@ class HuobiClient:
 
     async def get_account_ledger(
             self,
-            account_id: str,
+            account_id: int,
             currency: Optional[str] = None,
             transact_types: Optional[str] = None,
             start_time: Optional[int] = None,
             end_time: Optional[int] = None,
-            sorting: Optional[str] = None,
+            sorting: Sort = Sort.asc,
+            limit: int = 100,
             from_id: Optional[int] = None,
     ):
+        if limit < 1 or limit > 500:
+            raise ValueError(f'Wrong limit value "{limit}"')
         params = _GetAccountLedger(
             accountId=account_id,
             currency=currency,
             transactTypes=transact_types,
             startTime=start_time,
             endTime=end_time,
-            sorting=sorting,
+            sorting=str(sorting.value),
             fromId=from_id,
+            limit=limit,
         )
         path = '/v2/account/ledger'
         return await self.request(

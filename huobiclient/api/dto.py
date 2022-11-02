@@ -26,8 +26,8 @@ class _GetTotalValuationPlatformAssets(APIAuth):
 
 class _GetTotalValuation(APIAuth):
     accountType: str
-    valuationCurrency: Optional[str]
     subUid: Optional[int]
+    valuationCurrency: Optional[str]
 
 
 class _AssetTransfer(BaseModel):
@@ -45,10 +45,14 @@ class _AssetTransfer(BaseModel):
 
 
 class _GetAccountHistory(APIAuth):
-    account_id: str = Field(alias='account-id')
+    account_id: int = Field(alias='account-id')
     currency: Optional[str]
-    size: int = Field(default=100, ge=1, le=500)
+    end_time: Optional[int] = Field(alias='end-time')
     from_id: Optional[int] = Field(alias='from-id')
+    size: int = 100
+    sorting: str = Field(alias='sort', default='asc')
+    start_time: Optional[int] = Field(alias='start-time')
+    transact_types: Optional[str] = Field(alias='transact-types')
 
     class Config:
         allow_population_by_field_name = True
@@ -59,13 +63,14 @@ class _GetPointBalance(APIAuth):
 
 
 class _GetAccountLedger(APIAuth):
-    accountId: str
+    accountId: int
     currency: Optional[str]
-    transactTypes: Optional[str]
-    startTime: Optional[int]
     endTime: Optional[int]
-    sorting: Optional[str] = Field(alias='sort')
     fromId: Optional[int]
+    limit: int = 100
+    sorting: str = Field(alias='sort', default='asc')
+    startTime: Optional[int]
+    transactTypes: Optional[str]
 
     class Config:
         allow_population_by_field_name = True
