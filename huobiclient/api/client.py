@@ -636,6 +636,13 @@ class HuobiClient:
         )
 
     async def query_deposit_address(self, currency: str) -> Dict:
+        """
+        Parent user and sub user could query deposit address of corresponding chain,
+        for a specific cryptocurrency (except IOTA)
+        https://huobiapi.github.io/docs/spot/v1/en/#query-deposit-address
+
+        :param currency: Cryptocurrency
+        """
         params = _QueryDepositAddress(
             currency=currency,
         )
@@ -647,6 +654,12 @@ class HuobiClient:
         )
 
     async def query_withdraw_quota(self, currency: str) -> Dict:
+        """
+        Parent user could query withdrawing quota for currencies
+        https://huobiapi.github.io/docs/spot/v1/en/#query-withdraw-quota
+
+        :param currency: Cryptocurrency
+        """
         params = _QueryWithdrawQuota(
             currency=currency
         )
@@ -662,9 +675,21 @@ class HuobiClient:
             currency: str,
             chain: Optional[str] = None,
             note: Optional[str] = None,
-            limit: Optional[str] = None,
+            limit: int = 100,
             fromId: Optional[int] = None
     ) -> Dict:
+        """
+        This endpoint allows parent user to query withdraw address available for API key
+        https://huobiapi.github.io/docs/spot/v1/en/#query-withdraw-quota
+
+        :param currency: Cryptocurrency
+        :param chain: Block chain name
+        :param note: The note of withdraw address
+        :param limit: The number of items to return
+        :param fromId: 	First record ID in this query
+        """
+        if limit < 1 or limit > 500:
+            raise ValueError(f'Wrong limit value "{limit}"')
         params = _QueryWithdrawAddress(
             currency=currency,
             chain=chain,

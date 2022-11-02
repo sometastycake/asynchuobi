@@ -85,11 +85,11 @@ class _QueryWithdrawQuota(APIAuth):
 
 
 class _QueryWithdrawAddress(APIAuth):
-    currency: str
     chain: Optional[str]
-    note: Optional[str]
-    limit: Optional[str]
+    currency: str
     fromId: Optional[int]
+    limit: int
+    note: Optional[str]
 
 
 class _CreateWithdrawRequest(BaseModel):
