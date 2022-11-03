@@ -806,6 +806,8 @@ class HuobiClient:
     async def set_deduction_for_parent_and_sub_user(self, sub_uids: List[int], deduct_mode: DeductMode) -> Dict:
         """
         This interface is to set the deduction fee for parent and sub user (HT or point)
+        https://huobiapi.github.io/docs/spot/v1/en/#set-a-deduction-for-parent-and-sub-user
+
         :param sub_uids: sub user's UID list (maximum 50 UIDs, separated by comma)
         :param deduct_mode: deduct mode
         """
@@ -824,6 +826,8 @@ class HuobiClient:
         """
         This endpoint is used by the parent user to query their own API key information,
         and the parent user to query their sub user's API key information
+        https://huobiapi.github.io/docs/spot/v1/en/#api-key-query
+
         :param uid: parent user uid , sub user uid
         :param access_key: the access key of the API key, if not specified,
             it will return all API keys belong to the UID.
@@ -841,7 +845,8 @@ class HuobiClient:
 
     async def get_uid(self) -> Dict:
         """
-        This endpoint allow users to view the user ID of the account easily.
+        This endpoint allow users to view the user ID of the account easily
+        https://huobiapi.github.io/docs/spot/v1/en/#get-uid
         """
         path = '/v2/user/uid'
         return await self.request(
@@ -852,7 +857,8 @@ class HuobiClient:
 
     async def sub_user_creation(self, request: SubUserCreation) -> Dict:
         """
-        This endpoint is used by the parent user to create sub users, up to 50 at a time.
+        This endpoint is used by the parent user to create sub users, up to 50 at a time
+        https://huobiapi.github.io/docs/spot/v1/en/#sub-user-creation
         """
         path = '/v2/sub-user/creation'
         return await self.request(
@@ -865,7 +871,10 @@ class HuobiClient:
     async def get_sub_users_list(self, from_id: Optional[int] = None) -> Dict:
         """
         Via this endpoint parent user is able to query a full list of sub
-        user's UID as well as their status.
+        user's UID as well as their status
+        https://huobiapi.github.io/docs/spot/v1/en/#get-sub-user-39-s-list
+
+        :param from_id: First record ID in next page
         """
         params = _GetSubUsersList(
             fromId=from_id,
@@ -879,7 +888,11 @@ class HuobiClient:
 
     async def lock_unlock_sub_user(self, sub_uid: int, action: LockSubUserAction) -> Dict:
         """
-        This endpoint allows parent user to lock or unlock a specific sub user.
+        This endpoint allows parent user to lock or unlock a specific sub user
+        https://huobiapi.github.io/docs/spot/v1/en/#lock-unlock-sub-user
+
+        :param sub_uid: Sub user UID
+        :param action: Action type
         """
         path = '/v2/sub-user/management'
         return await self.request(
@@ -895,7 +908,10 @@ class HuobiClient:
     async def get_sub_user_status(self, sub_uid: int) -> Dict:
         """
         Via this endpoint, parent user is able to query sub user's
-        status by specifying a UID.
+        status by specifying a UID
+        https://huobiapi.github.io/docs/spot/v1/en/#get-sub-user-39-s-status
+
+        :param sub_uid: Sub user's UID
         """
         params = _GetSubUserStatus(
             subUid=sub_uid,
@@ -916,7 +932,12 @@ class HuobiClient:
         """
         Parent user is able to set tradable market for a batch of sub users through this
         endpoint. By default, sub user’s trading permission in
-        spot market is activated.
+        spot market is activated
+        https://huobiapi.github.io/docs/spot/v1/en/#set-tradable-market-for-sub-users
+
+        :param sub_uids: Sub user's UID list
+        :param account_type: Account type (isolated-margin,cross-margin)
+        :param activation: Account activation (activated,deactivated)
         """
         path = '/v2/sub-user/tradable-market'
         return await self.request(
@@ -940,6 +961,8 @@ class HuobiClient:
         Parent user is able to set asset transfer permission for a batch of sub users.
         By default, the asset transfer from sub user’s spot account to
         parent user’s spot account is allowed
+        https://huobiapi.github.io/docs/spot/v1/en/#set-asset-transfer-permission-for-sub-users
+
         :param sub_uids: Sub user's UID list
         :param transferrable: Transferrablility
         :param account_type: Account type
@@ -959,7 +982,9 @@ class HuobiClient:
     async def get_sub_users_account_list(self, sub_uid: int) -> Dict:
         """
         Via this endpoint parent user is able to query account list of
-        sub user by specifying a UID.
+        sub user by specifying a UID
+        https://huobiapi.github.io/docs/spot/v1/en/#get-sub-user-39-s-account-list
+
         :param sub_uid: Sub User's UID
         """
         params = _GetSubUsersAccountList(
@@ -981,7 +1006,15 @@ class HuobiClient:
             otp_token: Optional[str] = None
     ) -> Dict:
         """
-        This endpoint is used by the parent user to create the API key of the sub user.
+        This endpoint is used by the parent user to create the API key of the sub user
+        https://huobiapi.github.io/docs/spot/v1/en/#sub-user-api-key-creation
+
+        :param sub_uid: Sub user UID
+        :param note: API key note
+        :param permissions: API key permissions
+        :param ip_addresses: The IPv4/IPv6 host address or IPv4 network address bound to the API key
+        :param otp_token: Google verification code of the parent user, the parent user must be
+            bound to Google Authenticator for verification on the web
         """
         if ApiKeyPermission.readOnly not in permissions:
             permissions.append(ApiKeyPermission.readOnly)
@@ -1010,6 +1043,8 @@ class HuobiClient:
     ) -> Dict:
         """
         This endpoint is used by the parent user to modify the API key of the sub user
+        https://huobiapi.github.io/docs/spot/v1/en/#sub-user-api-key-modification
+
         :param sub_uid: sub user uid
         :param access_key: Access key for sub user API key
         :param note: API keynote for sub user API key
@@ -1035,6 +1070,8 @@ class HuobiClient:
     async def sub_user_api_key_deletion(self, sub_uid: int, access_key: str) -> Dict:
         """
         This endpoint is used by the parent user to delete the API key of the sub user
+        https://huobiapi.github.io/docs/spot/v1/en/#sub-user-api-key-deletion
+
         :param sub_uid: sub user uid
         :param access_key Access key for sub user API key
         """
@@ -1057,7 +1094,9 @@ class HuobiClient:
             transfer_type: TransferTypeBetweenParentAndSubUser,
     ) -> Dict:
         """
-        This endpoint allows user to transfer asset between parent and subaccount.
+        This endpoint allows user to transfer asset between parent and subaccount
+        https://huobiapi.github.io/docs/spot/v1/en/#transfer-asset-between-parent-and-sub-account
+
         :param sub_uid: The subaccount's uid to transfer to or from
         :param currency: The type of currency to transfer
         :param amount: The amount of asset to transfer
@@ -1084,6 +1123,8 @@ class HuobiClient:
         """
         Parent user could query sub user's deposit address on corresponding chain,
         for a specific cryptocurrency (except IOTA)
+        https://huobiapi.github.io/docs/spot/v1/en/#query-deposit-address-of-sub-user
+
         :param sub_uid: Sub user UID
         :param currency: Cryptocurrency
         """
@@ -1110,6 +1151,8 @@ class HuobiClient:
     ) -> Dict:
         """
         Parent user could query sub user's deposit history via this endpoint
+        https://huobiapi.github.io/docs/spot/v1/en/#query-deposit-history-of-sub-user
+
         :param sub_uid: Sub user UID
         :param currency: Cryptocurrency (default value: all)
         :param start_time: Farthest time
@@ -1136,7 +1179,8 @@ class HuobiClient:
 
     async def get_aggregated_balance_of_all_sub_users(self) -> Dict:
         """
-        This endpoint returns the aggregated balance from all the sub-users.
+        This endpoint returns the aggregated balance from all the sub-users
+        https://huobiapi.github.io/docs/spot/v1/en/#get-the-aggregated-balance-of-all-sub-users
         """
         path = '/v1/subuser/aggregate-balance'
         return await self.request(
@@ -1148,6 +1192,8 @@ class HuobiClient:
     async def get_account_balance_of_sub_user(self, sub_uid: int) -> Dict:
         """
         This endpoint returns the balance of a sub-user specified by sub-uid
+        https://huobiapi.github.io/docs/spot/v1/en/#get-account-balance-of-a-sub-user
+
         :param sub_uid: The specified sub user id to get balance for.
         """
         params = _GetAccountBalanceOfSubUser(
