@@ -111,10 +111,10 @@ class _QueryWithdrawalOrderByClientOrderId(APIAuth):
 
 class _SearchExistedWithdrawsAndDeposits(APIAuth):
     currency: Optional[str]
-    transfer_type: str = Field(alias='type')
+    direct: str
     from_transfer_id: Optional[str] = Field(alias='from')
-    size: Optional[str]
-    direct: Optional[str]
+    size: int
+    transfer_type: str = Field(alias='type')
 
     class Config:
         allow_population_by_field_name = True

@@ -745,6 +745,19 @@ class HuobiClient:
             addr_tag: Optional[str] = None,
             client_order_id: Optional[str] = None,
     ) -> Dict:
+        """
+        Parent user creates a withdraw request from spot account to an external address (exists in
+        your withdraw address list), which doesn't require two-factor-authentication
+        https://huobiapi.github.io/docs/spot/v1/en/#create-a-withdraw-request
+
+        :param address: The desination address of this withdraw
+        :param currency: Cryptocurrency
+        :param amount: The amount of currency to withdraw
+        :param fee: Fee
+        :param chain: Refer toGET /v2/reference/currencies
+        :param addr_tag: A tag specified for this address
+        :param client_order_id: Client order id
+        """
         params = _CreateWithdrawRequest(
             address=address,
             currency=currency,
@@ -763,6 +776,12 @@ class HuobiClient:
         )
 
     async def query_withdrawal_order_by_client_order_id(self, client_order_id: str) -> Dict:
+        """
+        Query withdrawal order by client order id
+        https://huobiapi.github.io/docs/spot/v1/en/#query-withdrawal-order-by-client-order-id
+
+        :param client_order_id: Client order id
+        """
         params = _QueryWithdrawalOrderByClientOrderId(
             clientOrderId=client_order_id,
         )
@@ -774,6 +793,12 @@ class HuobiClient:
         )
 
     async def cancel_withdraw_request(self, withdraw_id: int) -> Dict:
+        """
+        Parent user cancels a previously created withdrawal request by its transfer id
+        https://huobiapi.github.io/docs/spot/v1/en/#cancel-a-withdraw-request
+
+        :param withdraw_id: The id returned when previously created a withdraw request
+        """
         path = f'/v1/dw/withdraw-virtual/{withdraw_id}/cancel'
         return await self.request(
             method='POST',
@@ -786,9 +811,21 @@ class HuobiClient:
             transfer_type: str,
             currency: Optional[str] = None,
             from_trasfer_id: Optional[str] = None,
-            size: Optional[str] = None,
-            direct: Optional[str] = None,
+            size: int = 100,
+            direct: str = 'prev'
     ) -> Dict:
+        """
+        Parent user and sub user search for all existed withdraws and deposits and return their latest status
+        https://huobiapi.github.io/docs/spot/v1/en/#search-for-existed-withdraws-and-deposits
+
+        :param transfer_type: Define transfer type to search (deposit, withdraw, sub user can only use deposit)
+        :param currency: The cryptocurrency to withdraw
+        :param from_trasfer_id: The transfer id to begin search
+        :param size: The number of items to return
+        :param direct: The order of response ('prev' (ascending), 'next' (descending))
+        """
+        if size < 1 or size > 500:
+            raise ValueError(f'Wrong size value "{size}"')
         params = _SearchExistedWithdrawsAndDeposits(
             currency=currency,
             transfer_type=transfer_type,
