@@ -754,7 +754,7 @@ class HuobiClient:
         :param currency: Cryptocurrency
         :param amount: The amount of currency to withdraw
         :param fee: Fee
-        :param chain: Refer toGET /v2/reference/currencies
+        :param chain: Refer to GET /v2/reference/currencies
         :param addr_tag: A tag specified for this address
         :param client_order_id: Client order id
         """
@@ -962,7 +962,7 @@ class HuobiClient:
 
     async def set_tradable_market_for_sub_users(
             self,
-            sub_uids: List[str],
+            sub_uids: List[int],
             account_type: str,
             activation: str,
     ) -> Dict:
@@ -982,7 +982,7 @@ class HuobiClient:
             path=path,
             params=APIAuth().to_request(path, 'POST'),
             json={
-                'subUids': ','.join(sub_uids),
+                'subUids': ','.join([str(sub_uid) for sub_uid in sub_uids]),
                 'accountType': account_type,
                 'activation': activation,
             },
