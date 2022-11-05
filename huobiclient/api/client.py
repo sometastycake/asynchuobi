@@ -11,19 +11,26 @@ from huobiclient.enums import (
     DeductMode,
     LockSubUserAction,
     MarketDepthAggregationLevel,
+    OperatorCharacterOfStopPrice,
+    OrderSide,
+    OrderSource,
+    OrderType,
     Sort,
     TransferTypeBetweenParentAndSubUser,
 )
 from huobiclient.exceptions import HuobiError
 
 from .dto import (
+    PlaceNewOrder,
     SubUserCreation,
     _APIKeyQuery,
     _AssetTransfer,
+    _CancelOrder,
     _CreateWithdrawRequest,
     _GetAccountBalanceOfSubUser,
     _GetAccountHistory,
     _GetAccountLedger,
+    _GetAllOpenOrders,
     _GetChainsInformationRequest,
     _GetMarketSymbolsSettings,
     _GetPointBalance,
@@ -845,7 +852,7 @@ class HuobiClient:
         This interface is to set the deduction fee for parent and sub user (HT or point)
         https://huobiapi.github.io/docs/spot/v1/en/#set-a-deduction-for-parent-and-sub-user
 
-        :param sub_uids: sub user's UID list (maximum 50 UIDs, separated by comma)
+        :param sub_uids: sub user's UID list (maximum 50 UIDs)
         :param deduct_mode: deduct mode
         """
         path = '/v2/sub-user/deduct-mode'
@@ -1237,6 +1244,143 @@ class HuobiClient:
             sub_uid=sub_uid,
         )
         path = f'/v1/account/accounts/{sub_uid}'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def new_order(
+            self,
+            account_id: int,
+            symbol: str,
+            order_type: OrderType,
+            amount: float,
+            price: Optional[float] = None,
+            source: OrderSource = OrderSource.spot_api,
+            client_order_id: Optional[str] = None,
+            self_match_prevent: int = 0,
+            stop_price: Optional[float] = None,
+            operator: Optional[OperatorCharacterOfStopPrice] = None,
+    ) -> Dict:
+        """
+        This endpoint places a new order and sends to the exchange to be matched
+        https://huobiapi.github.io/docs/spot/v1/en/#place-a-new-order
+
+        :param account_id: The account id used for this trade
+        :param symbol: The trading symbol to trade
+        :param order_type: The order type
+        :param amount: Order size (for buy market order, it's order value)
+        :param price: The order price (not available for market order)
+        :param source: When trade with spot use 'spot-api'
+        :param client_order_id: Client order ID
+        :param self_match_prevent: self match prevent.
+            0: no, means allowing self-trading; 1: yes, means not allowing self-trading
+        :param stop_price: 	Trigger price of stop limit order
+        :param operator: Operation charactor of stop price
+        """
+        params = PlaceNewOrder(
+            account_id=account_id,
+            amount=amount,
+            client_order_id=client_order_id,
+            operator=operator,
+            order_type=str(order_type.value),
+            price=price,
+            self_match_prevent=self_match_prevent,
+            source=str(source.value),
+            stop_price=stop_price,
+            symbol=symbol,
+        )
+        path = '/v1/order/orders/place'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=params.dict(by_alias=True, exclude_none=True),
+        )
+
+    async def place_batch_of_orders(self, orders: List[PlaceNewOrder]) -> Dict:
+        """
+        A batch contains at most 10 orders.
+        https://huobiapi.github.io/docs/spot/v1/en/#place-a-batch-of-orders
+        """
+        path = '/v1/order/batch-orders'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=[order.dict(by_alias=True, exclude_none=True) for order in orders],
+        )
+
+    async def cancel_order(self, order_id: str, symbol: Optional[str] = None) -> Dict:
+        """
+        This endpoint submits a request to cancel an order.
+        https://huobiapi.github.io/docs/spot/v1/en/#submit-cancel-for-an-order
+
+        :param order_id: The previously returned order id when order was created
+        :param symbol: Symbol which needs to be filled in the URL
+        """
+        params = _CancelOrder(
+            order_id=order_id,
+            symbol=symbol,
+        )
+        path = f'/v1/order/orders/{order_id}/submitcancel'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=params.dict(by_alias=True, exclude_none=True),
+        )
+
+    async def cancel_order_by_client_order_id(self, client_order_id: str) -> Dict:
+        """
+        This endpoint submit a request to cancel an order based on client-order-id
+        https://huobiapi.github.io/docs/spot/v1/en/#submit-cancel-for-an-order-based-on-client-order-id
+
+        :param client_order_id: Client order ID, it must exist within 8 hours,
+            otherwise it is not allowed to use when placing a new order
+        """
+        path = '/v1/order/orders/submitCancelClientOrder'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json={
+                'client-order-id': client_order_id,
+            },
+        )
+
+    async def get_all_open_orders(
+            self,
+            account_id: Optional[int] = None,
+            symbol: Optional[str] = None,
+            side: Optional[OrderSide] = None,
+            start_order_id: Optional[str] = None,
+            direct: Optional[str] = None,
+            size: int = 100,
+    ) -> Dict:
+        """
+        This endpoint returns all open orders which have not been filled completely
+        https://huobiapi.github.io/docs/spot/v1/en/#get-all-open-orders
+
+        :param account_id: The account id used for this trade
+        :param symbol: The trading symbol to trade
+        :param side: Filter on the direction of the trade
+        :param start_order_id: Start order ID the searching to begin with
+        :param direct: Searching direction
+        :param size: The number of orders to return
+        """
+        if size < 1 or size > 500:
+            raise ValueError(f'Wrong size value "{size}"')
+        params = _GetAllOpenOrders(
+            account_id=account_id,
+            symbol=symbol,
+            side=side.value if side else side,
+            start_order_id=start_order_id,
+            direct=direct,
+            size=size,
+        )
+        path = '/v1/order/openOrders'
         return await self.request(
             method='GET',
             path=path,

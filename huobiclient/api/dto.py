@@ -3,6 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from huobiclient.auth import APIAuth
+from huobiclient.enums import OrderSource
 
 
 class _GetChainsInformationRequest(BaseModel):
@@ -182,6 +183,42 @@ class _QueryDepositHistoryOfSubUser(APIAuth):
 
 class _GetAccountBalanceOfSubUser(APIAuth):
     sub_uid: int = Field(alias='sub-uid')
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class PlaceNewOrder(BaseModel):
+    account_id: int = Field(alias='account-id')
+    amount: float
+    client_order_id: Optional[str] = Field(None, alias='client-order-id')
+    operator: Optional[str]
+    order_type: str = Field(alias='type')
+    price: Optional[float] = None
+    self_match_prevent: int = Field(default=0, alias='self-match-prevent')
+    source: str = OrderSource.spot_api.value
+    stop_price: Optional[float] = Field(None, alias='stop-price')
+    symbol: str
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _CancelOrder(BaseModel):
+    order_id: str = Field(alias='order-id')
+    symbol: Optional[str]
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _GetAllOpenOrders(APIAuth):
+    account_id: Optional[int] = Field(None, alias='account-id')
+    direct: Optional[str]
+    side: Optional[str]
+    size: int
+    start_order_id: Optional[str] = Field(alias='from')
+    symbol: Optional[str]
 
     class Config:
         allow_population_by_field_name = True

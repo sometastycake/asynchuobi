@@ -54,3 +54,37 @@ class TransferTypeBetweenParentAndSubUser(Enum):
     master_transfer_out = 'master-transfer-out'
     master_point_transfer_in = 'master-point-transfer-in'
     master_point_transfer_out = 'master-point-transfer-out'
+
+
+class OrderType(Enum):
+    buy_market = 'buy-market'
+    sell_market = 'sell-market'
+    buy_limit = 'buy-limit'
+    sell_limit = 'sell-limit'
+    buy_ioc = 'buy-ioc'
+    sell_ioc = 'sell-ioc'
+    buy_limit_market = ' buy-limit-maker'
+    sell_limit_market = 'sell-limit-maker'
+    buy_stop_limit = 'buy-stop-limit'
+    sell_stop_limit = 'sell-stop-limit'
+    buy_limit_fok = 'buy-limit-fok'
+    sell_limit_fok = 'sell-limit-fok'
+    buy_stop_limit_fok = 'buy-stop-limit-fok'
+    sell_stop_limit_fok = 'sell-stop-limit-fok'
+
+
+class OrderSource(Enum):
+    spot_api = 'spot-api'
+    margin_api = 'margin-api'
+    super_margin_api = 'super-margin-api'
+    c2c_margin_api = 'c2c-margin-api'
+
+
+class OperatorCharacterOfStopPrice(Enum):
+    gte = 'gte'
+    lte = 'lte'
+
+
+class OrderSide(Enum):
+    buy = 'buy'
+    sell = 'sell'
