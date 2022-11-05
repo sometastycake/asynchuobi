@@ -25,6 +25,7 @@ from .dto import (
     SubUserCreation,
     _APIKeyQuery,
     _AssetTransfer,
+    _BatchCancelOpenOrders,
     _CancelOrder,
     _CreateWithdrawRequest,
     _GetAccountBalanceOfSubUser,
@@ -32,7 +33,9 @@ from .dto import (
     _GetAccountLedger,
     _GetAllOpenOrders,
     _GetChainsInformationRequest,
+    _GetCurrentFeeRateAppliedToUser,
     _GetMarketSymbolsSettings,
+    _GetOrderDetailByClientOrderId,
     _GetPointBalance,
     _GetSubUsersAccountList,
     _GetSubUsersList,
@@ -46,6 +49,9 @@ from .dto import (
     _QueryWithdrawalOrderByClientOrderId,
     _QueryWithdrawQuota,
     _SearchExistedWithdrawsAndDeposits,
+    _SearchHistoricalOrdersWithin48Hours,
+    _SearchMatchResult,
+    _SearchPastOrder,
     _SubUserApiKeyCreation,
     _SubUserApiKeyModification,
 )
@@ -1381,6 +1387,274 @@ class HuobiClient:
             size=size,
         )
         path = '/v1/order/openOrders'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def batch_cancel_open_orders(
+            self,
+            account_id: Optional[str] = None,
+            symbols: Optional[List[str]] = None,
+            order_types: Optional[List[OrderType]] = None,
+            side: Optional[OrderSide] = None,
+            size: int = 100,
+    ) -> Dict:
+        """
+        This endpoint submit cancellation for multiple orders (not exceeding 100 orders
+        per request) at once with given criteria
+        https://huobiapi.github.io/docs/spot/v1/en/#submit-cancel-for-multiple-orders-by-criteria
+
+        :param account_id: The account id used for this cancel
+        :param symbols: The trading symbol list
+        :param order_types: One or more types of order to include in the search
+        :param side: Filter on the direction of the trade
+        :param size: The number of orders to cancel
+        """
+        if size < 1 or size > 100:
+            raise ValueError(f'Wrong size value "{size}"')
+        params = _BatchCancelOpenOrders(
+            account_id=account_id,
+            symbol=','.join([symbol for symbol in symbols]) if symbols else symbols,
+            order_types=','.join([
+                str(order_type.value) for order_type in order_types
+            ]) if order_types else order_types,
+            side=str(side.value) if side else side,
+            size=size,
+        )
+        path = '/v1/order/orders/batchCancelOpenOrders'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=params.dict(by_alias=True, exclude_none=True),
+        )
+
+    async def cancel_order_by_ids(
+            self,
+            order_ids: Optional[List[str]] = None,
+            client_order_ids: Optional[List[str]] = None,
+    ) -> Dict:
+        """
+        This endpoint submit cancellation for multiple orders at once with given ids.
+        It is suggested to use order-ids instead of client-order-ids, so that the cancellation
+        is faster, more accurate and more stable
+        https://huobiapi.github.io/docs/spot/v1/en/#submit-cancel-for-multiple-orders-by-ids
+
+        :param order_ids: The order ids to cancel
+        :param client_order_ids: The client order ids to cancel
+        """
+        params = {}
+        if order_ids is not None:
+            params['order-ids'] = order_ids
+        if client_order_ids is not None:
+            params['client-order-ids'] = client_order_ids
+        path = '/v1/order/orders/batchcancel'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json=params,
+        )
+
+    async def dead_mans_switch(self, timeout: int) -> Dict:
+        """
+        The Dead man’s switch protects the user’s assets when the connection to the exchange is
+        lost due to network or system errors
+        https://huobiapi.github.io/docs/spot/v1/en/#dead-man-s-switch
+
+        :param timeout: Time out duration (unit：second)
+        """
+        path = '/v2/algo-orders/cancel-all-after'
+        return await self.request(
+            method='POST',
+            path=path,
+            params=APIAuth().to_request(path, 'POST'),
+            json={
+                'timeout': timeout,
+            },
+        )
+
+    async def get_order_detail(self, order_id: str) -> Dict:
+        """
+        This endpoint returns the detail of a specific order. If an order is created via API,
+        then it's no longer queryable after being cancelled for 2 hours
+        https://huobiapi.github.io/docs/spot/v1/en/#get-the-order-detail-of-an-order
+
+        :param order_id: Order id when order was created
+        """
+        path = f'/v1/order/orders/{order_id}'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=APIAuth().to_request(path, 'GET'),
+        )
+
+    async def get_order_detail_by_client_order_id(self, client_order_id: str) -> Dict:
+        """
+        This endpoint returns the detail of one order by specified client order id (within 8 hours)
+        https://huobiapi.github.io/docs/spot/v1/en/#get-the-order-detail-of-an-order-based-on-client-order-id
+        """
+        params = _GetOrderDetailByClientOrderId(
+            clientOrderId=client_order_id,
+        )
+        path = '/v1/order/orders/getClientOrder'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def get_match_result_of_order(self, order_id: str):
+        """
+        This endpoint returns the match result of an order
+        https://huobiapi.github.io/docs/spot/v1/en/#get-the-match-result-of-an-order
+
+        :param order_id: Order id
+        """
+        path = f'/v1/order/orders/{order_id}/matchresults'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=APIAuth().to_request(path, 'GET'),
+        )
+
+    async def search_past_orders(
+            self,
+            symbol: str,
+            states: List[str],
+            order_types: Optional[List[OrderType]] = None,
+            start_time: Optional[int] = None,
+            end_time: Optional[int] = None,
+            from_order_id: Optional[str] = None,
+            size: int = 100,
+            direct: Optional[str] = None,
+    ) -> Dict:
+        """
+        This endpoint returns orders based on a specific searching criteria. The order created via
+        API will no longer be queryable after being cancelled for more than 2 hours
+        https://huobiapi.github.io/docs/spot/v1/en/#search-past-orders
+
+        :param symbol: The trading symbol
+        :param states: One or more states of order to include in the search
+            (filled, partial-canceled, canceled)
+        :param order_types: One or more types of order to include in the search
+        :param start_time: Search starts time, UTC time in millisecond
+        :param end_time: Search ends time, UTC time in millisecond
+        :param from_order_id: Search order id to begin with
+        :param size: The number of orders to return
+        :param direct: 	Search direction when 'from' is used
+        """
+        if size < 1 or size > 100:
+            raise ValueError(f'Wrong size value "{size}"')
+        params = _SearchPastOrder(
+            symbol=symbol,
+            states=','.join(states) if states else states,
+            order_types=','.join([
+                str(order_type.value) for order_type in order_types
+            ]) if order_types else order_types,
+            start_time=start_time,
+            end_time=end_time,
+            from_order_id=from_order_id,
+            size=size,
+            direct=direct,
+        )
+        path = '/v1/order/orders'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def search_historical_orders_within_48_hours(
+            self,
+            symbol: Optional[str] = None,
+            start_time: Optional[int] = None,
+            end_time: Optional[int] = None,
+            direct: str = 'next',
+            size: int = 100,
+    ) -> Dict:
+        """
+        This endpoint returns orders based on a specific searching criteria
+        https://huobiapi.github.io/docs/spot/v1/en/#search-historical-orders-within-48-hours
+
+        :param symbol: The trading symbol to trade
+        :param start_time: Start time
+        :param end_time: End time
+        :param direct: Direction of the query
+        :param size: Number of items in each response
+        """
+        if size < 10 or size > 1000:
+            raise ValueError(f'Wrong size value "{size}"')
+        params = _SearchHistoricalOrdersWithin48Hours(
+            symbol=symbol,
+            start_time=start_time,
+            end_time=end_time,
+            direct=direct,
+            size=size,
+        )
+        path = '/v1/order/history'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def search_match_results(
+            self,
+            symbol: str,
+            order_types: Optional[List[OrderType]] = None,
+            start_time: Optional[int] = None,
+            end_time: Optional[int] = None,
+            from_order_id: Optional[str] = None,
+            size: int = 100,
+            direct: str = 'next',
+    ) -> Dict:
+        """
+        This endpoint returns the match results of past and current filled, or partially
+        filled orders based on specific search criteria
+        https://huobiapi.github.io/docs/spot/v1/en/#search-match-results
+
+        :param symbol: The trading symbol to trade
+        :param order_types: The types of order to include in the search
+        :param start_time: Far point of time of the query window (unix time in millisecond)
+        :param end_time: Near point of time of the query window (unix time in millisecond)
+        :param from_order_id: Search internal id to begin with
+        :param size: The number of orders to return
+        :param direct: Search direction when 'from' is used
+        """
+        if size < 1 or size > 500:
+            raise ValueError(f'Wrong size value "{size}"')
+        params = _SearchMatchResult(
+            symbol=symbol,
+            order_types=','.join([
+                str(order_type.value) for order_type in order_types
+            ]) if order_types else order_types,
+            start_time=start_time,
+            end_time=end_time,
+            from_order_id=from_order_id,
+            size=size,
+            direct=direct,
+        )
+        path = '/v1/order/matchresults'
+        return await self.request(
+            method='GET',
+            path=path,
+            params=params.to_request(path, 'GET'),
+        )
+
+    async def get_current_fee_rate_applied_to_user(self, symbols: List[str]) -> Dict:
+        """
+        This endpoint returns the current transaction fee rate applied to the user
+        https://huobiapi.github.io/docs/spot/v1/en/#get-current-fee-rate-applied-to-the-user
+
+        :param symbols: The trading symbols to query
+        """
+        params = _GetCurrentFeeRateAppliedToUser(
+            symbols=','.join(symbols),
+        )
+        path = '/v2/reference/transact-fee-rate'
         return await self.request(
             method='GET',
             path=path,

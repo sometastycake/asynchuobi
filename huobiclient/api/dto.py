@@ -222,3 +222,60 @@ class _GetAllOpenOrders(APIAuth):
 
     class Config:
         allow_population_by_field_name = True
+
+
+class _BatchCancelOpenOrders(BaseModel):
+    account_id: Optional[str] = Field(None, alias='account-id')
+    order_types: Optional[str] = Field(None, alias='types')
+    side: Optional[str] = None
+    size: int
+    symbol: Optional[str] = None
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _GetOrderDetailByClientOrderId(APIAuth):
+    clientOrderId: str
+
+
+class _SearchPastOrder(APIAuth):
+    direct: Optional[str]
+    end_time: Optional[int] = Field(None, alias='end-time')
+    from_order_id: Optional[str] = Field(None, alias='from')
+    order_types: Optional[str] = Field(None, alias='types')
+    size: int
+    start_time: Optional[int] = Field(None, alias='start-time')
+    states: str
+    symbol: str
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _SearchHistoricalOrdersWithin48Hours(APIAuth):
+    direct: str
+    end_time: Optional[int] = Field(None, alias='end-time')
+    size: int
+    start_time: Optional[int] = Field(None, alias='start-time')
+    symbol: Optional[str]
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _SearchMatchResult(APIAuth):
+    direct: str
+    end_time: Optional[int] = Field(None, alias='end-time')
+    from_order_id: Optional[str] = Field(None, alias='from')
+    size: int
+    start_time: Optional[int] = Field(None, alias='start-time')
+    symbol: str
+    order_types: Optional[str] = Field(None, alias='types')
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _GetCurrentFeeRateAppliedToUser(APIAuth):
+    symbols: str
