@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import aiohttp
 from yarl import URL
@@ -1261,12 +1261,12 @@ class HuobiClient:
             account_id: int,
             symbol: str,
             order_type: OrderType,
-            amount: float,
-            price: Optional[float] = None,
+            amount: str,
+            price: Optional[str] = None,
             source: OrderSource = OrderSource.spot_api,
             client_order_id: Optional[str] = None,
             self_match_prevent: int = 0,
-            stop_price: Optional[float] = None,
+            stop_price: Optional[str] = None,
             operator: Optional[OperatorCharacterOfStopPrice] = None,
     ) -> Dict:
         """
@@ -1282,7 +1282,7 @@ class HuobiClient:
         :param client_order_id: Client order ID
         :param self_match_prevent: self match prevent.
             0: no, means allowing self-trading; 1: yes, means not allowing self-trading
-        :param stop_price: 	Trigger price of stop limit order
+        :param stop_price: Trigger price of stop limit order
         :param operator: Operation charactor of stop price
         """
         params = PlaceNewOrder(
@@ -1523,8 +1523,8 @@ class HuobiClient:
     async def search_past_orders(
             self,
             symbol: str,
-            states: List[str],
-            order_types: Optional[List[OrderType]] = None,
+            states: Iterable[str],
+            order_types: Optional[Iterable[OrderType]] = None,
             start_time: Optional[int] = None,
             end_time: Optional[int] = None,
             from_order_id: Optional[str] = None,
@@ -1548,12 +1548,16 @@ class HuobiClient:
         """
         if size < 1 or size > 100:
             raise ValueError(f'Wrong size value "{size}"')
+        if order_types is not None:
+            if not isinstance(order_types, Iterable):
+                raise TypeError(f'Iterable type expected for order types, got "{type(order_types)}"')
+            types = ','.join(map(lambda item: item.value, order_types))
+        else:
+            types = None
         params = _SearchPastOrder(
             symbol=symbol,
             states=','.join(states) if states else states,
-            order_types=','.join([
-                str(order_type.value) for order_type in order_types
-            ]) if order_types else order_types,
+            order_types=types,
             start_time=start_time,
             end_time=end_time,
             from_order_id=from_order_id,
@@ -1604,7 +1608,7 @@ class HuobiClient:
     async def search_match_results(
             self,
             symbol: str,
-            order_types: Optional[List[OrderType]] = None,
+            order_types: Optional[Iterable[OrderType]] = None,
             start_time: Optional[int] = None,
             end_time: Optional[int] = None,
             from_order_id: Optional[str] = None,
@@ -1618,19 +1622,25 @@ class HuobiClient:
 
         :param symbol: The trading symbol to trade
         :param order_types: The types of order to include in the search
-        :param start_time: Far point of time of the query window (unix time in millisecond)
-        :param end_time: Near point of time of the query window (unix time in millisecond)
+        :param start_time: Far point of time of the query window
+            (unix time in millisecond)
+        :param end_time: Near point of time of the query window
+            (unix time in millisecond)
         :param from_order_id: Search internal id to begin with
         :param size: The number of orders to return
         :param direct: Search direction when 'from' is used
         """
         if size < 1 or size > 500:
             raise ValueError(f'Wrong size value "{size}"')
+        if order_types is not None:
+            if not isinstance(order_types, Iterable):
+                raise TypeError(f'Iterable type expected for order types, got "{type(order_types)}"')
+            types = ','.join(map(lambda item: item.value, order_types))
+        else:
+            types = None
         params = _SearchMatchResult(
             symbol=symbol,
-            order_types=','.join([
-                str(order_type.value) for order_type in order_types
-            ]) if order_types else order_types,
+            order_types=types,
             start_time=start_time,
             end_time=end_time,
             from_order_id=from_order_id,
@@ -1644,13 +1654,15 @@ class HuobiClient:
             params=params.to_request(path, 'GET'),
         )
 
-    async def get_current_fee_rate_applied_to_user(self, symbols: List[str]) -> Dict:
+    async def get_current_fee_rate_applied_to_user(self, symbols: Iterable[str]) -> Dict:
         """
         This endpoint returns the current transaction fee rate applied to the user
         https://huobiapi.github.io/docs/spot/v1/en/#get-current-fee-rate-applied-to-the-user
 
         :param symbols: The trading symbols to query
         """
+        if not isinstance(symbols, Iterable):
+            raise TypeError(f'Iterable type expected for symbols, got "{type(symbols)}"')
         params = _GetCurrentFeeRateAppliedToUser(
             symbols=','.join(symbols),
         )

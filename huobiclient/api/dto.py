@@ -190,14 +190,14 @@ class _GetAccountBalanceOfSubUser(APIAuth):
 
 class PlaceNewOrder(BaseModel):
     account_id: int = Field(alias='account-id')
-    amount: float
+    amount: str
     client_order_id: Optional[str] = Field(None, alias='client-order-id')
     operator: Optional[str]
     order_type: str = Field(alias='type')
-    price: Optional[float] = None
+    price: Optional[str] = None
     self_match_prevent: int = Field(default=0, alias='self-match-prevent')
     source: str = OrderSource.spot_api.value
-    stop_price: Optional[float] = Field(None, alias='stop-price')
+    stop_price: Optional[str] = Field(None, alias='stop-price')
     symbol: str
 
     class Config:
@@ -243,11 +243,11 @@ class _SearchPastOrder(APIAuth):
     direct: Optional[str]
     end_time: Optional[int] = Field(None, alias='end-time')
     from_order_id: Optional[str] = Field(None, alias='from')
-    order_types: Optional[str] = Field(None, alias='types')
     size: int
     start_time: Optional[int] = Field(None, alias='start-time')
     states: str
     symbol: str
+    order_types: Optional[str] = Field(None, alias='types')
 
     class Config:
         allow_population_by_field_name = True
