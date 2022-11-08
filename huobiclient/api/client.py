@@ -1381,7 +1381,7 @@ class HuobiClient:
         params = _GetAllOpenOrders(
             account_id=account_id,
             symbol=symbol,
-            side=side.value if side else side,
+            side=side.value if side else None,
             start_order_id=start_order_id,
             direct=direct,
             size=size,
@@ -1395,9 +1395,9 @@ class HuobiClient:
 
     async def batch_cancel_open_orders(
             self,
-            account_id: Optional[str] = None,
-            symbols: Optional[List[str]] = None,
-            order_types: Optional[List[OrderType]] = None,
+            account_id: Optional[int] = None,
+            symbols: Optional[Iterable[str]] = None,
+            order_types: Optional[Iterable[OrderType]] = None,
             side: Optional[OrderSide] = None,
             size: int = 100,
     ) -> Dict:
@@ -1414,13 +1414,19 @@ class HuobiClient:
         """
         if size < 1 or size > 100:
             raise ValueError(f'Wrong size value "{size}"')
+        if symbols is not None and not isinstance(symbols, Iterable):
+            raise TypeError(f'Iterable type expected for symbols, got "{type(symbols)}"')
+        if order_types is not None:
+            if not isinstance(order_types, Iterable):
+                raise TypeError(f'Iterable type expected for order types, got "{type(order_types)}"')
+            types = ','.join(map(lambda item: item.value, order_types))
+        else:
+            types = None
         params = _BatchCancelOpenOrders(
             account_id=account_id,
-            symbol=','.join([symbol for symbol in symbols]) if symbols else symbols,
-            order_types=','.join([
-                str(order_type.value) for order_type in order_types
-            ]) if order_types else order_types,
-            side=str(side.value) if side else side,
+            symbol=','.join(symbols) if symbols else None,
+            order_types=types,
+            side=str(side.value) if side else None,
             size=size,
         )
         path = '/v1/order/orders/batchCancelOpenOrders'
@@ -1447,8 +1453,12 @@ class HuobiClient:
         """
         params = {}
         if order_ids is not None:
+            if not isinstance(order_ids, list):
+                raise TypeError('order_ids is not list')
             params['order-ids'] = order_ids
         if client_order_ids is not None:
+            if not isinstance(client_order_ids, list):
+                raise TypeError('client_order_ids is not list')
             params['client-order-ids'] = client_order_ids
         path = '/v1/order/orders/batchcancel'
         return await self.request(
@@ -1506,7 +1516,7 @@ class HuobiClient:
             params=params.to_request(path, 'GET'),
         )
 
-    async def get_match_result_of_order(self, order_id: str):
+    async def get_match_result_of_order(self, order_id: str) -> Dict:
         """
         This endpoint returns the match result of an order
         https://huobiapi.github.io/docs/spot/v1/en/#get-the-match-result-of-an-order
@@ -1544,7 +1554,7 @@ class HuobiClient:
         :param end_time: Search ends time, UTC time in millisecond
         :param from_order_id: Search order id to begin with
         :param size: The number of orders to return
-        :param direct: 	Search direction when 'from' is used
+        :param direct: Search direction when 'from' is used
         """
         if size < 1 or size > 100:
             raise ValueError(f'Wrong size value "{size}"')

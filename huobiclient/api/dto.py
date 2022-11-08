@@ -226,10 +226,10 @@ class _GetAllOpenOrders(APIAuth):
 
 class _BatchCancelOpenOrders(BaseModel):
     account_id: Optional[str] = Field(None, alias='account-id')
-    order_types: Optional[str] = Field(None, alias='types')
     side: Optional[str] = None
     size: int
     symbol: Optional[str] = None
+    order_types: Optional[str] = Field(None, alias='types')
 
     class Config:
         allow_population_by_field_name = True
