@@ -192,7 +192,7 @@ class PlaceNewOrder(BaseModel):
     account_id: int = Field(alias='account-id')
     amount: str
     client_order_id: Optional[str] = Field(None, alias='client-order-id')
-    operator: Optional[str]
+    operator: Optional[str] = None
     order_type: str = Field(alias='type')
     price: Optional[str] = None
     self_match_prevent: int = Field(default=0, alias='self-match-prevent')

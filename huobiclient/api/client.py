@@ -1289,7 +1289,7 @@ class HuobiClient:
             account_id=account_id,
             amount=amount,
             client_order_id=client_order_id,
-            operator=operator,
+            operator=operator.value if operator else None,
             order_type=str(order_type.value),
             price=price,
             self_match_prevent=self_match_prevent,
