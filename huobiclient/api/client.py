@@ -441,7 +441,7 @@ class HuobiClient:
     async def get_total_valuation_of_platform_assets(
             self,
             account_type_code: Optional[int] = None,
-            valuation_currency: Optional[str] = None,
+            valuation_currency: str = 'BTC',
     ) -> Dict:
         """
         Obtain the total asset valuation of the platform account according
@@ -452,8 +452,8 @@ class HuobiClient:
         :param valuation_currency: If not filled, the default is BTC
         """
         params = _GetTotalValuationPlatformAssets(
-            accountType=str(account_type_code) if account_type_code else account_type_code,
-            valuationCurrency=valuation_currency.upper() if valuation_currency else valuation_currency,
+            accountType=account_type_code,
+            valuationCurrency=valuation_currency,
         )
         path = '/v2/account/valuation'
         return await self.request(
@@ -479,7 +479,7 @@ class HuobiClient:
         """
         params = _GetTotalValuation(
             accountType=account_type,
-            valuationCurrency=valuation_currency.upper() if valuation_currency else valuation_currency,
+            valuationCurrency=valuation_currency.upper() if valuation_currency else None,
             subUid=sub_uid,
         )
         path = '/v2/account/asset-valuation'
@@ -500,6 +500,19 @@ class HuobiClient:
             currency: str,
             amount: str,
     ) -> Dict:
+        """
+        This endpoint allows parent user and sub user to transfer asset between accounts
+        https://huobiapi.github.io/docs/spot/v1/en/#asset-transfer
+
+        :param from_user: Transfer out user uid
+        :param from_account_type: 	Transfer out account type
+        :param from_account: Transfer out account id
+        :param to_user: Transfer in user uid
+        :param to_account_type: Transfer in account type
+        :param to_account: Transfer in account id
+        :param currency: Currency name
+        :param amount: 	Amount of fund to transfer
+        """
         params = _AssetTransfer(
             from_user=from_user,
             from_account_type=from_account_type,
@@ -522,7 +535,7 @@ class HuobiClient:
             self,
             account_id: int,
             currency: Optional[str] = None,
-            transact_types: Optional[List[str]] = None,
+            transact_types: Optional[Iterable[str]] = None,
             start_time: Optional[int] = None,
             end_time: Optional[int] = None,
             size: int = 100,
@@ -542,13 +555,19 @@ class HuobiClient:
         :param sorting: Sorting order
         :param from_id: First record ID in this query
         """
+        if transact_types is not None:
+            if not isinstance(transact_types, Iterable):
+                raise TypeError(f'Iterable type expected for transact types, got "{type(transact_types)}"')
+            types = ','.join(map(lambda item: item, transact_types))
+        else:
+            types = None
         if size < 1 or size > 500:
             raise ValueError(f'Wrong size value "{size}"')
         params = _GetAccountHistory(
             account_id=account_id,
             currency=currency,
             size=size,
-            transact_types=','.join(transact_types) if transact_types else transact_types,
+            transact_types=types,
             start_time=start_time,
             end_time=end_time,
             sorting=str(sorting.value),
@@ -720,7 +739,7 @@ class HuobiClient:
             chain: Optional[str] = None,
             note: Optional[str] = None,
             limit: int = 100,
-            fromId: Optional[int] = None
+            from_id: Optional[int] = None
     ) -> Dict:
         """
         This endpoint allows parent user to query withdraw address available for API key
@@ -730,7 +749,7 @@ class HuobiClient:
         :param chain: Block chain name
         :param note: The note of withdraw address
         :param limit: The number of items to return
-        :param fromId: First record ID in this query
+        :param from_id: First record ID in this query
         """
         if limit < 1 or limit > 500:
             raise ValueError(f'Wrong limit value "{limit}"')
@@ -739,7 +758,7 @@ class HuobiClient:
             chain=chain,
             note=note,
             limit=limit,
-            fromId=fromId,
+            fromId=from_id,
         )
         path = '/v2/account/withdraw/address'
         return await self.request(
@@ -825,7 +844,7 @@ class HuobiClient:
             currency: Optional[str] = None,
             from_trasfer_id: Optional[str] = None,
             size: int = 100,
-            direct: str = 'prev'
+            direct: str = 'prev',
     ) -> Dict:
         """
         Parent user and sub user search for all existed withdraws and deposits and return their latest status

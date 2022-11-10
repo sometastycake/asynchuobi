@@ -21,7 +21,7 @@ class _GetMarketSymbolsSettings(BaseModel):
 
 
 class _GetTotalValuationPlatformAssets(APIAuth):
-    accountType: Optional[str]
+    accountType: Optional[int]
     valuationCurrency: Optional[str]
 
 
@@ -32,14 +32,14 @@ class _GetTotalValuation(APIAuth):
 
 
 class _AssetTransfer(BaseModel):
-    from_user: int = Field(alias='from-user')
-    from_account_type: str = Field(alias='from-account-type')
-    from_account: int = Field(alias='from-account')
-    to_user: int = Field(alias='to-user')
-    to_account_type: str = Field(alias='to-account-type')
-    to_account: int = Field(alias='to-account')
-    currency: str
     amount: str
+    currency: str
+    from_account: int = Field(alias='from-account')
+    from_account_type: str = Field(alias='from-account-type')
+    from_user: int = Field(alias='from-user')
+    to_account: int = Field(alias='to-account')
+    to_account_type: str = Field(alias='to-account-type')
+    to_user: int = Field(alias='to-user')
 
     class Config:
         allow_population_by_field_name = True
