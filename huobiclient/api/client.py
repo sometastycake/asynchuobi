@@ -20,7 +20,6 @@ from huobiclient.enums import (
     Sort,
     TransferTypeBetweenParentAndSubUser,
 )
-from huobiclient.exceptions import HuobiError
 
 from .dto import (
     PlaceNewOrder,
@@ -61,8 +60,7 @@ from .dto import (
 
 class HuobiClient:
 
-    def __init__(self, raise_if_status_error: bool = False):
-        self._raise_if_status_error = raise_if_status_error
+    def __init__(self):
         self._session = aiohttp.ClientSession(
             connector=aiohttp.TCPConnector(ssl=False),
             raise_for_status=True,
@@ -71,14 +69,6 @@ class HuobiClient:
     def __del__(self):
         if not self._session.closed:
             self._session.connector.close()
-
-    def _check_error(self, response: Dict) -> None:
-        status = response.get('status')
-        if isinstance(status, str) and status != 'ok':
-            raise HuobiError(
-                err_code=response.get('err-code', ''),
-                err_msg=response.get('err-msg', ''),
-            )
 
     def _url(self, path: str) -> str:
         return str(URL(config.HUOBI_API_URL).with_path(path))
@@ -97,10 +87,7 @@ class HuobiClient:
                 'Content-Type': 'application/json',
             },
         )
-        data = await response.json()
-        if self._raise_if_status_error and isinstance(data, dict):
-            self._check_error(data)
-        return data
+        return await response.json()
 
     async def get_system_status(self) -> Dict:
         """
