@@ -34,6 +34,16 @@ class DeductMode(Enum):
     sub = 'sub'
 
 
+class MarginAccountType(Enum):
+    isolated_margin = 'isolated-margin'
+    cross_margin = 'cross-margin'
+
+
+class MarginAccountActivation(Enum):
+    activated = 'activated'
+    deactivated = 'deactivated'
+
+
 class LockSubUserAction(Enum):
     lock = 'lock'
     unlock = 'unlock'

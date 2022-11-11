@@ -10,6 +10,8 @@ from huobiclient.enums import (
     CandleInterval,
     DeductMode,
     LockSubUserAction,
+    MarginAccountActivation,
+    MarginAccountType,
     MarketDepthAggregationLevel,
     OperatorCharacterOfStopPrice,
     OrderSide,
@@ -872,7 +874,7 @@ class HuobiClient:
             params=params.to_request(path, 'GET'),
         )
 
-    async def set_deduction_for_parent_and_sub_user(self, sub_uids: List[int], deduct_mode: DeductMode) -> Dict:
+    async def set_deduction_for_parent_and_sub_user(self, sub_uids: Iterable[int], deduct_mode: DeductMode) -> Dict:
         """
         This interface is to set the deduction fee for parent and sub user (HT or point)
         https://huobiapi.github.io/docs/spot/v1/en/#set-a-deduction-for-parent-and-sub-user
@@ -880,6 +882,8 @@ class HuobiClient:
         :param sub_uids: sub user's UID list (maximum 50 UIDs)
         :param deduct_mode: deduct mode
         """
+        if not isinstance(sub_uids, Iterable):
+            raise TypeError(f'Iterable type expected for sub_uids, got "{type(sub_uids)}"')
         path = '/v2/sub-user/deduct-mode'
         return await self.request(
             method='POST',
@@ -994,9 +998,9 @@ class HuobiClient:
 
     async def set_tradable_market_for_sub_users(
             self,
-            sub_uids: List[int],
-            account_type: str,
-            activation: str,
+            sub_uids: Iterable[int],
+            account_type: MarginAccountType,
+            activation: MarginAccountActivation,
     ) -> Dict:
         """
         Parent user is able to set tradable market for a batch of sub users through this
@@ -1008,6 +1012,8 @@ class HuobiClient:
         :param account_type: Account type (isolated-margin,cross-margin)
         :param activation: Account activation (activated,deactivated)
         """
+        if not isinstance(sub_uids, Iterable):
+            raise TypeError(f'Iterable type expected for sub_uids, got "{type(sub_uids)}"')
         path = '/v2/sub-user/tradable-market'
         return await self.request(
             method='POST',
@@ -1015,14 +1021,14 @@ class HuobiClient:
             params=APIAuth().to_request(path, 'POST'),
             json={
                 'subUids': ','.join([str(sub_uid) for sub_uid in sub_uids]),
-                'accountType': account_type,
-                'activation': activation,
+                'accountType': account_type.value,
+                'activation': activation.value,
             },
         )
 
     async def set_asset_transfer_permission_for_sub_users(
             self,
-            sub_uids: List[int],
+            sub_uids: Iterable[int],
             transferrable: bool,
             account_type: str = 'spot',
     ) -> Dict:
@@ -1036,6 +1042,8 @@ class HuobiClient:
         :param transferrable: Transferrablility
         :param account_type: Account type
         """
+        if not isinstance(sub_uids, Iterable):
+            raise TypeError(f'Iterable type expected for sub_uids, got "{type(sub_uids)}"')
         path = '/v2/sub-user/transferability'
         return await self.request(
             method='POST',
@@ -1071,7 +1079,7 @@ class HuobiClient:
             sub_uid: int,
             note: str,
             permissions: List[ApiKeyPermission],
-            ip_addresses: Optional[List[str]] = None,
+            ip_addresses: Optional[Iterable[str]] = None,
             otp_token: Optional[str] = None
     ) -> Dict:
         """
@@ -1079,12 +1087,20 @@ class HuobiClient:
         https://huobiapi.github.io/docs/spot/v1/en/#sub-user-api-key-creation
 
         :param sub_uid: Sub user UID
-        :param note: API key note
+        :param note: API keynote
         :param permissions: API key permissions
         :param ip_addresses: The IPv4/IPv6 host address or IPv4 network address bound to the API key
         :param otp_token: Google verification code of the parent user, the parent user must be
             bound to Google Authenticator for verification on the web
         """
+        if not isinstance(permissions, list):
+            raise TypeError(f'List expected for permissions, got "{type(permissions)}"')
+        if ip_addresses is not None:
+            if not isinstance(ip_addresses, Iterable):
+                raise TypeError(f'Iterable type expected for ip addresses, got "{type(ip_addresses)}"')
+            addresses = ','.join(ip_addresses)
+        else:
+            addresses = None
         if ApiKeyPermission.readOnly not in permissions:
             permissions.append(ApiKeyPermission.readOnly)
         params = _SubUserApiKeyCreation(
@@ -1092,7 +1108,7 @@ class HuobiClient:
             subUid=sub_uid,
             note=note,
             permission=','.join([str(perm.value) for perm in permissions]),
-            ipAddresses=','.join(ip_addresses) if ip_addresses else ip_addresses,
+            ipAddresses=addresses,
         )
         path = '/v2/sub-user/api-key-generation'
         return await self.request(
@@ -1107,8 +1123,8 @@ class HuobiClient:
             sub_uid: int,
             access_key: str,
             note: Optional[str] = None,
-            permissions: Optional[List[ApiKeyPermission]] = None,
-            ip_addresses: Optional[List[str]] = None,
+            permissions: Optional[Iterable[ApiKeyPermission]] = None,
+            ip_addresses: Optional[Iterable[str]] = None,
     ) -> Dict:
         """
         This endpoint is used by the parent user to modify the API key of the sub user
@@ -1121,12 +1137,20 @@ class HuobiClient:
         :param ip_addresses: At most 20 IPv4/IPv6 host address(es) and/or
             IPv4 network address(es) can bind with one API key
         """
+        if ip_addresses is not None:
+            if not isinstance(ip_addresses, Iterable):
+                raise TypeError(f'Iterable type expected for ip addresses, got "{type(ip_addresses)}"')
+            addresses = ','.join(ip_addresses)
+        else:
+            addresses = None
+        if permissions is not None and not isinstance(permissions, Iterable):
+            raise TypeError(f'Iterable type expected for permissions, got "{type(permissions)}"')
         params = _SubUserApiKeyModification(
             accessKey=access_key,
             subUid=sub_uid,
             note=note,
-            permission=','.join([str(perm.value) for perm in permissions]) if permissions else permissions,
-            ipAddresses=','.join(ip_addresses) if ip_addresses else ip_addresses,
+            permission=','.join([str(perm.value) for perm in permissions]) if permissions else None,
+            ipAddresses=addresses,
         )
         path = '/v2/sub-user/api-key-modification'
         return await self.request(
