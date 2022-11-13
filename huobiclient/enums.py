@@ -29,6 +29,24 @@ class PriceLevel(IntEnum):
     level_20 = 20
 
 
+class AccountTypeCode(IntEnum):
+    spot = 1
+    isolated = 2
+    cross = 3
+    coin_futures = 4
+    flat = 5
+    minepool = 6
+    coin_swaps = 7
+    investment = 8
+    borrow = 9
+    earn = 10
+    usdt_swaps = 11
+    option = 12
+    otc_options = 13
+    crypto_loans = 14
+    grid_trading = 15
+
+
 class DeductMode(Enum):
     master = 'master'
     sub = 'sub'

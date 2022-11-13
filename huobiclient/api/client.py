@@ -4,8 +4,9 @@ import aiohttp
 from yarl import URL
 
 from huobiclient.auth import APIAuth
-from huobiclient.config import huobi_client_config as config
+from huobiclient.config import HuobiConfig
 from huobiclient.enums import (
+    AccountTypeCode,
     ApiKeyPermission,
     CandleInterval,
     DeductMode,
@@ -60,7 +61,8 @@ from .dto import (
 
 class HuobiClient:
 
-    def __init__(self):
+    def __init__(self, cfg: HuobiConfig):
+        self._cfg = cfg
         self._session = aiohttp.ClientSession(
             connector=aiohttp.TCPConnector(ssl=False),
             raise_for_status=True,
@@ -71,7 +73,7 @@ class HuobiClient:
             self._session.connector.close()
 
     def _url(self, path: str) -> str:
-        return str(URL(config.HUOBI_API_URL).with_path(path))
+        return str(URL(self._cfg.HUOBI_API_URL).with_path(path))
 
     async def request(self, path: str, method: str, **kwargs: Any) -> Any:
         """
@@ -405,11 +407,15 @@ class HuobiClient:
         Get all Accounts of the Current User
         https://huobiapi.github.io/docs/spot/v1/en/#get-all-accounts-of-the-current-user
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/account/accounts'
         return await self.request(
             method='GET',
             path=path,
-            params=APIAuth().to_request(path, 'GET'),
+            params=auth.to_request(self._url(path), 'GET'),
         )
 
     async def account_balance(self, account_id: int) -> Dict:
@@ -420,16 +426,20 @@ class HuobiClient:
         :param account_id: The specified account id to get balance for,
             can be found by query '/v1/account/accounts' endpoint.
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = f'/v1/account/accounts/{account_id}/balance'
         return await self.request(
             method='GET',
             path=path,
-            params=APIAuth().to_request(path, 'GET'),
+            params=auth.to_request(self._url(path), 'GET'),
         )
 
     async def get_total_valuation_of_platform_assets(
             self,
-            account_type_code: Optional[int] = None,
+            account_type_code: Optional[AccountTypeCode] = None,
             valuation_currency: str = 'BTC',
     ) -> Dict:
         """
@@ -441,14 +451,16 @@ class HuobiClient:
         :param valuation_currency: If not filled, the default is BTC
         """
         params = _GetTotalValuationPlatformAssets(
-            accountType=account_type_code,
+            accountType=account_type_code.value if account_type_code else None,
             valuationCurrency=valuation_currency,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/account/valuation'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def get_asset_valuation(
@@ -470,12 +482,14 @@ class HuobiClient:
             accountType=account_type,
             valuationCurrency=valuation_currency.upper() if valuation_currency else None,
             subUid=sub_uid,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/account/asset-valuation'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def asset_transfer(
@@ -512,11 +526,15 @@ class HuobiClient:
             currency=currency,
             amount=amount,
         )
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/account/transfer'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json=params.dict(by_alias=True),
         )
 
@@ -561,12 +579,14 @@ class HuobiClient:
             end_time=end_time,
             sorting=str(sorting.value),
             from_id=from_id,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v1/account/history'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def get_account_ledger(
@@ -604,12 +624,14 @@ class HuobiClient:
             sorting=str(sorting.value),
             fromId=from_id,
             limit=limit,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/account/ledger'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def transfer_fund_between_spot_and_futures(
@@ -628,11 +650,15 @@ class HuobiClient:
         :param amount: Amount of fund to transfer
         :param transfer_type: Type of the transfer
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/futures/transfer'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json={
                 'currency': currency,
                 'amount': amount,
@@ -649,12 +675,14 @@ class HuobiClient:
         """
         params = _GetPointBalance(
             subUid=sub_user_id,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/point/account'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def point_transfer(
@@ -674,11 +702,15 @@ class HuobiClient:
         :param group_id: Group ID
         :param amount: Transfer amount (precision: maximum 8 decimal places)
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/point/transfer'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json={
                 'fromUid': from_uid,
                 'toUid': to_uid,
@@ -697,12 +729,14 @@ class HuobiClient:
         """
         params = _QueryDepositAddress(
             currency=currency,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/account/deposit/address'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def query_withdraw_quota(self, currency: str) -> Dict:
@@ -713,13 +747,15 @@ class HuobiClient:
         :param currency: Cryptocurrency
         """
         params = _QueryWithdrawQuota(
-            currency=currency
+            currency=currency,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/account/withdraw/quota'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def query_withdraw_address(
@@ -748,12 +784,14 @@ class HuobiClient:
             note=note,
             limit=limit,
             fromId=from_id,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/account/withdraw/address'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def create_withdraw_request(
@@ -788,11 +826,15 @@ class HuobiClient:
             addr_tag=addr_tag,
             client_order_id=client_order_id,
         )
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/dw/withdraw/api/create'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json=params.dict(by_alias=True, exclude_none=True),
         )
 
@@ -805,12 +847,14 @@ class HuobiClient:
         """
         params = _QueryWithdrawalOrderByClientOrderId(
             clientOrderId=client_order_id,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v1/query/withdraw/client-order-id'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def cancel_withdraw_request(self, withdraw_id: int) -> Dict:
@@ -820,11 +864,15 @@ class HuobiClient:
 
         :param withdraw_id: The id returned when previously created a withdraw request
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = f'/v1/dw/withdraw-virtual/{withdraw_id}/cancel'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
         )
 
     async def search_for_existed_withraws_and_deposits(
@@ -853,12 +901,14 @@ class HuobiClient:
             from_transfer_id=from_trasfer_id,
             size=size,
             direct=direct,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v1/query/deposit-withdraw'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def set_deduction_for_parent_and_sub_user(self, sub_uids: Iterable[int], deduct_mode: DeductMode) -> Dict:
@@ -871,11 +921,15 @@ class HuobiClient:
         """
         if not isinstance(sub_uids, Iterable):
             raise TypeError(f'Iterable type expected for sub_uids, got "{type(sub_uids)}"')
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/sub-user/deduct-mode'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json={
                 'subUids': ','.join([str(sub_uid) for sub_uid in sub_uids]),
                 'deductMode': deduct_mode.value,
@@ -895,12 +949,14 @@ class HuobiClient:
         params = _APIKeyQuery(
             uid=uid,
             accessKey=access_key,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/user/api-key'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def get_uid(self) -> Dict:
@@ -908,11 +964,15 @@ class HuobiClient:
         This endpoint allow users to view the user ID of the account easily
         https://huobiapi.github.io/docs/spot/v1/en/#get-uid
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/user/uid'
         return await self.request(
             method='GET',
             path=path,
-            params=APIAuth().to_request(path, 'GET'),
+            params=auth.to_request(self._url(path), 'GET'),
         )
 
     async def sub_user_creation(self, request: SubUserCreation) -> Dict:
@@ -920,11 +980,15 @@ class HuobiClient:
         This endpoint is used by the parent user to create sub users, up to 50 at a time
         https://huobiapi.github.io/docs/spot/v1/en/#sub-user-creation
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/sub-user/creation'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json=request.dict(exclude_none=True),
         )
 
@@ -938,12 +1002,14 @@ class HuobiClient:
         """
         params = _GetSubUsersList(
             fromId=from_id,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/sub-user/user-list'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def lock_unlock_sub_user(self, sub_uid: int, action: LockSubUserAction) -> Dict:
@@ -954,11 +1020,15 @@ class HuobiClient:
         :param sub_uid: Sub user UID
         :param action: Action type
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/sub-user/management'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json={
                 'subUid': sub_uid,
                 'action': action.value,
@@ -975,12 +1045,14 @@ class HuobiClient:
         """
         params = _GetSubUserStatus(
             subUid=sub_uid,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/sub-user/user-state'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def set_tradable_market_for_sub_users(
@@ -1001,11 +1073,15 @@ class HuobiClient:
         """
         if not isinstance(sub_uids, Iterable):
             raise TypeError(f'Iterable type expected for sub_uids, got "{type(sub_uids)}"')
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/sub-user/tradable-market'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json={
                 'subUids': ','.join([str(sub_uid) for sub_uid in sub_uids]),
                 'accountType': account_type.value,
@@ -1031,11 +1107,15 @@ class HuobiClient:
         """
         if not isinstance(sub_uids, Iterable):
             raise TypeError(f'Iterable type expected for sub_uids, got "{type(sub_uids)}"')
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/sub-user/transferability'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json={
                 'subUids': ','.join([str(sub_uid) for sub_uid in sub_uids]),
                 'accountType': account_type,
@@ -1053,12 +1133,14 @@ class HuobiClient:
         """
         params = _GetSubUsersAccountList(
             subUid=sub_uid,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/sub-user/account-list'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def sub_user_api_key_creation(
@@ -1097,11 +1179,15 @@ class HuobiClient:
             permission=','.join([str(perm.value) for perm in permissions]),
             ipAddresses=addresses,
         )
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/sub-user/api-key-generation'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json=params.dict(exclude_none=True),
         )
 
@@ -1139,11 +1225,15 @@ class HuobiClient:
             permission=','.join([str(perm.value) for perm in permissions]) if permissions else None,
             ipAddresses=addresses,
         )
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/sub-user/api-key-modification'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json=params.dict(exclude_none=True),
         )
 
@@ -1155,11 +1245,15 @@ class HuobiClient:
         :param sub_uid: sub user uid
         :param access_key Access key for sub user API key
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/sub-user/api-key-deletion'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json={
                 'subUid': sub_uid,
                 'accessKey': access_key,
@@ -1182,11 +1276,15 @@ class HuobiClient:
         :param amount: The amount of asset to transfer
         :param transfer_type: The type of transfer
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/subuser/transfer'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json={
                 'sub-uid': sub_uid,
                 'currency': currency,
@@ -1211,12 +1309,14 @@ class HuobiClient:
         params = _QueryDepositAddressOfSubUser(
             subUid=sub_uid,
             currency=currency,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/sub-user/deposit-address'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def query_deposit_history_of_sub_user(
@@ -1249,12 +1349,14 @@ class HuobiClient:
             sorting=str(sorting.value),
             limit=limit,
             fromId=from_id,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/sub-user/query-deposit'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def get_aggregated_balance_of_all_sub_users(self) -> Dict:
@@ -1262,11 +1364,15 @@ class HuobiClient:
         This endpoint returns the aggregated balance from all the sub-users
         https://huobiapi.github.io/docs/spot/v1/en/#get-the-aggregated-balance-of-all-sub-users
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/subuser/aggregate-balance'
         return await self.request(
             method='GET',
             path=path,
-            params=APIAuth().to_request(path, 'GET'),
+            params=auth.to_request(self._url(path), 'GET'),
         )
 
     async def get_account_balance_of_sub_user(self, sub_uid: int) -> Dict:
@@ -1278,12 +1384,14 @@ class HuobiClient:
         """
         params = _GetAccountBalanceOfSubUser(
             sub_uid=sub_uid,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = f'/v1/account/accounts/{sub_uid}'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def new_order(
@@ -1327,11 +1435,15 @@ class HuobiClient:
             stop_price=stop_price,
             symbol=symbol,
         )
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/order/orders/place'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json=params.dict(by_alias=True, exclude_none=True),
         )
 
@@ -1340,11 +1452,15 @@ class HuobiClient:
         A batch contains at most 10 orders.
         https://huobiapi.github.io/docs/spot/v1/en/#place-a-batch-of-orders
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/order/batch-orders'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json=[order.dict(by_alias=True, exclude_none=True) for order in orders],
         )
 
@@ -1360,11 +1476,15 @@ class HuobiClient:
             order_id=order_id,
             symbol=symbol,
         )
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = f'/v1/order/orders/{order_id}/submitcancel'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json=params.dict(by_alias=True, exclude_none=True),
         )
 
@@ -1376,11 +1496,15 @@ class HuobiClient:
         :param client_order_id: Client order ID, it must exist within 8 hours,
             otherwise it is not allowed to use when placing a new order
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/order/orders/submitCancelClientOrder'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json={
                 'client-order-id': client_order_id,
             },
@@ -1415,12 +1539,14 @@ class HuobiClient:
             start_order_id=start_order_id,
             direct=direct,
             size=size,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v1/order/openOrders'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def batch_cancel_open_orders(
@@ -1459,12 +1585,19 @@ class HuobiClient:
             side=str(side.value) if side else None,
             size=size,
         )
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/order/orders/batchCancelOpenOrders'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
-            json=params.dict(by_alias=True, exclude_none=True),
+            params=auth.to_request(self._url(path), 'POST'),
+            json=params.dict(
+                by_alias=True,
+                exclude_none=True,
+            ),
         )
 
     async def cancel_order_by_ids(
@@ -1482,19 +1615,26 @@ class HuobiClient:
         :param client_order_ids: The client order ids to cancel
         """
         params = {}
+
         if order_ids is not None:
             if not isinstance(order_ids, list):
                 raise TypeError('order_ids is not list')
             params['order-ids'] = order_ids
+
         if client_order_ids is not None:
             if not isinstance(client_order_ids, list):
                 raise TypeError('client_order_ids is not list')
             params['client-order-ids'] = client_order_ids
+
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v1/order/orders/batchcancel'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json=params,
         )
 
@@ -1506,11 +1646,15 @@ class HuobiClient:
 
         :param timeout: Time out duration (unit：second)
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = '/v2/algo-orders/cancel-all-after'
         return await self.request(
             method='POST',
             path=path,
-            params=APIAuth().to_request(path, 'POST'),
+            params=auth.to_request(self._url(path), 'POST'),
             json={
                 'timeout': timeout,
             },
@@ -1524,11 +1668,15 @@ class HuobiClient:
 
         :param order_id: Order id when order was created
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = f'/v1/order/orders/{order_id}'
         return await self.request(
             method='GET',
             path=path,
-            params=APIAuth().to_request(path, 'GET'),
+            params=auth.to_request(self._url(path), 'GET'),
         )
 
     async def get_order_detail_by_client_order_id(self, client_order_id: str) -> Dict:
@@ -1538,12 +1686,14 @@ class HuobiClient:
         """
         params = _GetOrderDetailByClientOrderId(
             clientOrderId=client_order_id,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v1/order/orders/getClientOrder'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def get_match_result_of_order(self, order_id: str) -> Dict:
@@ -1553,11 +1703,15 @@ class HuobiClient:
 
         :param order_id: Order id
         """
+        auth = APIAuth(
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
+        )
         path = f'/v1/order/orders/{order_id}/matchresults'
         return await self.request(
             method='GET',
             path=path,
-            params=APIAuth().to_request(path, 'GET'),
+            params=auth.to_request(self._url(path), 'GET'),
         )
 
     async def search_past_orders(
@@ -1603,12 +1757,14 @@ class HuobiClient:
             from_order_id=from_order_id,
             size=size,
             direct=direct,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v1/order/orders'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def search_historical_orders_within_48_hours(
@@ -1637,12 +1793,14 @@ class HuobiClient:
             end_time=end_time,
             direct=direct,
             size=size,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v1/order/history'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def search_match_results(
@@ -1686,12 +1844,14 @@ class HuobiClient:
             from_order_id=from_order_id,
             size=size,
             direct=direct,
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v1/order/matchresults'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
 
     async def get_current_fee_rate_applied_to_user(self, symbols: Iterable[str]) -> Dict:
@@ -1705,10 +1865,12 @@ class HuobiClient:
             raise TypeError(f'Iterable type expected for symbols, got "{type(symbols)}"')
         params = _GetCurrentFeeRateAppliedToUser(
             symbols=','.join(symbols),
+            AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
+            SecretKey=self._cfg.HUOBI_SECRET_KEY,
         )
         path = '/v2/reference/transact-fee-rate'
         return await self.request(
             method='GET',
             path=path,
-            params=params.to_request(path, 'GET'),
+            params=params.to_request(self._url(path), 'GET'),
         )
