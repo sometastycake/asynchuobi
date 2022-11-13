@@ -1619,12 +1619,14 @@ class HuobiClient:
         if order_ids is not None:
             if not isinstance(order_ids, list):
                 raise TypeError('order_ids is not list')
-            params['order-ids'] = order_ids
+            if order_ids:
+                params['order-ids'] = order_ids
 
         if client_order_ids is not None:
             if not isinstance(client_order_ids, list):
                 raise TypeError('client_order_ids is not list')
-            params['client-order-ids'] = client_order_ids
+            if client_order_ids:
+                params['client-order-ids'] = client_order_ids
 
         auth = APIAuth(
             AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
