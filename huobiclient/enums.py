@@ -116,3 +116,8 @@ class OperatorCharacterOfStopPrice(Enum):
 class OrderSide(Enum):
     buy = 'buy'
     sell = 'sell'
+
+
+class Direct(Enum):
+    next = 'next'
+    prev = 'prev'

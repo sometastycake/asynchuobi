@@ -10,6 +10,7 @@ from huobiclient.enums import (
     ApiKeyPermission,
     CandleInterval,
     DeductMode,
+    Direct,
     LockSubUserAction,
     MarginAccountActivation,
     MarginAccountType,
@@ -1516,7 +1517,7 @@ class HuobiClient:
             symbol: Optional[str] = None,
             side: Optional[OrderSide] = None,
             start_order_id: Optional[str] = None,
-            direct: Optional[str] = None,
+            direct: Optional[Direct] = None,
             size: int = 100,
     ) -> Dict:
         """
@@ -1721,11 +1722,11 @@ class HuobiClient:
             symbol: str,
             states: Iterable[str],
             order_types: Optional[Iterable[OrderType]] = None,
-            start_time: Optional[int] = None,
-            end_time: Optional[int] = None,
+            start_time_ms: Optional[int] = None,
+            end_time_ms: Optional[int] = None,
             from_order_id: Optional[str] = None,
             size: int = 100,
-            direct: Optional[str] = None,
+            direct: Optional[Direct] = None,
     ) -> Dict:
         """
         This endpoint returns orders based on a specific searching criteria. The order created via
@@ -1736,8 +1737,8 @@ class HuobiClient:
         :param states: One or more states of order to include in the search
             (filled, partial-canceled, canceled)
         :param order_types: One or more types of order to include in the search
-        :param start_time: Search starts time, UTC time in millisecond
-        :param end_time: Search ends time, UTC time in millisecond
+        :param start_time_ms: Search starts time, UTC time in millisecond
+        :param end_time_ms: Search ends time, UTC time in millisecond
         :param from_order_id: Search order id to begin with
         :param size: The number of orders to return
         :param direct: Search direction when 'from' is used
@@ -1754,8 +1755,8 @@ class HuobiClient:
             symbol=symbol,
             states=','.join(states) if states else states,
             order_types=types,
-            start_time=start_time,
-            end_time=end_time,
+            start_time=start_time_ms,
+            end_time=end_time_ms,
             from_order_id=from_order_id,
             size=size,
             direct=direct,
@@ -1772,9 +1773,9 @@ class HuobiClient:
     async def search_historical_orders_within_48_hours(
             self,
             symbol: Optional[str] = None,
-            start_time: Optional[int] = None,
-            end_time: Optional[int] = None,
-            direct: str = 'next',
+            start_time_ms: Optional[int] = None,
+            end_time_ms: Optional[int] = None,
+            direct: Direct = Direct.next,
             size: int = 100,
     ) -> Dict:
         """
@@ -1782,8 +1783,8 @@ class HuobiClient:
         https://huobiapi.github.io/docs/spot/v1/en/#search-historical-orders-within-48-hours
 
         :param symbol: The trading symbol to trade
-        :param start_time: Start time
-        :param end_time: End time
+        :param start_time_ms: Start time
+        :param end_time_ms: End time
         :param direct: Direction of the query
         :param size: Number of items in each response
         """
@@ -1791,8 +1792,8 @@ class HuobiClient:
             raise ValueError(f'Wrong size value "{size}"')
         params = _SearchHistoricalOrdersWithin48Hours(
             symbol=symbol,
-            start_time=start_time,
-            end_time=end_time,
+            start_time=start_time_ms,
+            end_time=end_time_ms,
             direct=direct,
             size=size,
             AccessKeyId=self._cfg.HUOBI_ACCESS_KEY,
@@ -1809,11 +1810,11 @@ class HuobiClient:
             self,
             symbol: str,
             order_types: Optional[Iterable[OrderType]] = None,
-            start_time: Optional[int] = None,
-            end_time: Optional[int] = None,
+            start_time_ms: Optional[int] = None,
+            end_time_ms: Optional[int] = None,
             from_order_id: Optional[str] = None,
             size: int = 100,
-            direct: str = 'next',
+            direct: Direct = Direct.next,
     ) -> Dict:
         """
         This endpoint returns the match results of past and current filled, or partially
@@ -1822,9 +1823,9 @@ class HuobiClient:
 
         :param symbol: The trading symbol to trade
         :param order_types: The types of order to include in the search
-        :param start_time: Far point of time of the query window
+        :param start_time_ms: Far point of time of the query window
             (unix time in millisecond)
-        :param end_time: Near point of time of the query window
+        :param end_time_ms: Near point of time of the query window
             (unix time in millisecond)
         :param from_order_id: Search internal id to begin with
         :param size: The number of orders to return
@@ -1841,8 +1842,8 @@ class HuobiClient:
         params = _SearchMatchResult(
             symbol=symbol,
             order_types=types,
-            start_time=start_time,
-            end_time=end_time,
+            start_time=start_time_ms,
+            end_time=end_time_ms,
             from_order_id=from_order_id,
             size=size,
             direct=direct,

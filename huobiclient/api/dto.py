@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from huobiclient.auth import APIAuth
-from huobiclient.enums import OrderSource
+from huobiclient.enums import Direct, OrderSource
 
 
 class _GetChainsInformationRequest(BaseModel):
@@ -214,7 +214,7 @@ class _CancelOrder(BaseModel):
 
 class _GetAllOpenOrders(APIAuth):
     account_id: Optional[int] = Field(None, alias='account-id')
-    direct: Optional[str]
+    direct: Optional[Direct]
     side: Optional[str]
     size: int
     start_order_id: Optional[str] = Field(alias='from')
@@ -222,6 +222,7 @@ class _GetAllOpenOrders(APIAuth):
 
     class Config:
         allow_population_by_field_name = True
+        use_enum_values = True
 
 
 class _BatchCancelOpenOrders(BaseModel):
@@ -240,7 +241,7 @@ class _GetOrderDetailByClientOrderId(APIAuth):
 
 
 class _SearchPastOrder(APIAuth):
-    direct: Optional[str]
+    direct: Optional[Direct]
     end_time: Optional[int] = Field(None, alias='end-time')
     from_order_id: Optional[str] = Field(None, alias='from')
     size: int
@@ -251,10 +252,11 @@ class _SearchPastOrder(APIAuth):
 
     class Config:
         allow_population_by_field_name = True
+        use_enum_values = True
 
 
 class _SearchHistoricalOrdersWithin48Hours(APIAuth):
-    direct: str
+    direct: Direct
     end_time: Optional[int] = Field(None, alias='end-time')
     size: int
     start_time: Optional[int] = Field(None, alias='start-time')
@@ -262,10 +264,11 @@ class _SearchHistoricalOrdersWithin48Hours(APIAuth):
 
     class Config:
         allow_population_by_field_name = True
+        use_enum_values = True
 
 
 class _SearchMatchResult(APIAuth):
-    direct: str
+    direct: Direct
     end_time: Optional[int] = Field(None, alias='end-time')
     from_order_id: Optional[str] = Field(None, alias='from')
     size: int
@@ -275,6 +278,7 @@ class _SearchMatchResult(APIAuth):
 
     class Config:
         allow_population_by_field_name = True
+        use_enum_values = True
 
 
 class _GetCurrentFeeRateAppliedToUser(APIAuth):

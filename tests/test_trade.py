@@ -5,7 +5,7 @@ from freezegun import freeze_time
 from yarl import URL
 
 from huobiclient.api.dto import PlaceNewOrder
-from huobiclient.enums import OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
+from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
 
 ORDER_TYPES = [
     'buy-market',
@@ -207,16 +207,16 @@ async def test_cancel_order_by_client_order_id(cfg, client):
         (None, None, 1, None, None, None, 'Yy3IvQo/31lFk0/HWCUjBPL3SXGIvg/R09QduRTiqc8='),
         (1, None, 1, None, None, None, 'JWvmuu778U/7D8rtt5X1cPvDkCwKaovN3J9NV1F46Ts='),
         (None, 'btcusdt', 1, None, None, None, '/EklwbNiJsMum1HNcjWUiV8Uuut4PyUpZOWCINPYNxU='),
-        (1, 'btcusdt', 100, 'next', 1, OrderSide.sell, '/V1AKXG06ge0fgr6SvoZ91zNVVdL4P7F8yjqLJ44kxo='),
-        (None, 'btcusdt', 100, 'next', 1, OrderSide.sell, '4yCbWic5TBKOiTK7kUOe4WGf66StZsFNXsqTNl8JIgk='),
+        (1, 'btcusdt', 100, Direct.next, 1, OrderSide.sell, '/V1AKXG06ge0fgr6SvoZ91zNVVdL4P7F8yjqLJ44kxo='),
+        (None, 'btcusdt', 100, Direct.next, 1, OrderSide.sell, '4yCbWic5TBKOiTK7kUOe4WGf66StZsFNXsqTNl8JIgk='),
         (None, 'btcusdt', 1, None, None, None, '/EklwbNiJsMum1HNcjWUiV8Uuut4PyUpZOWCINPYNxU='),
         (1, 'btcusdt', 1, None, None, None, 'GapvaCRi9YM5hI9xA33S7LtWcQztx3doUi0TklJhFOQ='),
-        (None, None, 1, 'prev', None, OrderSide.buy, 'j8VEmze5rMMeqIhh4aGwOdHjQTjYzE3/OYfqQrfRcmg='),
-        (None, None, 1, 'next', None, None, 'hWuv5PoRMReU9/titT3htIolNU5Rt8yI/qdPY9Rpgdo='),
-        (1, 'btcusdt', 1, 'next', None, OrderSide.buy, '57frngmSQfiYxxdqshb92OHxfMskm4qu2Qf+u8I5qm8='),
-        (None, 'btcusdt', 1, 'next', None, OrderSide.sell, 'toHBFxirOIzZNfgOa03Dg5egChCsJQhGGp9S1+K8dwc='),
-        (None, None, 100, 'next', 1, None, 'jCei6N5hdPUSCJG00987aYXfpX9uQg1CslvefUamPoE='),
-        (None, None, 100, 'prev', 1, OrderSide.sell, 'yXc6z+QvcUBcK80IbJMvEtc794dISHSYtlZmE2qhoIY=')
+        (None, None, 1, Direct.prev, None, OrderSide.buy, 'j8VEmze5rMMeqIhh4aGwOdHjQTjYzE3/OYfqQrfRcmg='),
+        (None, None, 1, Direct.next, None, None, 'hWuv5PoRMReU9/titT3htIolNU5Rt8yI/qdPY9Rpgdo='),
+        (1, 'btcusdt', 1, Direct.next, None, OrderSide.buy, '57frngmSQfiYxxdqshb92OHxfMskm4qu2Qf+u8I5qm8='),
+        (None, 'btcusdt', 1, Direct.next, None, OrderSide.sell, 'toHBFxirOIzZNfgOa03Dg5egChCsJQhGGp9S1+K8dwc='),
+        (None, None, 100, Direct.next, 1, None, 'jCei6N5hdPUSCJG00987aYXfpX9uQg1CslvefUamPoE='),
+        (None, None, 100, Direct.prev, 1, OrderSide.sell, 'yXc6z+QvcUBcK80IbJMvEtc794dISHSYtlZmE2qhoIY=')
     ]
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
@@ -250,7 +250,7 @@ async def test_get_all_open_orders(
     if account_id is not None:
         request['account-id'] = account_id
     if direct is not None:
-        request['direct'] = direct
+        request['direct'] = direct.value
     if side is not None:
         request['side'] = side.value  # type:ignore
     if start_order_id is not None:
@@ -481,19 +481,19 @@ async def test_get_match_result_of_order(cfg, client):
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     'states, order_types, size, direct, start_time, end_time, signature', [
-        (['canceled', 'filled'], [OrderType.buy_limit, OrderType.sell_limit], 100, 'next', 1, 1,
+        (['canceled', 'filled'], [OrderType.buy_limit, OrderType.sell_limit], 100, Direct.next, 1, 1,
          'iDS+gUx+MHTRle4TXKHyovIxKPUwZT+7JcNq6xMLts0='),
-        (['filled'], [OrderType.buy_limit, OrderType.sell_limit], 100, 'next', 1, 1,
+        (['filled'], [OrderType.buy_limit, OrderType.sell_limit], 100, Direct.next, 1, 1,
          'G4lzjjWu0in/FRaDO0eaXDW9rMiDwQE6fHjO6m6GUx0='),
-        (['canceled', 'filled'], [OrderType.buy_limit], 100, 'next', 1, 1,
+        (['canceled', 'filled'], [OrderType.buy_limit], 100, Direct.next, 1, 1,
          '+YjGiN4600K4ERRW7XzmCzrpFHJ4UzbeGwNhbf0KZ68='),
         (['filled'], None, 1, None, None, None, 've2SLsQX7kJ2M4oZ5VBkWn6rIteOklCQI91sknzzw0o='),
         (['filled'], [OrderType.buy_limit], 1, None, None, None, '6W6pKayRiXLh/MQLfHLkkJSP5W7VyB2/G1btIZrObPg='),
-        (['filled'], None, 1, 'prev', None, None, 'XKnEnBeh1Lrb5RAjM5jFDoHf1apDK5wTJq4DLFJBx5M='),
-        (['filled'], [OrderType.buy_limit], 1, 'prev', None, None, 'HEw9+AVc6JqCQ2bzAqrR+Vft96yPQmT3QA0JvjoOLZI='),
-        (['canceled', 'filled'], None, 100, 'next', None, None, 'PWn8bqoTV2AYSKixyiCF+14X7/gSxIoW6iaUBdk3Cw0='),
+        (['filled'], None, 1, Direct.prev, None, None, 'XKnEnBeh1Lrb5RAjM5jFDoHf1apDK5wTJq4DLFJBx5M='),
+        (['filled'], [OrderType.buy_limit], 1, Direct.prev, None, None, 'HEw9+AVc6JqCQ2bzAqrR+Vft96yPQmT3QA0JvjoOLZI='),
+        (['canceled', 'filled'], None, 100, Direct.next, None, None, 'PWn8bqoTV2AYSKixyiCF+14X7/gSxIoW6iaUBdk3Cw0='),
         (['filled'], [OrderType.buy_limit], 100, None, 1, None, '5/VsgUky0vNqdIfJ1C2HehnLLbnwyke5a1rtoq/dWk8='),
-        (['filled'], None, 1, 'prev', 1, None, 'tF6kptJcQ3PWFRN6Fab8MvzW3r32RSUFmsQAbloiZOc=')
+        (['filled'], None, 1, Direct.prev, 1, None, 'tF6kptJcQ3PWFRN6Fab8MvzW3r32RSUFmsQAbloiZOc=')
     ]
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
@@ -506,8 +506,8 @@ async def test_search_past_orders(
         order_types=order_types,
         size=size,
         direct=direct,
-        start_time=start_time,
-        end_time=end_time,
+        start_time_ms=start_time,
+        end_time_ms=end_time,
     )
     kwargs = client._session.request.call_args.kwargs
     assert client._session.request.call_count == 1
@@ -530,7 +530,7 @@ async def test_search_past_orders(
     if order_types is not None:
         request['types'] = ','.join(map(lambda item: item.value, order_types))
     if direct is not None:
-        request['direct'] = direct
+        request['direct'] = direct.value
     if start_time is not None:
         request['start-time'] = start_time
     if end_time is not None:
@@ -563,13 +563,13 @@ async def test_search_past_orders_wrong_order_types(client, order_types):
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     'symbol, start_time, end_time, direct, size, signature', [
-        (None, None, None, 'prev', 10, 'FRd8vrJfYlU9OGx75iVSmfE8UIPZEOOT26XTq65rc5Q='),
-        ('btcusdt', None, None, 'prev', 10, 'fVNfteNqBhFjC1EPV0lqaWmqnroPIpgby8xhWJVTFX4='),
-        (None, 1, None, 'prev', 10, 'SqEoLtp3w8m+C8kAU8Dt8SapUfIHkde09RtljjDkaOI='),
-        ('btcusdt', None, 1, 'next', 500, 'YeKwRdK7rBK7uIvwAUvc9vxmZNXuTuybRRUczMjQTFg='),
-        (None, None, 1, 'next', 500, '/WHZ22i61cmAgAFbEvC0CO38LlDyX8pDA6aVzDlfotI='),
-        (None, None, None, 'next', 500, 'bhmVINDzXxhAR5M0fu7fe91HbZa9hAlQutrPIk4y760='),
-        (None, None, 1, 'next', 10, 'W0LAKhNmO25vqSmzn/deVGA6mUD014ukHYP/X+XaKrg='),
+        (None, None, None, Direct.prev, 10, 'FRd8vrJfYlU9OGx75iVSmfE8UIPZEOOT26XTq65rc5Q='),
+        ('btcusdt', None, None, Direct.prev, 10, 'fVNfteNqBhFjC1EPV0lqaWmqnroPIpgby8xhWJVTFX4='),
+        (None, 1, None, Direct.prev, 10, 'SqEoLtp3w8m+C8kAU8Dt8SapUfIHkde09RtljjDkaOI='),
+        ('btcusdt', None, 1, Direct.next, 500, 'YeKwRdK7rBK7uIvwAUvc9vxmZNXuTuybRRUczMjQTFg='),
+        (None, None, 1, Direct.next, 500, '/WHZ22i61cmAgAFbEvC0CO38LlDyX8pDA6aVzDlfotI='),
+        (None, None, None, Direct.next, 500, 'bhmVINDzXxhAR5M0fu7fe91HbZa9hAlQutrPIk4y760='),
+        (None, None, 1, Direct.next, 10, 'W0LAKhNmO25vqSmzn/deVGA6mUD014ukHYP/X+XaKrg='),
     ]
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
@@ -578,8 +578,8 @@ async def test_search_historical_orders_within_48_hours(
 ):
     await client.search_historical_orders_within_48_hours(
         symbol=symbol,
-        start_time=start_time,
-        end_time=end_time,
+        start_time_ms=start_time,
+        end_time_ms=end_time,
         direct=direct,
         size=size
     )
@@ -598,7 +598,7 @@ async def test_search_historical_orders_within_48_hours(
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
         'size': size,
-        'direct': direct,
+        'direct': direct.value,
     }
     if symbol is not None:
         request['symbol'] = symbol
@@ -621,17 +621,17 @@ async def test_search_historical_orders_within_48_hours_wrong_size(client, size)
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     'order_types, start_time, end_time, from_order_id, direct, size, signature', [
-        ([OrderType.buy_limit], None, None, None, 'next', 1, 'pei8V0Xn/GrS8WfLzOv2qbkfBGI6siDTfsbLyfnz9EE='),
-        ([OrderType.buy_limit, OrderType.sell_limit], None, None, None, 'next', 1,
+        ([OrderType.buy_limit], None, None, None, Direct.next, 1, 'pei8V0Xn/GrS8WfLzOv2qbkfBGI6siDTfsbLyfnz9EE='),
+        ([OrderType.buy_limit, OrderType.sell_limit], None, None, None, Direct.next, 1,
          'JTqx29NZ6AKtsupqd08o9DUAwCpQv3tyY/5mFmkylKQ='),
-        ([OrderType.buy_limit], None, 1, None, 'next', 1, 'UisFcJAP1eGiPwFFKMdZAx2MDmqig+TCmMj1Uc7DdMQ='),
-        ([OrderType.buy_limit], None, 1, 50, 'next', 1, '29aSUJwdXa4Gmyiq24QYCRY0y/XiRsKpl+guVECdTdI='),
-        ([OrderType.buy_limit], 1, None, 50, 'next', 1, 'JNE1s6/a/44uxyZwmPqaoCiGDIx5cdoH3FpYinQv5dI='),
-        ([OrderType.buy_limit], 1, 2, None, 'prev', 1, 'navO/z33Wbb5Ks9eBRjyAyEXlw0sqmS0h+/npWyJ8YI='),
-        ([OrderType.buy_limit, OrderType.sell_limit], 1, 2, 50, 'prev', 500,
+        ([OrderType.buy_limit], None, 1, None, Direct.next, 1, 'UisFcJAP1eGiPwFFKMdZAx2MDmqig+TCmMj1Uc7DdMQ='),
+        ([OrderType.buy_limit], None, 1, 50, Direct.next, 1, '29aSUJwdXa4Gmyiq24QYCRY0y/XiRsKpl+guVECdTdI='),
+        ([OrderType.buy_limit], 1, None, 50, Direct.next, 1, 'JNE1s6/a/44uxyZwmPqaoCiGDIx5cdoH3FpYinQv5dI='),
+        ([OrderType.buy_limit], 1, 2, None, Direct.prev, 1, 'navO/z33Wbb5Ks9eBRjyAyEXlw0sqmS0h+/npWyJ8YI='),
+        ([OrderType.buy_limit, OrderType.sell_limit], 1, 2, 50, Direct.prev, 500,
          'EBscqqYuQ3ZQ7gDJdy8bhDlm527GxGwGOGuI3Egoh4U='),
-        ([OrderType.buy_limit], 1, 2, 50, 'prev', 500, 'NJQROonu//cFCf54iIV5NAGGOWn1jr5rSP7rEMx/JLU='),
-        ([OrderType.buy_limit], None, None, 50, 'prev', 500, 'YVYclrPUzkfL4vypMz0kO/Plb8yPMIWYvJretRTAOVk=')
+        ([OrderType.buy_limit], 1, 2, 50, Direct.prev, 500, 'NJQROonu//cFCf54iIV5NAGGOWn1jr5rSP7rEMx/JLU='),
+        ([OrderType.buy_limit], None, None, 50, Direct.prev, 500, 'YVYclrPUzkfL4vypMz0kO/Plb8yPMIWYvJretRTAOVk=')
     ]
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
@@ -641,8 +641,8 @@ async def test_search_match_results(
     await client.search_match_results(
         symbol='btcusdt',
         order_types=order_types,
-        start_time=start_time,
-        end_time=end_time,
+        start_time_ms=start_time,
+        end_time_ms=end_time,
         from_order_id=from_order_id,
         direct=direct,
         size=size,
@@ -662,7 +662,7 @@ async def test_search_match_results(
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
         'size': size,
-        'direct': direct,
+        'direct': direct.value,
         'symbol': 'btcusdt',
     }
     if order_types is not None:
