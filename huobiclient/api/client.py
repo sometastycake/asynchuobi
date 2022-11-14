@@ -1400,11 +1400,11 @@ class HuobiClient:
             symbol: str,
             order_type: OrderType,
             amount: float,
-            price: Optional[str] = None,
+            price: Optional[float] = None,
             source: OrderSource = OrderSource.spot_api,
             client_order_id: Optional[str] = None,
             self_match_prevent: int = 0,
-            stop_price: Optional[str] = None,
+            stop_price: Optional[float] = None,
             operator: Optional[OperatorCharacterOfStopPrice] = None,
     ) -> Dict:
         """

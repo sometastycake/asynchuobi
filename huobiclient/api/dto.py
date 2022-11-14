@@ -194,10 +194,10 @@ class PlaceNewOrder(BaseModel):
     client_order_id: Optional[str] = Field(None, alias='client-order-id')
     operator: Optional[str] = None
     order_type: str = Field(alias='type')
-    price: Optional[str] = None
+    price: Optional[float] = None
     self_match_prevent: int = Field(default=0, alias='self-match-prevent')
     source: str = OrderSource.spot_api.value
-    stop_price: Optional[str] = Field(None, alias='stop-price')
+    stop_price: Optional[float] = Field(None, alias='stop-price')
     symbol: str
 
     class Config:

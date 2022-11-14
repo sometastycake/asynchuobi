@@ -39,9 +39,9 @@ ORDER_SOURCES = [
 @pytest.mark.parametrize(
     'price, stop_price, operator, client_order_id', [
         (None, None, None, None),
-        (None, '0.5', 'gte', None),
-        (None, '0.5', 'lte', None),
-        ('0.2', '0.5', None, 'custom_client_order_id')
+        (None, 0.5, 'gte', None),
+        (None, 0.5, 'lte', None),
+        (0.2, 0.5, None, 'custom_client_order_id')
     ]
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
@@ -93,8 +93,8 @@ async def test_new_order(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('price', [None, '10.5'])
-@pytest.mark.parametrize('stop_price', [None, '10'])
+@pytest.mark.parametrize('price', [None, 10.5])
+@pytest.mark.parametrize('stop_price', [None, 10])
 @pytest.mark.parametrize('operator', [None, 'gte', 'lte'])
 @pytest.mark.parametrize('client_order_id', [None, 'client_order_id'])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
