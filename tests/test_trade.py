@@ -14,13 +14,10 @@ from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, O
     OrderType.sell_market,
     OrderType.buy_limit,
     OrderType.sell_limit,
-    OrderType.buy_ioc,
-    OrderType.sell_ioc,
 ])
 @pytest.mark.parametrize('order_source', [
     OrderSource.spot_api,
     OrderSource.margin_api,
-    OrderSource.super_margin_api,
 ])
 @pytest.mark.parametrize('operator', [
     None,
