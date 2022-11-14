@@ -190,7 +190,7 @@ class _GetAccountBalanceOfSubUser(APIAuth):
 
 class PlaceNewOrder(BaseModel):
     account_id: int = Field(alias='account-id')
-    amount: str
+    amount: float
     client_order_id: Optional[str] = Field(None, alias='client-order-id')
     operator: Optional[str] = None
     order_type: str = Field(alias='type')

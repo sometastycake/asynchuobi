@@ -1399,7 +1399,7 @@ class HuobiClient:
             account_id: int,
             symbol: str,
             order_type: OrderType,
-            amount: str,
+            amount: float,
             price: Optional[str] = None,
             source: OrderSource = OrderSource.spot_api,
             client_order_id: Optional[str] = None,
