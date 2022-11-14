@@ -24,7 +24,7 @@ from huobiclient.enums import (
 )
 
 from .dto import (
-    PlaceNewOrder,
+    NewOrder,
     SubUserCreation,
     _APIKeyQuery,
     _AssetTransfer,
@@ -1424,15 +1424,15 @@ class HuobiClient:
         :param stop_price: Trigger price of stop limit order
         :param operator: Operation charactor of stop price
         """
-        params = PlaceNewOrder(
+        params = NewOrder(
             account_id=account_id,
             amount=amount,
             client_order_id=client_order_id,
-            operator=operator.value if operator else None,
-            order_type=str(order_type.value),
+            operator=operator,
+            order_type=order_type,
             price=price,
             self_match_prevent=self_match_prevent,
-            source=str(source.value),
+            source=source,
             stop_price=stop_price,
             symbol=symbol,
         )
@@ -1448,7 +1448,7 @@ class HuobiClient:
             json=params.dict(by_alias=True, exclude_none=True),
         )
 
-    async def place_batch_of_orders(self, orders: List[PlaceNewOrder]) -> Dict:
+    async def place_batch_of_orders(self, orders: List[NewOrder]) -> Dict:
         """
         A batch contains at most 10 orders.
         https://huobiapi.github.io/docs/spot/v1/en/#place-a-batch-of-orders

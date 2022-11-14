@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from huobiclient.auth import APIAuth
-from huobiclient.enums import Direct, OrderSource
+from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSource, OrderType
 
 
 class _GetChainsInformationRequest(BaseModel):
@@ -188,20 +188,21 @@ class _GetAccountBalanceOfSubUser(APIAuth):
         allow_population_by_field_name = True
 
 
-class PlaceNewOrder(BaseModel):
+class NewOrder(BaseModel):
     account_id: int = Field(alias='account-id')
     amount: float
     client_order_id: Optional[str] = Field(None, alias='client-order-id')
-    operator: Optional[str] = None
-    order_type: str = Field(alias='type')
+    operator: Optional[OperatorCharacterOfStopPrice] = None
+    order_type: OrderType = Field(alias='type')
     price: Optional[float] = None
     self_match_prevent: int = Field(default=0, alias='self-match-prevent')
-    source: str = OrderSource.spot_api.value
+    source: OrderSource = OrderSource.spot_api
     stop_price: Optional[float] = Field(None, alias='stop-price')
     symbol: str
 
     class Config:
         allow_population_by_field_name = True
+        use_enum_values = True
 
 
 class _CancelOrder(BaseModel):

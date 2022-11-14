@@ -4,46 +4,32 @@ import pytest
 from freezegun import freeze_time
 from yarl import URL
 
-from huobiclient.api.dto import PlaceNewOrder
+from huobiclient.api.dto import NewOrder
 from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
-
-ORDER_TYPES = [
-    'buy-market',
-    'sell-market',
-    'buy-limit',
-    'sell-limit',
-    'buy-ioc',
-    'sell-ioc',
-    'buy-limit-maker',
-    'sell-limit-maker',
-    'buy-stop-limit',
-    'sell-stop-limit',
-    'buy-limit-fok',
-    'sell-limit-fok',
-    'buy-stop-limit-fok',
-    'sell-stop-limit-fok',
-]
-
-
-ORDER_SOURCES = [
-    'spot-api',
-    'margin-api',
-    'super-margin-api',
-    'c2c-margin-api',
-]
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('order_type', ORDER_TYPES)
-@pytest.mark.parametrize('order_source', ORDER_SOURCES)
-@pytest.mark.parametrize(
-    'price, stop_price, operator, client_order_id', [
-        (None, None, None, None),
-        (None, 0.5, 'gte', None),
-        (None, 0.5, 'lte', None),
-        (0.2, 0.5, None, 'custom_client_order_id')
-    ]
-)
+@pytest.mark.parametrize('order_type', [
+    OrderType.buy_market,
+    OrderType.sell_market,
+    OrderType.buy_limit,
+    OrderType.sell_limit,
+    OrderType.buy_ioc,
+    OrderType.sell_ioc,
+])
+@pytest.mark.parametrize('order_source', [
+    OrderSource.spot_api,
+    OrderSource.margin_api,
+    OrderSource.super_margin_api,
+])
+@pytest.mark.parametrize('operator', [
+    None,
+    OperatorCharacterOfStopPrice.gte,
+    OperatorCharacterOfStopPrice.lte
+])
+@pytest.mark.parametrize('price', [None, 10.5])
+@pytest.mark.parametrize('stop_price', [None, 20.5])
+@pytest.mark.parametrize('client_order_id', [None, 'a456'])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_new_order(
         cfg, client, order_type, order_source, stop_price, operator, client_order_id, price
@@ -51,12 +37,12 @@ async def test_new_order(
     await client.new_order(
         account_id=1,
         symbol='btcusdt',
-        order_type=OrderType(order_type),
+        order_type=order_type,
         amount=1,
         price=price,
-        source=OrderSource(order_source),
+        source=order_source,
         stop_price=stop_price,
-        operator=OperatorCharacterOfStopPrice(operator) if operator is not None else operator,
+        operator=operator,
         client_order_id=client_order_id,
     )
     kwargs = client._session.request.call_args.kwargs
@@ -69,9 +55,9 @@ async def test_new_order(
     request = {
         'account-id': 1,
         'amount': 1,
-        'type': order_type,
+        'type': order_type.value,
         'self-match-prevent': 0,
-        'source': order_source,
+        'source': order_source.value,
         'symbol': 'btcusdt',
     }
     if stop_price is not None:
@@ -79,7 +65,7 @@ async def test_new_order(
     if client_order_id is not None:
         request['client-order-id'] = client_order_id
     if operator is not None:
-        request['operator'] = operator
+        request['operator'] = operator.value
     if price is not None:
         request['price'] = price
     assert kwargs['json'] == request
@@ -95,17 +81,21 @@ async def test_new_order(
 @pytest.mark.asyncio
 @pytest.mark.parametrize('price', [None, 10.5])
 @pytest.mark.parametrize('stop_price', [None, 10])
-@pytest.mark.parametrize('operator', [None, 'gte', 'lte'])
+@pytest.mark.parametrize('operator', [
+    None,
+    OperatorCharacterOfStopPrice.gte,
+    OperatorCharacterOfStopPrice.lte
+])
 @pytest.mark.parametrize('client_order_id', [None, 'client_order_id'])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_place_batch_of_orders(
         cfg, client, price, stop_price, operator, client_order_id
 ):
     await client.place_batch_of_orders(
-        orders=[PlaceNewOrder(
+        orders=[NewOrder(
             account_id=1,
             symbol='btcusdt',
-            order_type=str(OrderType.buy_limit.value),
+            order_type=OrderType.buy_limit,
             amount=1,
             price=price,
             stop_price=stop_price,
@@ -133,7 +123,7 @@ async def test_place_batch_of_orders(
     if stop_price is not None:
         request['stop-price'] = stop_price
     if operator is not None:
-        request['operator'] = operator
+        request['operator'] = operator.value
     if client_order_id is not None:
         request['client-order-id'] = client_order_id
     assert kwargs['json'] == [request]
