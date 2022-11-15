@@ -190,7 +190,7 @@ class HuobiClient:
 
     async def get_market_symbols_settings(
             self,
-            symbols: Optional[List[str]] = None,
+            symbols: Optional[Iterable[str]] = None,
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
         """
@@ -200,9 +200,11 @@ class HuobiClient:
         :param symbols: symbols
         :param timestamp_milliseconds: timestamp to get incremental data
         """
+        if symbols is not None and not isinstance(symbols, Iterable):
+            raise TypeError(f'Iterable type expected for symbols, got "{type(symbols)}"')
         params = _GetMarketSymbolsSettings(
             ts=timestamp_milliseconds,
-            symbols=','.join(symbols) if isinstance(symbols, list) else symbols,
+            symbols=','.join(symbols) if symbols else None,
         )
         return await self.request(
             method='GET',
