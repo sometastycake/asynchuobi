@@ -714,7 +714,7 @@ async def test_get_current_fee_rate_applied_to_user(cfg, client, symbols, signat
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('symbols', [1, True])
-async def test_get_current_fee_rate_applied_to_user_symbols(client, symbols):
+async def test_get_current_fee_rate_applied_to_user_wrong_symbols(client, symbols):
     with pytest.raises(TypeError):
         await client.search_match_results(
             symbols=symbols,

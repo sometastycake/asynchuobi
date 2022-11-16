@@ -14,6 +14,7 @@ from huobiclient.enums import (
     LockSubUserAction,
     MarginAccountActivation,
     MarginAccountType,
+    MarketDepth,
     MarketDepthAggregationLevel,
     OperatorCharacterOfStopPrice,
     OrderSide,
@@ -315,7 +316,7 @@ class HuobiClient:
     async def get_market_depth(
         self,
         symbol: str,
-        depth: int = 20,
+        depth: MarketDepth = MarketDepth.depth_20,
         aggregation_level: MarketDepthAggregationLevel = MarketDepthAggregationLevel.step0,
     ):
         """
@@ -326,17 +327,16 @@ class HuobiClient:
         :param depth: The number of market depth to return on each side
         :param aggregation_level: Market depth aggregation level
         """
-        if depth not in (5, 10, 20):
-            raise ValueError(f'Wrong market depth value "{depth}"')
         return await self.request(
             method='GET',
             path='/market/depth',
             params={
                 'symbol': symbol,
-                'depth': depth,
+                'depth': depth.value,
                 'type': aggregation_level.value,
             },
         )
+
 
     async def get_last_trade(self, symbol: str) -> Dict:
         """
@@ -399,7 +399,7 @@ class HuobiClient:
         """
         return await self.request(
             method='GET',
-            path='/market/etp',
+            path='/market/etp/',
             params={
                 'symbol': symbol,
             },

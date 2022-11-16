@@ -121,3 +121,9 @@ class OrderSide(Enum):
 class Direct(Enum):
     next = 'next'
     prev = 'prev'
+
+
+class MarketDepth(IntEnum):
+    depth_5 = 5
+    depth_10 = 10
+    depth_20 = 20
