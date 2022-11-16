@@ -32,7 +32,7 @@ class _GetTotalValuation(APIAuth):
 
 
 class _AssetTransfer(BaseModel):
-    amount: str
+    amount: float
     currency: str
     from_account: int = Field(alias='from-account')
     from_account_type: str = Field(alias='from-account-type')

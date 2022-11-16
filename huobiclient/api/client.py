@@ -504,7 +504,7 @@ class HuobiClient:
             to_account_type: str,
             to_account: int,
             currency: str,
-            amount: str,
+            amount: float,
     ) -> Dict:
         """
         This endpoint allows parent user and sub user to transfer asset between accounts
@@ -693,7 +693,7 @@ class HuobiClient:
             from_uid: str,
             to_uid: str,
             group_id: int,
-            amount: str,
+            amount: float,
     ) -> Dict:
         """
         Via this endpoint, parent user should be able to transfer points between parent
