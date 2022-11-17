@@ -1,10 +1,11 @@
 from datetime import datetime
+from urllib.parse import urljoin
 
 import pytest
 from freezegun import freeze_time
-from yarl import URL
 
 from huobiclient.api.dto import NewOrder
+from huobiclient.cfg import HUOBI_API_URL
 from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
 
 
@@ -29,9 +30,9 @@ from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, O
 @pytest.mark.parametrize('client_order_id', [None, 'a456'])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_new_order(
-        cfg, client, order_type, order_source, stop_price, operator, client_order_id, price
+        order_client, order_type, order_source, stop_price, operator, client_order_id, price
 ):
-    await client.new_order(
+    await order_client.new_order(
         account_id=1,
         symbol='btcusdt',
         order_type=order_type,
@@ -42,16 +43,14 @@ async def test_new_order(
         operator=operator,
         client_order_id=client_order_id,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/orders/place'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 4
+    assert order_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/place')
     assert kwargs['method'] == 'POST'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
     request = {
         'account-id': 1,
-        'amount': 1,
+        'amount': 1.0,
         'type': order_type.value,
         'self-match-prevent': 0,
         'source': order_source.value,
@@ -86,9 +85,9 @@ async def test_new_order(
 @pytest.mark.parametrize('client_order_id', [None, 'client_order_id'])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_place_batch_of_orders(
-        cfg, client, price, stop_price, operator, client_order_id
+        order_client, price, stop_price, operator, client_order_id
 ):
-    await client.place_batch_of_orders(
+    await order_client.place_batch_of_orders(
         orders=[NewOrder(
             account_id=1,
             symbol='btcusdt',
@@ -100,20 +99,18 @@ async def test_place_batch_of_orders(
             client_order_id=client_order_id,
         )],
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/batch-orders'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 4
+    assert order_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/batch-orders')
     assert kwargs['method'] == 'POST'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
     request = {
         'account-id': 1,
         'symbol': 'btcusdt',
         'type': OrderType.buy_limit.value,
         'self-match-prevent': 0,
         'source': OrderSource.spot_api.value,
-        'amount': 1,
+        'amount': 1.0,
     }
     if price is not None:
         request['price'] = price
@@ -136,18 +133,16 @@ async def test_place_batch_of_orders(
 @pytest.mark.asyncio
 @pytest.mark.parametrize('symbol', [None, 'btcusdt'])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_cancel_order(cfg, client, symbol):
-    await client.cancel_order(
+async def test_cancel_order(order_client, symbol):
+    await order_client.cancel_order(
         order_id='1',
         symbol=symbol,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/orders/1/submitcancel'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 4
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/1/submitcancel')
     assert kwargs['method'] == 'POST'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
     request = {
         'order-id': '1',
     }
@@ -165,17 +160,15 @@ async def test_cancel_order(cfg, client, symbol):
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_cancel_order_by_client_order_id(cfg, client):
-    await client.cancel_order_by_client_order_id(
+async def test_cancel_order_by_client_order_id(order_client):
+    await order_client.cancel_order_by_client_order_id(
         client_order_id='1',
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/orders/submitCancelClientOrder'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 4
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/submitCancelClientOrder')
     assert kwargs['method'] == 'POST'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
     assert kwargs['json'] == {
         'client-order-id': '1',
     }
@@ -208,9 +201,9 @@ async def test_cancel_order_by_client_order_id(cfg, client):
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_get_all_open_orders(
-        cfg, client, account_id, symbol, size, direct, start_order_id, side, signature
+        order_client, account_id, symbol, size, direct, start_order_id, side, signature
 ):
-    await client.get_all_open_orders(
+    await order_client.get_all_open_orders(
         account_id=account_id,
         symbol=symbol,
         size=size,
@@ -218,14 +211,11 @@ async def test_get_all_open_orders(
         start_order_id=start_order_id,
         side=side,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/openOrders'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 3
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/openOrders')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     request = {
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
         'Signature': signature,
@@ -249,9 +239,9 @@ async def test_get_all_open_orders(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('size', [0, 501])
-async def test_get_all_open_orders_wrong_size(client, size):
+async def test_get_all_open_orders_wrong_size(order_client, size):
     with pytest.raises(ValueError):
-        await client.get_all_open_orders(size=size)
+        await order_client.get_all_open_orders(size=size)
 
 
 @pytest.mark.asyncio
@@ -266,22 +256,20 @@ async def test_get_all_open_orders_wrong_size(client, size):
 @pytest.mark.parametrize('size', [1, 100])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_batch_cancel_open_orders(
-        cfg, client, account_id, symbols, order_types, side, size
+        order_client, account_id, symbols, order_types, side, size
 ):
-    await client.batch_cancel_open_orders(
+    await order_client.batch_cancel_open_orders(
         account_id=account_id,
         symbols=symbols,
         order_types=order_types,
         side=side,
         size=size,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/orders/batchCancelOpenOrders'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 4
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/batchCancelOpenOrders')
     assert kwargs['method'] == 'POST'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
     request = {
         'size': size,
     }
@@ -305,23 +293,23 @@ async def test_batch_cancel_open_orders(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('size', [0, 101])
-async def test_batch_cancel_open_orders_wrong_size(client, size):
+async def test_batch_cancel_open_orders_wrong_size(order_client, size):
     with pytest.raises(ValueError):
-        await client.batch_cancel_open_orders(size=size)
+        await order_client.batch_cancel_open_orders(size=size)
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('symbols', [1, True])
-async def test_batch_cancel_open_orders_wrong_symbols(client, symbols):
+async def test_batch_cancel_open_orders_wrong_symbols(order_client, symbols):
     with pytest.raises(TypeError):
-        await client.batch_cancel_open_orders(symbols=symbols)
+        await order_client.batch_cancel_open_orders(symbols=symbols)
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('order_types', [1, True])
-async def test_batch_cancel_open_orders_wrong_order_types(client, order_types):
+async def test_batch_cancel_open_orders_wrong_order_types(order_client, order_types):
     with pytest.raises(TypeError):
-        await client.batch_cancel_open_orders(order_types=order_types)
+        await order_client.batch_cancel_open_orders(order_types=order_types)
 
 
 @pytest.mark.asyncio
@@ -332,18 +320,16 @@ async def test_batch_cancel_open_orders_wrong_order_types(client, order_types):
     ]
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_cancel_order_by_ids(cfg, client, order_ids, client_order_ids):
-    await client.cancel_order_by_ids(
+async def test_cancel_order_by_ids(order_client, order_ids, client_order_ids):
+    await order_client.cancel_order_by_ids(
         order_ids=order_ids,
         client_order_ids=client_order_ids,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/orders/batchcancel'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 4
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/batchcancel')
     assert kwargs['method'] == 'POST'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
     request = {}
     if order_ids is not None:
         request['order-ids'] = order_ids
@@ -367,10 +353,10 @@ async def test_cancel_order_by_ids(cfg, client, order_ids, client_order_ids):
     ],
 )
 async def test_cancel_order_by_ids_order_ids_not_list(
-        client, order_ids, client_order_ids,
+        order_client, order_ids, client_order_ids,
 ):
     with pytest.raises(TypeError):
-        await client.cancel_order_by_ids(
+        await order_client.cancel_order_by_ids(
             order_ids=order_ids,
             client_order_ids=client_order_ids,
         )
@@ -378,15 +364,13 @@ async def test_cancel_order_by_ids_order_ids_not_list(
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_dead_mans_switch(cfg, client):
-    await client.dead_mans_switch(timeout=1)
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v2/algo-orders/cancel-all-after'))
+async def test_dead_mans_switch(order_client):
+    await order_client.dead_mans_switch(timeout=1)
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 4
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/algo-orders/cancel-all-after')
     assert kwargs['method'] == 'POST'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
     assert kwargs['json'] == {
         'timeout': 1
     }
@@ -401,16 +385,13 @@ async def test_dead_mans_switch(cfg, client):
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_get_order_detail(cfg, client):
-    await client.get_order_detail(order_id=1)
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/orders/1'))
+async def test_get_order_detail(order_client):
+    await order_client.get_order_detail(order_id=1)
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 3
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/1')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {
         'Signature': 'hrLiWD2+gWnTEc1OW2SnOOTAIRuMYqIqOGtm/dHEiTg=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -422,18 +403,15 @@ async def test_get_order_detail(cfg, client):
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_get_order_detail_by_client_order_id(cfg, client):
-    await client.get_order_detail_by_client_order_id(
+async def test_get_order_detail_by_client_order_id(order_client):
+    await order_client.get_order_detail_by_client_order_id(
         client_order_id=1
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/orders/getClientOrder'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 3
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/getClientOrder')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {
         'Signature': 'Ls++IMQhqOMNoSB2osuZkjJiyokvPYsC2iMLX85YysI=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -446,16 +424,13 @@ async def test_get_order_detail_by_client_order_id(cfg, client):
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_get_match_result_of_order(cfg, client):
-    await client.get_match_result_of_order(order_id='1')
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/orders/1/matchresults'))
+async def test_get_match_result_of_order(order_client):
+    await order_client.get_match_result_of_order(order_id='1')
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 3
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/1/matchresults')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {
         'Signature': 'HDi4YN9iEQzu8irolQJFAg1qooljUjAud4YLxBDlGUU=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -485,9 +460,9 @@ async def test_get_match_result_of_order(cfg, client):
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_search_past_orders(
-        cfg, client, states, order_types, size, direct, start_time, end_time, signature
+        order_client, states, order_types, size, direct, start_time, end_time, signature
 ):
-    await client.search_past_orders(
+    await order_client.search_past_orders(
         symbol='btcusdt',
         states=states,
         order_types=order_types,
@@ -496,14 +471,11 @@ async def test_search_past_orders(
         start_time_ms=start_time,
         end_time_ms=end_time,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/orders'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 3
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     request = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -527,9 +499,9 @@ async def test_search_past_orders(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('size', [0, 101])
-async def test_search_past_orders_wrong_size(client, size):
+async def test_search_past_orders_wrong_size(order_client, size):
     with pytest.raises(ValueError):
-        await client.search_past_orders(
+        await order_client.search_past_orders(
             symbol='btcusdt',
             states=['filled'],
             size=size,
@@ -538,9 +510,9 @@ async def test_search_past_orders_wrong_size(client, size):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('order_types', [1, True])
-async def test_search_past_orders_wrong_order_types(client, order_types):
+async def test_search_past_orders_wrong_order_types(order_client, order_types):
     with pytest.raises(TypeError):
-        await client.search_past_orders(
+        await order_client.search_past_orders(
             symbol='btcusdt',
             states=['filled'],
             order_types=order_types,
@@ -561,23 +533,20 @@ async def test_search_past_orders_wrong_order_types(client, order_types):
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_search_historical_orders_within_48_hours(
-        cfg, client, symbol, start_time, end_time, direct, size, signature
+        order_client, symbol, start_time, end_time, direct, size, signature
 ):
-    await client.search_historical_orders_within_48_hours(
+    await order_client.search_historical_orders_within_48_hours(
         symbol=symbol,
         start_time_ms=start_time,
         end_time_ms=end_time,
         direct=direct,
         size=size
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/history'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 3
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/history')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     request = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -598,9 +567,9 @@ async def test_search_historical_orders_within_48_hours(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('size', [9, 1001])
-async def test_search_historical_orders_within_48_hours_wrong_size(client, size):
+async def test_search_historical_orders_within_48_hours_wrong_size(order_client, size):
     with pytest.raises(ValueError):
-        await client.search_historical_orders_within_48_hours(
+        await order_client.search_historical_orders_within_48_hours(
             size=size,
         )
 
@@ -623,9 +592,9 @@ async def test_search_historical_orders_within_48_hours_wrong_size(client, size)
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_search_match_results(
-        cfg, client, order_types, start_time, end_time, from_order_id, direct, size, signature
+        order_client, order_types, start_time, end_time, from_order_id, direct, size, signature
 ):
-    await client.search_match_results(
+    await order_client.search_match_results(
         symbol='btcusdt',
         order_types=order_types,
         start_time_ms=start_time,
@@ -634,14 +603,11 @@ async def test_search_match_results(
         direct=direct,
         size=size,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/order/matchresults'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 3
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/matchresults')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     request = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -665,9 +631,9 @@ async def test_search_match_results(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('size', [0, 501])
-async def test_search_match_results_wrong_size(client, size):
+async def test_search_match_results_wrong_size(order_client, size):
     with pytest.raises(ValueError):
-        await client.search_match_results(
+        await order_client.search_match_results(
             symbol='btcusdt',
             size=size,
         )
@@ -675,9 +641,9 @@ async def test_search_match_results_wrong_size(client, size):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('order_types', [1, True])
-async def test_search_match_results_wrong_order_types(client, order_types):
+async def test_search_match_results_wrong_order_types(order_client, order_types):
     with pytest.raises(TypeError):
-        await client.search_match_results(
+        await order_client.search_match_results(
             symbol='btcusdt',
             order_types=order_types,
         )
@@ -689,18 +655,15 @@ async def test_search_match_results_wrong_order_types(client, order_types):
     (('btcusdt', 'ethusdt'), 'fmlXBQ609IREfm0RSs8B7o52byTKnViaa5J4v7Ss7e0=')
 ])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_get_current_fee_rate_applied_to_user(cfg, client, symbols, signature):
-    await client.get_current_fee_rate_applied_to_user(
+async def test_get_current_fee_rate_applied_to_user(order_client, symbols, signature):
+    await order_client.get_current_fee_rate_applied_to_user(
         symbols=symbols,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert client._session.request.call_count == 1
-    assert len(kwargs) == 6
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v2/reference/transact-fee-rate'))
+    kwargs = order_client._rstrategy.request.call_args.kwargs
+    assert order_client._rstrategy.request.call_count == 1
+    assert len(kwargs) == 3
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/reference/transact-fee-rate')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     request = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -714,8 +677,8 @@ async def test_get_current_fee_rate_applied_to_user(cfg, client, symbols, signat
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('symbols', [1, True])
-async def test_get_current_fee_rate_applied_to_user_wrong_symbols(client, symbols):
+async def test_get_current_fee_rate_applied_to_user_wrong_symbols(order_client, symbols):
     with pytest.raises(TypeError):
-        await client.search_match_results(
+        await order_client.search_match_results(
             symbols=symbols,
         )

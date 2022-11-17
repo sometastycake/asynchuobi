@@ -1,6 +1,8 @@
-import pytest
-from yarl import URL
+from urllib.parse import urljoin
 
+import pytest
+
+from huobiclient.cfg import HUOBI_API_URL
 from huobiclient.enums import CandleInterval, MarketDepth, MarketDepthAggregationLevel
 
 
@@ -18,16 +20,13 @@ from huobiclient.enums import CandleInterval, MarketDepth, MarketDepthAggregatio
     CandleInterval.year_1,
 ])
 @pytest.mark.parametrize('size', [1, 2000])
-async def test_get_candles(cfg, client, interval, size):
-    await client.get_candles('btcusdt', interval, size)
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/market/history/kline'))
+async def test_get_candles(market_client, interval, size):
+    await market_client.get_candles('btcusdt', interval, size)
+    kwargs = market_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert market_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/history/kline')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {
         'symbol': 'btcusdt',
         'period': interval.value,
@@ -37,37 +36,30 @@ async def test_get_candles(cfg, client, interval, size):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('size', [0, 2001])
-async def test_get_candles_wrong_size(client, size):
+async def test_get_candles_wrong_size(market_client, size):
     with pytest.raises(ValueError):
-        await client.get_candles('btcusdt', CandleInterval.min_1, size)
+        await market_client.get_candles('btcusdt', CandleInterval.min_1, size)
 
 
 @pytest.mark.asyncio
-async def test_get_latest_aggregated_ticker(cfg, client):
-    await client.get_latest_aggregated_ticker('btcusdt')
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/market/detail/merged'))
+async def test_get_latest_aggregated_ticker(market_client):
+    await market_client.get_latest_aggregated_ticker('btcusdt')
+    kwargs = market_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert market_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/detail/merged')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {'symbol': 'btcusdt'}
 
 
 @pytest.mark.asyncio
-async def test_get_latest_tickers_for_all_pairs(cfg, client):
-    await client.get_latest_tickers_for_all_pairs()
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/market/tickers'))
+async def test_get_latest_tickers_for_all_pairs(market_client):
+    await market_client.get_latest_tickers_for_all_pairs()
+    kwargs = market_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 2
+    assert market_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/tickers')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
-    assert kwargs['params'] is None
 
 
 @pytest.mark.asyncio
@@ -78,20 +70,17 @@ async def test_get_latest_tickers_for_all_pairs(cfg, client):
     MarketDepthAggregationLevel.step0,
     MarketDepthAggregationLevel.step2
 ])
-async def test_get_market_depth(cfg, client, depth, aggregation_level):
-    await client.get_market_depth(
+async def test_get_market_depth(market_client, depth, aggregation_level):
+    await market_client.get_market_depth(
         symbol='btcusdt',
         depth=depth,
         aggregation_level=aggregation_level,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/market/depth'))
+    kwargs = market_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert market_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/depth')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {
         'symbol': 'btcusdt',
         'depth': depth.value,
@@ -100,20 +89,32 @@ async def test_get_market_depth(cfg, client, depth, aggregation_level):
 
 
 @pytest.mark.asyncio
+async def test_get_last_trade(market_client):
+    await market_client.get_last_trade(
+        symbol='btcusdt'
+    )
+    kwargs = market_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert market_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/trade')
+    assert kwargs['method'] == 'GET'
+    assert kwargs['params'] == {
+        'symbol': 'btcusdt',
+    }
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('size', [1, 2000])
-async def test_get_most_recent_trades(cfg, client, size):
-    await client.get_most_recent_trades(
+async def test_get_most_recent_trades(market_client, size):
+    await market_client.get_most_recent_trades(
         symbol='btcusdt',
         size=size,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/market/history/trade'))
+    kwargs = market_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert market_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/history/trade')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {
         'symbol': 'btcusdt',
         'size': size,
@@ -122,37 +123,31 @@ async def test_get_most_recent_trades(cfg, client, size):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('size', [0, 2001])
-async def test_get_most_recent_trades(client, size):
+async def test_get_most_recent_trades(market_client, size):
     with pytest.raises(ValueError):
-        await client.get_most_recent_trades(
+        await market_client.get_most_recent_trades(
             symbol='btcusdt',
             size=size,
         )
 
 
 @pytest.mark.asyncio
-async def test_get_last_market_summary(cfg, client):
-    await client.get_last_market_summary(symbol='btcusdt')
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/market/detail/'))
+async def test_get_last_market_summary(market_client):
+    await market_client.get_last_market_summary(symbol='btcusdt')
+    kwargs = market_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert market_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/detail/')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {'symbol': 'btcusdt'}
 
 
 @pytest.mark.asyncio
-async def test_get_real_time_nav(cfg, client):
-    await client.get_real_time_nav(symbol='btcusdt')
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/market/etp/'))
+async def test_get_real_time_nav(market_client):
+    await market_client.get_real_time_nav(symbol='btcusdt')
+    kwargs = market_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert market_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/etp/')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {'symbol': 'btcusdt'}

@@ -1,24 +1,22 @@
 from datetime import datetime
+from urllib.parse import urljoin
 
 import pytest
 from freezegun import freeze_time
-from yarl import URL
 
+from huobiclient.cfg import HUOBI_API_URL
 from huobiclient.enums import AccountTypeCode, Sort
 
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_accounts(cfg, client):
-    await client.accounts()
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/account/accounts'))
+async def test_accounts(account_client):
+    await account_client.accounts()
+    kwargs = account_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert account_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/accounts')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {
         'Signature': 'QlWgsW91USVj7HjtsmLShIb2V6FBbecprJBTKIRJ2e8=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -30,16 +28,13 @@ async def test_accounts(cfg, client):
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_account_balance(cfg, client):
-    await client.account_balance(account_id=1)
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/account/accounts/1/balance'))
+async def test_account_balance(account_client):
+    await account_client.account_balance(account_id=1)
+    kwargs = account_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert account_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/accounts/1/balance')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     assert kwargs['params'] == {
         'Signature': 'R/5i5DPhCzsBiTKrFif7rbNBRiBU3gws1gFQlbfXmEU=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -56,18 +51,15 @@ async def test_account_balance(cfg, client):
     (AccountTypeCode.spot, 'Oq2C4pCCPMOL+Ngs5FlCzeHwsoYnmgFEOw8AAD2mvwI='),
 ])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_get_total_valuation_of_platform_assets(cfg, client, account_type_code, signature):
-    await client.get_total_valuation_of_platform_assets(
+async def test_get_total_valuation_of_platform_assets(account_client, account_type_code, signature):
+    await account_client.get_total_valuation_of_platform_assets(
         account_type_code=account_type_code,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v2/account/valuation'))
+    kwargs = account_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert account_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/valuation')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -89,20 +81,17 @@ async def test_get_total_valuation_of_platform_assets(cfg, client, account_type_
     ('btc', 1, 'SA9whYwLZpbaHcSs/yxuf7WxHC1USW8EWhNzqqmZEww=')
 ])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_get_asset_valuation(cfg, client, currency, sub_uid, signature):
-    await client.get_asset_valuation(
+async def test_get_asset_valuation(account_client, currency, sub_uid, signature):
+    await account_client.get_asset_valuation(
         account_type='spot',
         valuation_currency=currency,
         sub_uid=sub_uid,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v2/account/asset-valuation'))
+    kwargs = account_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert account_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/asset-valuation')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -120,8 +109,8 @@ async def test_get_asset_valuation(cfg, client, currency, sub_uid, signature):
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_asset_transfer(cfg, client):
-    await client.asset_transfer(
+async def test_asset_transfer(account_client):
+    await account_client.asset_transfer(
         from_user=1,
         from_account_type='spot',
         from_account=2,
@@ -131,13 +120,11 @@ async def test_asset_transfer(cfg, client):
         currency='btc',
         amount='1',
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/account/transfer'))
+    kwargs = account_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 4
+    assert account_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/transfer')
     assert kwargs['method'] == 'POST'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
     assert kwargs['params'] == {
         'Signature': '2ZBuSF+pO5av3I0JKIVdmE1gZzxTyqShWbrNzosDB90=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -173,9 +160,9 @@ async def test_asset_transfer(cfg, client):
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_get_account_history(
-        cfg, client, currency, transact_types, start_time, end_time, from_id, size, sorting, signature
+        account_client, currency, transact_types, start_time, end_time, from_id, size, sorting, signature
 ):
-    await client.get_account_history(
+    await account_client.get_account_history(
         account_id=1,
         currency=currency,
         transact_types=transact_types,
@@ -185,14 +172,11 @@ async def test_get_account_history(
         size=size,
         sorting=sorting,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/account/history'))
+    kwargs = account_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert account_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/history')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -217,9 +201,9 @@ async def test_get_account_history(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('types', [1, True])
-async def test_get_account_history_wrong_transact_types(client, types):
+async def test_get_account_history_wrong_transact_types(account_client, types):
     with pytest.raises(TypeError):
-        await client.get_account_history(
+        await account_client.get_account_history(
             account_id=1,
             transact_types=types,
         )
@@ -227,9 +211,9 @@ async def test_get_account_history_wrong_transact_types(client, types):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('size', [0, 501])
-async def test_get_account_history_wrong_size(client, size):
+async def test_get_account_history_wrong_size(account_client, size):
     with pytest.raises(ValueError):
-        await client.get_account_history(
+        await account_client.get_account_history(
             account_id=1,
             transact_types=('trade', ),
             size=size,
@@ -248,9 +232,9 @@ async def test_get_account_history_wrong_size(client, size):
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_get_account_ledger(
-        cfg, client, currency, start_time, end_time, from_id, limit, sorting, signature
+        account_client, currency, start_time, end_time, from_id, limit, sorting, signature
 ):
-    await client.get_account_ledger(
+    await account_client.get_account_ledger(
         account_id=1,
         currency=currency,
         transact_types='transfer',
@@ -260,14 +244,11 @@ async def test_get_account_ledger(
         limit=limit,
         sorting=sorting,
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v2/account/ledger'))
+    kwargs = account_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert account_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/ledger')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -292,9 +273,9 @@ async def test_get_account_ledger(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('limit', [0, 501])
-async def test_get_account_ledger_wrong_limit(client, limit):
+async def test_get_account_ledger_wrong_limit(account_client, limit):
     with pytest.raises(ValueError):
-        await client.get_account_ledger(
+        await account_client.get_account_ledger(
             account_id=1,
             limit=limit,
         )
@@ -302,19 +283,17 @@ async def test_get_account_ledger_wrong_limit(client, limit):
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_transfer_fund_between_spot_and_futures(cfg, client):
-    await client.transfer_fund_between_spot_and_futures(
+async def test_transfer_fund_between_spot_and_futures(account_client):
+    await account_client.transfer_fund_between_spot_and_futures(
         currency='btc',
         amount=1,
         transfer_type='futures-to-pro',
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v1/futures/transfer'))
+    kwargs = account_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 4
+    assert account_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/futures/transfer')
     assert kwargs['method'] == 'POST'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
     assert kwargs['json'] == {
         'currency': 'btc',
         'amount': 1.0,
@@ -335,16 +314,13 @@ async def test_transfer_fund_between_spot_and_futures(cfg, client):
     ('1', 'NaisJp3h6Rsji4s4Q3WEUkL6YlWrVIpuKzdVMS48/Es=')
 ])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_get_point_balance(cfg, client, sub_user_id, signature):
-    await client.get_point_balance(sub_user_id=sub_user_id)
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v2/point/account'))
+async def test_get_point_balance(account_client, sub_user_id, signature):
+    await account_client.get_point_balance(sub_user_id=sub_user_id)
+    kwargs = account_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 3
+    assert account_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/point/account')
     assert kwargs['method'] == 'GET'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
-    assert kwargs['json'] is None
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -359,20 +335,18 @@ async def test_get_point_balance(cfg, client, sub_user_id, signature):
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
-async def test_point_transfer(cfg, client):
-    await client.point_transfer(
+async def test_point_transfer(account_client):
+    await account_client.point_transfer(
         from_uid='1',
         to_uid='2',
         group_id=3,
         amount=1
     )
-    kwargs = client._session.request.call_args.kwargs
-    assert len(kwargs) == 6
-    assert client._session.request.call_count == 1
-    assert kwargs['url'] == str(URL(cfg.HUOBI_API_URL).with_path('/v2/point/transfer'))
+    kwargs = account_client._rstrategy.request.call_args.kwargs
+    assert len(kwargs) == 4
+    assert account_client._rstrategy.request.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/point/transfer')
     assert kwargs['method'] == 'POST'
-    assert kwargs['headers'] == {'Content-Type': 'application/json'}
-    assert kwargs['data'] is None
     assert kwargs['json'] == {
         'fromUid': '1',
         'toUid': '2',

@@ -2,20 +2,39 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from huobiclient.api.client import HuobiClient
-from huobiclient.config import HuobiConfig
-
-
-@pytest.fixture(scope='function')
-def client():
-    client = HuobiClient(HuobiConfig(
-        HUOBI_ACCESS_KEY='HUOBI_ACCESS_KEY',
-        HUOBI_SECRET_KEY='HUOBI_SECRET_KEY',
-    ))
-    client._session = AsyncMock()
-    return client
+from huobiclient.api.clients.account import AccountHuobiClient
+from huobiclient.api.clients.generic import GenericHuobiClient
+from huobiclient.api.clients.market import MarketHuobiClient
+from huobiclient.api.clients.order import OrderHuobiClient
 
 
 @pytest.fixture
-def cfg(client):
-    return client._cfg  # noqa
+def generic_client():
+    return GenericHuobiClient(
+        request_strategy=AsyncMock(),
+    )
+
+
+@pytest.fixture
+def market_client():
+    return MarketHuobiClient(
+        request_strategy=AsyncMock(),
+    )
+
+
+@pytest.fixture
+def account_client():
+    return AccountHuobiClient(
+        access_key='HUOBI_ACCESS_KEY',
+        secret_key='HUOBI_SECRET_KEY',
+        request_strategy=AsyncMock(),
+    )
+
+
+@pytest.fixture
+def order_client():
+    return OrderHuobiClient(
+        access_key='HUOBI_ACCESS_KEY',
+        secret_key='HUOBI_SECRET_KEY',
+        request_strategy=AsyncMock(),
+    )

@@ -3,7 +3,7 @@ from typing import Optional
 from aiohttp import ClientSession, ClientWebSocketResponse, TCPConnector
 
 from huobiclient.auth import WebsocketAuth
-from huobiclient.config import huobi_client_config as cfg
+from huobiclient.cfg import huobi_client_config as cfg
 
 
 class HuobiWebsocket:
