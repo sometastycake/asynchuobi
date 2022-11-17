@@ -96,7 +96,7 @@ class _QueryWithdrawAddress(APIAuth):
 class _CreateWithdrawRequest(BaseModel):
     address: str
     currency: str
-    amount: str
+    amount: float
     fee: Optional[float] = None
     chain: Optional[str] = None
     addr_tag: Optional[str] = Field(default=None, alias='addr-tag')
@@ -112,13 +112,14 @@ class _QueryWithdrawalOrderByClientOrderId(APIAuth):
 
 class _SearchExistedWithdrawsAndDeposits(APIAuth):
     currency: Optional[str]
-    direct: str
+    direct: Direct
     from_transfer_id: Optional[str] = Field(alias='from')
     size: int
     transfer_type: str = Field(alias='type')
 
     class Config:
         allow_population_by_field_name = True
+        use_enum_values = True
 
 
 class _APIKeyQuery(APIAuth):

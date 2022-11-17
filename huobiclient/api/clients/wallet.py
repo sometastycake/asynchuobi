@@ -13,6 +13,7 @@ from huobiclient.api.strategy.abstract import RequestStrategyAbstract
 from huobiclient.api.strategy.request import BaseRequestStrategy
 from huobiclient.auth import APIAuth
 from huobiclient.cfg import HUOBI_ACCESS_KEY, HUOBI_API_URL, HUOBI_SECRET_KEY
+from huobiclient.enums import Direct
 
 
 class WalletHuobiClient:
@@ -30,7 +31,7 @@ class WalletHuobiClient:
         self._rstrategy = request_strategy
         if self._access_key is None or self._secret_key is None:
             raise ValueError('Access key or secret key can not be None')
-    
+
     async def query_deposit_address(self, currency: str) -> Dict:
         """
         Parent user and sub user could query deposit address of corresponding chain,
@@ -110,7 +111,7 @@ class WalletHuobiClient:
             self,
             address: str,
             currency: str,
-            amount: str,
+            amount: float,
             fee: Optional[float] = None,
             chain: Optional[str] = None,
             addr_tag: Optional[str] = None,
@@ -191,9 +192,9 @@ class WalletHuobiClient:
             self,
             transfer_type: str,
             currency: Optional[str] = None,
-            from_trasfer_id: Optional[str] = None,
+            from_transfer_id: Optional[str] = None,
             size: int = 100,
-            direct: str = 'prev',
+            direct: Direct = Direct.prev,
     ) -> Dict:
         """
         Parent user and sub user search for all existed withdraws and deposits and return their latest status
@@ -201,7 +202,7 @@ class WalletHuobiClient:
 
         :param transfer_type: Define transfer type to search (deposit, withdraw, sub user can only use deposit)
         :param currency: The cryptocurrency to withdraw
-        :param from_trasfer_id: The transfer id to begin search
+        :param from_transfer_id: The transfer id to begin search
         :param size: The number of items to return
         :param direct: The order of response ('prev' (ascending), 'next' (descending))
         """
@@ -210,7 +211,7 @@ class WalletHuobiClient:
         params = _SearchExistedWithdrawsAndDeposits(
             currency=currency,
             transfer_type=transfer_type,
-            from_transfer_id=from_trasfer_id,
+            from_transfer_id=from_transfer_id,
             size=size,
             direct=direct,
             AccessKeyId=self._access_key,
