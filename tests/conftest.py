@@ -6,6 +6,7 @@ from huobiclient.api.clients.account import AccountHuobiClient
 from huobiclient.api.clients.generic import GenericHuobiClient
 from huobiclient.api.clients.market import MarketHuobiClient
 from huobiclient.api.clients.order import OrderHuobiClient
+from huobiclient.api.clients.subuser import SubUserHuobiClient
 from huobiclient.api.clients.wallet import WalletHuobiClient
 
 
@@ -44,6 +45,15 @@ def order_client():
 @pytest.fixture
 def wallet_client():
     return WalletHuobiClient(
+        access_key='HUOBI_ACCESS_KEY',
+        secret_key='HUOBI_SECRET_KEY',
+        request_strategy=AsyncMock(),
+    )
+
+
+@pytest.fixture
+def subuser_client():
+    return SubUserHuobiClient(
         access_key='HUOBI_ACCESS_KEY',
         secret_key='HUOBI_SECRET_KEY',
         request_strategy=AsyncMock(),

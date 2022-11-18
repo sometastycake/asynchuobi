@@ -474,6 +474,8 @@ class SubUserHuobiClient:
         :param limit: Maximum number of items in one page
         :param from_id: First record ID in this query
         """
+        if limit < 1 or limit > 500:
+            raise ValueError(f'Wrong limit value "{limit}"')
         params = _QueryDepositHistoryOfSubUser(
             subUid=sub_uid,
             currency=currency,
