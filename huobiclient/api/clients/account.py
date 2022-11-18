@@ -29,8 +29,8 @@ class AccountHuobiClient:
         self._access_key = access_key
         self._secret_key = secret_key
         self._rstrategy = request_strategy
-        if self._access_key is None or self._secret_key is None:
-            raise ValueError('Access key or secret key can not be None')
+        if not self._access_key or not self._secret_key:
+            raise ValueError('Access key or secret key can not be empty')
 
     async def accounts(self) -> Dict:
         """

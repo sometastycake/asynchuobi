@@ -41,8 +41,8 @@ class SubUserHuobiClient:
         self._access_key = access_key
         self._secret_key = secret_key
         self._rstrategy = request_strategy
-        if self._access_key is None or self._secret_key is None:
-            raise ValueError('Access key or secret key can not be None')
+        if not self._access_key or not self._secret_key:
+            raise ValueError('Access key or secret key can not be empty')
 
     async def set_deduction_for_parent_and_sub_user(self, sub_uids: Iterable[int], deduct_mode: DeductMode) -> Dict:
         """
