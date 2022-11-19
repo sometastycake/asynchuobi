@@ -7,7 +7,8 @@ from huobiclient.api.strategy.abstract import RequestStrategyAbstract
 
 class BaseRequestStrategy(RequestStrategyAbstract):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        self._kwargs = kwargs
         self._session: Optional[aiohttp.ClientSession] = None
 
     def __del__(self):
@@ -15,7 +16,10 @@ class BaseRequestStrategy(RequestStrategyAbstract):
             self._session.connector.close()
 
     def _create_session(self) -> aiohttp.ClientSession:
-        return aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False))
+        return aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(ssl=False),
+            **self._kwargs,
+        )
 
     async def request(self, url: str, method: str, **kwargs: Any) -> Any:
         if self._session is None:
