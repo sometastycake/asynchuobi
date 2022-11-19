@@ -34,6 +34,12 @@ class OrderHuobiClient:
         self._rstrategy = request_strategy
         if not self._access_key or not self._secret_key:
             raise ValueError('Access key or secret key can not be empty')
+
+    async def __aenter__(self) -> 'OrderHuobiClient':
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        ...
     
     async def new_order(
             self,

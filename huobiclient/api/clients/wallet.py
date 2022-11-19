@@ -32,6 +32,12 @@ class WalletHuobiClient:
         if not self._access_key or not self._secret_key:
             raise ValueError('Access key or secret key can not be empty')
 
+    async def __aenter__(self) -> 'WalletHuobiClient':
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        ...
+
     async def query_deposit_address(self, currency: str) -> Dict:
         """
         Parent user and sub user could query deposit address of corresponding chain,

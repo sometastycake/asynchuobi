@@ -17,6 +17,12 @@ class MarketHuobiClient:
         self._api = api_url
         self._rstrategy = request_strategy
 
+    async def __aenter__(self) -> 'MarketHuobiClient':
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        ...
+
     async def get_candles(self, symbol: str, interval: CandleInterval, size: int = 150) -> Dict:
         """
         Market data APIs provide public market information such as varies of candlestick,

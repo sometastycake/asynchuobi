@@ -17,6 +17,12 @@ class GenericHuobiClient:
         self._api = api_url
         self._rstrategy = request_strategy
 
+    async def __aenter__(self) -> 'GenericHuobiClient':
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        ...
+
     async def get_system_status(self) -> Dict:
         """
         This endpoint allows users to get system status, Incidents and planned maintenance

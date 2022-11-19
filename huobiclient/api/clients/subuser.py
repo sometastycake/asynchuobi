@@ -44,6 +44,12 @@ class SubUserHuobiClient:
         if not self._access_key or not self._secret_key:
             raise ValueError('Access key or secret key can not be empty')
 
+    async def __aenter__(self) -> 'SubUserHuobiClient':
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        ...
+
     async def set_deduction_for_parent_and_sub_user(self, sub_uids: Iterable[int], deduct_mode: DeductMode) -> Dict:
         """
         This interface is to set the deduction fee for parent and sub user (HT or point)
