@@ -72,3 +72,26 @@ class WebsocketAuth(_BaseAuth):
     signatureVersion: str = Field(default='2.1', const=True)
     timestamp: str = Field(default_factory=_utcnow)
     signature: Optional[str]
+
+    def _get_params(self) -> Dict:
+        return self.dict(
+            exclude={
+                'signature',
+                'SecretKey',
+                'authType',
+            },
+            exclude_none=True,
+            by_alias=True,
+        )
+
+    def to_request(self, url: str, method: str) -> Dict:
+        self.signature = self._sign(
+            path=URL(url).path,
+            method=method,
+            host=URL(url).host,
+        )
+        return self.dict(
+            exclude_none=True,
+            by_alias=True,
+            exclude={'SecretKey'},
+        )

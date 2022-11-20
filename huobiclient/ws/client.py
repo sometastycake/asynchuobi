@@ -1,9 +1,11 @@
-from typing import Optional
+import gzip
+import json
+from typing import AsyncGenerator, Dict, Optional
 
 from aiohttp import ClientSession, ClientWebSocketResponse, TCPConnector
 
 from huobiclient.auth import WebsocketAuth
-from huobiclient.cfg import huobi_client_config as cfg
+from huobiclient.cfg import HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY, HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
 
 
 class HuobiWebsocket:
@@ -11,25 +13,25 @@ class HuobiWebsocket:
     def __init__(self, ws_url: str):
         self._ws_url = ws_url
         self._session: Optional[ClientSession] = None
-        self._ws: Optional[ClientWebSocketResponse] = None
+        self._socket: Optional[ClientWebSocketResponse] = None
 
     @property
-    def ws(self) -> ClientWebSocketResponse:
-        if self._ws is None:
+    def socket(self) -> ClientWebSocketResponse:
+        if self._socket is None:
             raise RuntimeError('WS is not initialized')
-        return self._ws
+        return self._socket
 
     async def close(self) -> None:
-        if self._ws is not None and not self._ws.closed:
-            await self._ws.close()
-        if self._session and not self._session.closed:
+        if self._socket is not None and not self._socket.closed:
+            await self._socket.close()
+        if self._session is not None and not self._session.closed:
             await self._session.close()
 
     async def connect(self) -> None:
         self._session = ClientSession(
             connector=TCPConnector(ssl=False),
         )
-        self._ws = await self._session.ws_connect(
+        self._socket = await self._session.ws_connect(
             autoping=False,
             url=self._ws_url,
         )
@@ -37,29 +39,61 @@ class HuobiWebsocket:
 
 class HuobiMarketWebsocket(HuobiWebsocket):
 
-    def __init__(self, ws_url: str = cfg.HUOBI_WS_MARKET_URL):
+    def __init__(self, ws_url: str = HUOBI_WS_MARKET_URL):
         super().__init__(ws_url=ws_url)
 
-    async def pong(self, timestamp: int) -> None:
-        await self.ws.send_json({'pong': timestamp})
+    async def _pong(self, timestamp: int) -> None:
+        await self._socket.send_json({'pong': timestamp})
+
+    async def __aiter__(self) -> AsyncGenerator[Dict, None]:
+        async for msg in self.socket:
+            raw = msg.data  # type:ignore
+            data = json.loads(gzip.decompress(raw))
+            if 'ping' in data:
+                await self._pong(data['ping'])
+                continue
+            yield data
 
 
 class HuobiAccountOrderWebsocket(HuobiWebsocket):
 
-    def __init__(self, ws_url: str = cfg.HUOBI_WS_ASSET_AND_ORDER_URL):
+    def __init__(
+        self,
+        ws_url: str = HUOBI_WS_ASSET_AND_ORDER_URL,
+        access_key: str = HUOBI_ACCESS_KEY,
+        secret_key: str = HUOBI_SECRET_KEY,
+    ):
         super().__init__(ws_url=ws_url)
+        self._access_key = access_key
+        self._secret_key = secret_key
 
-    async def pong(self, timestamp: int) -> None:
-        await self.ws.send_json({
+    async def _pong(self, timestamp: int) -> None:
+        msg = {
             'action': 'pong',
             'data': {
                 'ts': timestamp,
             },
-        })
+        }
+        await self._socket.send_json(msg)
 
     async def auth(self) -> None:
-        await self.ws.send_json({
+        auth = WebsocketAuth(
+            SecretKey=self._secret_key,
+            accessKey=self._access_key,
+        )
+        msg = {
             'action': 'req',
             'ch': 'auth',
-            'params': WebsocketAuth().to_request(),
-        })
+            'params': auth.to_request(self._ws_url, 'GET'),
+        }
+        await self._socket.send_json(msg)
+        await self.socket.receive_json()
+
+    async def __aiter__(self) -> AsyncGenerator[Dict, None]:
+        async for msg in self.socket:
+            raw = msg.data  # type:ignore
+            data = json.loads(raw)
+            if data.get('action', '') == 'ping':
+                await self._pong(data['data']['ts'])
+                continue
+            yield data
