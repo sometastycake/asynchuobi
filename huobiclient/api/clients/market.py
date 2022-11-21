@@ -96,7 +96,6 @@ class MarketHuobiClient:
             },
         )
 
-
     async def get_last_trade(self, symbol: str) -> Dict:
         """
         This endpoint retrieves the latest trade with its price,
