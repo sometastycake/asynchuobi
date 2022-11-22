@@ -1,8 +1,9 @@
 import gzip
 import json
-from typing import AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator, Dict, Optional, Type
 
-from aiohttp import ClientSession, ClientWebSocketResponse, TCPConnector
+import aiohttp
+from aiohttp import ClientWebSocketResponse
 
 from huobiclient.auth import WebsocketAuth
 from huobiclient.cfg import HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY, HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
@@ -10,109 +11,127 @@ from huobiclient.exceptions import WSHuobiError
 from huobiclient.ws.subscribers.market import BaseMarketStream
 
 
-class HuobiWebsocket:
+class WebsocketConnection:
 
-    def __init__(self, ws_url: str):
-        self._ws_url = ws_url
-        self._session: Optional[ClientSession] = None
+    def __init__(
+        self,
+        url: str,
+        session: Type[aiohttp.ClientSession] = aiohttp.ClientSession,
+        **session_kwargs,
+    ):
+        self._url = url
+        if session_kwargs.get('connector') is None:
+            session_kwargs['connector'] = aiohttp.TCPConnector(ssl=False)
+        self._session = session(**session_kwargs)
         self._socket: Optional[ClientWebSocketResponse] = None
 
-    async def __aenter__(self) -> 'HuobiWebsocket':
-        await self.connect()
+    async def close(self) -> None:
+        await self._session.close()
+        if self._socket is not None:
+            await self._socket.close()
+            self._socket = None
+
+    async def connect(self, **kwargs) -> None:
+        self._socket = await self._session.ws_connect(url=self._url, **kwargs)
+
+    async def receive(self) -> Dict:
+        if self._socket is None:
+            raise RuntimeError('Web socket is not connected')
+        return await self._socket.receive_json()
+
+    async def send(self, message: Dict) -> None:
+        if self._socket is None:
+            await self.connect()
+        await self._socket.send_json(message)
+
+    async def __aiter__(self) -> AsyncGenerator[Any, None]:
+        if self._socket is None:
+            raise RuntimeError('Web socket is not connected')
+        async for message in self._socket:
+            yield message.data  # type:ignore
+
+
+class HuobiMarketWebsocket:
+
+    def __init__(
+        self,
+        url: str = HUOBI_WS_MARKET_URL,
+        connection: Type[WebsocketConnection] = WebsocketConnection,
+        **connection_kwargs,
+    ):
+        self.connection = connection(url=url, **connection_kwargs)
+
+    async def __aenter__(self):
+        await self.connection.connect()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.close()
-
-    @property
-    def socket(self) -> ClientWebSocketResponse:
-        if self._socket is None:
-            raise RuntimeError('WS is not initialized')
-        return self._socket
-
-    async def close(self) -> None:
-        if self._socket is not None and not self._socket.closed:
-            await self._socket.close()
-        if self._session is not None and not self._session.closed:
-            await self._session.close()
-
-    async def connect(self) -> None:
-        self._session = ClientSession(
-            connector=TCPConnector(ssl=False),
-        )
-        self._socket = await self._session.ws_connect(
-            autoping=False,
-            url=self._ws_url,
-        )
-
-
-class HuobiMarketWebsocket(HuobiWebsocket):
-
-    def __init__(self, ws_url: str = HUOBI_WS_MARKET_URL):
-        super().__init__(ws_url=ws_url)
+        await self.connection.close()
 
     async def _pong(self, timestamp: int) -> None:
-        await self.socket.send_json({'pong': timestamp})
+        await self.connection.send({'pong': timestamp})
 
     async def subscribe(self, stream: BaseMarketStream):
         for message in stream.subscribe():
-            await self.socket.send_json(message)
+            await self.connection.send(message)
 
     async def unsubscribe(self, stream: BaseMarketStream):
         for message in stream.unsubscribe():
-            await self.socket.send_json(message)
+            await self.connection.send(message)
 
     async def __aiter__(self) -> AsyncGenerator[Dict, None]:
-        async for msg in self.socket:
-            raw = msg.data  # type:ignore
-            data = json.loads(gzip.decompress(raw))
+        async for message in self.connection:
+            data = json.loads(gzip.decompress(message))
             if 'ping' in data:
                 await self._pong(data['ping'])
                 continue
             yield data
 
 
-class HuobiAccountOrderWebsocket(HuobiWebsocket):
+class HuobiAccountOrderWebsocket:
 
     def __init__(
         self,
-        ws_url: str = HUOBI_WS_ASSET_AND_ORDER_URL,
+        url: str = HUOBI_WS_ASSET_AND_ORDER_URL,
         access_key: str = HUOBI_ACCESS_KEY,
         secret_key: str = HUOBI_SECRET_KEY,
+        connection: Type[WebsocketConnection] = WebsocketConnection,
+        **connection_kwargs,
     ):
-        super().__init__(ws_url=ws_url)
+        self._url = url
         self._access_key = access_key
         self._secret_key = secret_key
+        self._connection = connection(url=url, **connection_kwargs)
 
     async def __aenter__(self) -> 'HuobiAccountOrderWebsocket':
-        await self.connect()
+        await self._connection.connect()
         await self.auth()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.close()
+        await self._connection.close()
 
     async def _pong(self, timestamp: int) -> None:
-        msg = {
+        message = {
             'action': 'pong',
             'data': {
                 'ts': timestamp,
             },
         }
-        await self.socket.send_json(msg)
+        await self._connection.send(message)
 
     async def auth(self) -> None:
         auth = WebsocketAuth(
             SecretKey=self._secret_key,
             accessKey=self._access_key,
         )
-        msg = {
+        message = {
             'action': 'req',
             'ch': 'auth',
-            'params': auth.to_request(self._ws_url, 'GET'),
+            'params': auth.to_request(self._url, 'GET'),
         }
-        await self.socket.send_json(msg)
-        recv = await self.socket.receive_json()
+        await self._connection.send(message)
+        recv = await self._connection.receive()
         code = recv['code']
         if code != 200:
             raise WSHuobiError(
@@ -121,9 +140,8 @@ class HuobiAccountOrderWebsocket(HuobiWebsocket):
             )
 
     async def __aiter__(self) -> AsyncGenerator[Dict, None]:
-        async for msg in self.socket:
-            raw = msg.data  # type:ignore
-            data = json.loads(raw)
+        async for message in self._connection:
+            data = json.loads(message)
             if data.get('action', '') == 'ping':
                 await self._pong(data['data']['ts'])
                 continue
