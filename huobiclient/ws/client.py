@@ -31,7 +31,7 @@ class HuobiMarketWebsocket:
         await self._connection.connect()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
         await self._connection.close()
 
     async def _pong(self, timestamp: int) -> None:
@@ -78,7 +78,7 @@ class HuobiAccountOrderWebsocket:
         await self.auth()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa: U100
         await self._connection.close()
 
     async def _pong(self, timestamp: int) -> None:
@@ -134,7 +134,7 @@ class HuobiAccountOrderWebsocket:
             raise ValueError('Wrong mode value')
         await self._connection.send({
             'action': 'sub',
-            'ch': f'accounts.update#{mode}'
+            'ch': f'accounts.update#{mode}',
         })
 
     async def __aiter__(self) -> AsyncGenerator[Dict, None]:

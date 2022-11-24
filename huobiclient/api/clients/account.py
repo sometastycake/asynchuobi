@@ -35,7 +35,7 @@ class AccountHuobiClient:
     async def __aenter__(self) -> 'AccountHuobiClient':
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
         ...
 
     async def accounts(self) -> Dict:

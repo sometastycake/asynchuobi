@@ -20,7 +20,7 @@ class GenericHuobiClient:
     async def __aenter__(self) -> 'GenericHuobiClient':
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
         ...
 
     async def get_system_status(self) -> Dict:
@@ -43,7 +43,7 @@ class GenericHuobiClient:
         """
         return await self._rstrategy.request(
             method='GET',
-            url=urljoin(self._api, '/v2/market-status')
+            url=urljoin(self._api, '/v2/market-status'),
         )
 
     async def get_all_supported_trading_symbols(

@@ -15,7 +15,7 @@ class BaseMarketStream:
     def __init__(self, symbols: Iterable[str]):
         self._symbols = symbols
 
-    def _topic(self, symbol: str) -> str:
+    def _topic(self, symbol: str) -> str:  # noqa:U100
         raise NotImplementedError
 
     def _message(self, symbol: str, action: _SubscribeAction) -> Dict:
@@ -75,7 +75,7 @@ class OrderbookStream(BaseMarketStream):
     def __init__(
         self,
         symbols: Iterable[str],
-        aggregation_level: MarketDepthAggregationLevel = MarketDepthAggregationLevel.step0
+        aggregation_level: MarketDepthAggregationLevel = MarketDepthAggregationLevel.step0,
     ):
         super().__init__(symbols)
         self._aggregation_level = aggregation_level

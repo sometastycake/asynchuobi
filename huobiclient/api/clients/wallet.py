@@ -35,7 +35,7 @@ class WalletHuobiClient:
     async def __aenter__(self) -> 'WalletHuobiClient':
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
         ...
 
     async def query_deposit_address(self, currency: str) -> Dict:
@@ -83,7 +83,7 @@ class WalletHuobiClient:
             chain: Optional[str] = None,
             note: Optional[str] = None,
             limit: int = 100,
-            from_id: Optional[int] = None
+            from_id: Optional[int] = None,
     ) -> Dict:
         """
         This endpoint allows parent user to query withdraw address available for API key

@@ -47,7 +47,7 @@ class SubUserHuobiClient:
     async def __aenter__(self) -> 'SubUserHuobiClient':
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
         ...
 
     async def set_deduction_for_parent_and_sub_user(self, sub_uids: Iterable[int], deduct_mode: DeductMode) -> Dict:
@@ -288,7 +288,7 @@ class SubUserHuobiClient:
             note: str,
             permissions: List[ApiKeyPermission],
             ip_addresses: Optional[Iterable[str]] = None,
-            otp_token: Optional[str] = None
+            otp_token: Optional[str] = None,
     ) -> Dict:
         """
         This endpoint is used by the parent user to create the API key of the sub user
