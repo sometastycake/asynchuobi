@@ -1,7 +1,5 @@
 import os
 
-HUOBI_SECRET_KEY: str = os.getenv(key='HUOBI_SECRET_KEY', default='')
-HUOBI_ACCESS_KEY: str = os.getenv(key='HUOBI_ACCESS_KEY', default='')
 
 HUOBI_API_URL: str = os.getenv(
     key='HUOBI_API_URL',

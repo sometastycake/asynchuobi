@@ -15,7 +15,7 @@ from huobiclient.api.dto import (
 from huobiclient.api.strategy.abstract import RequestStrategyAbstract
 from huobiclient.api.strategy.request import BaseRequestStrategy
 from huobiclient.auth import APIAuth
-from huobiclient.cfg import HUOBI_ACCESS_KEY, HUOBI_API_URL, HUOBI_SECRET_KEY
+from huobiclient.cfg import HUOBI_API_URL
 from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
 
 
@@ -23,9 +23,9 @@ class OrderHuobiClient:
 
     def __init__(
         self,
+        access_key: str,
+        secret_key: str,
         api_url: str = HUOBI_API_URL,
-        access_key: str = HUOBI_ACCESS_KEY,
-        secret_key: str = HUOBI_SECRET_KEY,
         request_strategy: RequestStrategyAbstract = BaseRequestStrategy(),
     ):
         self._api = api_url
