@@ -7,6 +7,7 @@ from huobiclient.auth import WebsocketAuth
 from huobiclient.cfg import HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY, HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
 from huobiclient.exceptions import WSHuobiError
 from huobiclient.ws.connection import WebsocketConnection
+from huobiclient.ws.enums import TradeDetailMode
 from huobiclient.ws.subscribers.market import BaseMarketStream
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
@@ -107,6 +108,34 @@ class HuobiAccountOrderWebsocket:
                 err_code=code,
                 err_msg=recv['message'],
             )
+
+    async def subscribe_order_updates(self, symbol: str) -> None:
+        if not isinstance(symbol, str):
+            raise TypeError('Symbol is not str')
+        await self._connection.send({
+            'action': 'sub',
+            'ch': f'orders#{symbol}',
+        })
+
+    async def subscribe_trade_detail(
+            self,
+            symbol: str,
+            mode: TradeDetailMode = TradeDetailMode.only_trade_event,
+    ) -> None:
+        if not isinstance(symbol, str):
+            raise TypeError('Symbol is not str')
+        await self._connection.send({
+            'action': 'sub',
+            'ch': f'trade.clearing#{symbol}#{mode.value}',
+        })
+
+    async def subscribe_account_change(self, mode: int = 0) -> None:
+        if mode not in (0, 1, 2):
+            raise ValueError('Wrong mode value')
+        await self._connection.send({
+            'action': 'sub',
+            'ch': f'accounts.update#{mode}'
+        })
 
     async def __aiter__(self) -> AsyncGenerator[Dict, None]:
         async for message in self._connection:
