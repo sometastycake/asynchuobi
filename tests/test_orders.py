@@ -5,8 +5,8 @@ import pytest
 from freezegun import freeze_time
 
 from huobiclient.api.dto import NewOrder
-from huobiclient.cfg import HUOBI_API_URL
 from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
+from huobiclient.urls import HUOBI_API_URL
 
 
 @pytest.mark.asyncio

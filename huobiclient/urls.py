@@ -1,6 +1,5 @@
 import os
 
-
 HUOBI_API_URL: str = os.getenv(
     key='HUOBI_API_URL',
     default='https://api.huobi.pro',

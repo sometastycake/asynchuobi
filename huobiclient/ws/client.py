@@ -4,8 +4,8 @@ import json
 from typing import Any, AsyncGenerator, Callable, Dict, Type, Union
 
 from huobiclient.auth import WebsocketAuth
-from huobiclient.cfg import HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
 from huobiclient.exceptions import WSHuobiError
+from huobiclient.urls import HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
 from huobiclient.ws.connection import WebsocketConnection
 from huobiclient.ws.enums import TradeDetailMode
 from huobiclient.ws.subscribers.market import BaseMarketStream

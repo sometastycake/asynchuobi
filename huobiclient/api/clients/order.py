@@ -15,8 +15,8 @@ from huobiclient.api.dto import (
 from huobiclient.api.strategy.abstract import RequestStrategyAbstract
 from huobiclient.api.strategy.request import BaseRequestStrategy
 from huobiclient.auth import APIAuth
-from huobiclient.cfg import HUOBI_API_URL
 from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
+from huobiclient.urls import HUOBI_API_URL
 
 
 class OrderHuobiClient:

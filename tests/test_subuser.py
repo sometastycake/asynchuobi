@@ -5,7 +5,6 @@ import pytest
 from freezegun import freeze_time
 
 from huobiclient.api.dto import SubUser, SubUserCreation
-from huobiclient.cfg import HUOBI_API_URL
 from huobiclient.enums import (
     ApiKeyPermission,
     DeductMode,
@@ -15,6 +14,7 @@ from huobiclient.enums import (
     Sort,
     TransferTypeBetweenParentAndSubUser,
 )
+from huobiclient.urls import HUOBI_API_URL
 
 
 @pytest.mark.asyncio

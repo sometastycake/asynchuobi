@@ -2,8 +2,8 @@ from urllib.parse import urljoin
 
 import pytest
 
-from huobiclient.cfg import HUOBI_API_URL
 from huobiclient.enums import CandleInterval, MarketDepth, MarketDepthAggregationLevel
+from huobiclient.urls import HUOBI_API_URL
 
 
 @pytest.mark.asyncio

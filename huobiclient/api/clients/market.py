@@ -3,8 +3,8 @@ from urllib.parse import urljoin
 
 from huobiclient.api.strategy.abstract import RequestStrategyAbstract
 from huobiclient.api.strategy.request import BaseRequestStrategy
-from huobiclient.cfg import HUOBI_API_URL
 from huobiclient.enums import CandleInterval, MarketDepth, MarketDepthAggregationLevel
+from huobiclient.urls import HUOBI_API_URL
 
 
 class MarketHuobiClient:

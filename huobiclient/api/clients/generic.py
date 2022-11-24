@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 from huobiclient.api.dto import _GetChainsInformationRequest, _GetMarketSymbolsSettings
 from huobiclient.api.strategy.abstract import RequestStrategyAbstract
 from huobiclient.api.strategy.request import BaseRequestStrategy
-from huobiclient.cfg import HUOBI_API_URL
+from huobiclient.urls import HUOBI_API_URL
 
 
 class GenericHuobiClient:
