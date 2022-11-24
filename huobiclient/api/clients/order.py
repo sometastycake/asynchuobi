@@ -1,7 +1,7 @@
 from typing import Dict, Iterable, List, Optional
 from urllib.parse import urljoin
 
-from huobiclient.api.dto import (
+from huobiclient.api.schemas import (
     NewOrder,
     _BatchCancelOpenOrders,
     _CancelOrder,

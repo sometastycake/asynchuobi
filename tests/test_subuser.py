@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 import pytest
 from freezegun import freeze_time
 
-from huobiclient.api.dto import SubUser, SubUserCreation
+from huobiclient.api.schemas import SubUser, SubUserCreation
 from huobiclient.enums import (
     ApiKeyPermission,
     DeductMode,

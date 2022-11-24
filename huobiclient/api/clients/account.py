@@ -1,7 +1,7 @@
 from typing import Dict, Iterable, Optional
 from urllib.parse import urljoin
 
-from huobiclient.api.dto import (
+from huobiclient.api.schemas import (
     _AssetTransfer,
     _GetAccountHistory,
     _GetAccountLedger,

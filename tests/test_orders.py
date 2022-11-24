@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 import pytest
 from freezegun import freeze_time
 
-from huobiclient.api.dto import NewOrder
+from huobiclient.api.schemas import NewOrder
 from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
 from huobiclient.urls import HUOBI_API_URL
 

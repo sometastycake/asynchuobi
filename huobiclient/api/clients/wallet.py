@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 from urllib.parse import urljoin
 
-from huobiclient.api.dto import (
+from huobiclient.api.schemas import (
     _CreateWithdrawRequest,
     _QueryDepositAddress,
     _QueryWithdrawAddress,
