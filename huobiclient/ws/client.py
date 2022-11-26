@@ -36,6 +36,9 @@ class HuobiMarketWebsocket:
     async def _pong(self, timestamp: int) -> None:
         await self._connection.send({'pong': timestamp})
 
+    async def send(self, message: Dict) -> None:
+        await self._connection.send(message)
+
     async def market_candlestick_stream(
             self,
             symbols: Iterable[str],
@@ -151,6 +154,9 @@ class HuobiAccountOrderWebsocket:
                 'ts': timestamp,
             },
         }
+        await self._connection.send(message)
+
+    async def send(self, message: Dict) -> None:
         await self._connection.send(message)
 
     async def auth(self) -> None:
