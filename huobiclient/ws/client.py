@@ -18,7 +18,7 @@ class HuobiMarketWebsocket:
         self,
         url: str = HUOBI_WS_MARKET_URL,
         loads: LOADS_TYPE = json.loads,
-        decompress: Callable[[bytes], bytes] = gzip.decompress,
+        decompress: Callable[[bytes], Union[str, bytes]] = gzip.decompress,
         connection: Type[WebsocketConnection] = WebsocketConnection,
         **connection_kwargs,
     ):
