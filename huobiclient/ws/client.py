@@ -1,13 +1,13 @@
 import gzip
 import json
-from typing import Any, AsyncGenerator, Callable, Dict, Type, Union
+from typing import Any, AsyncGenerator, Callable, Dict, Iterable, Type, Union
 
 from huobiclient.auth import WebsocketAuth
+from huobiclient.enums import CandleInterval, MarketDepthAggregationLevel
 from huobiclient.exceptions import WSHuobiError
 from huobiclient.urls import HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
 from huobiclient.ws.connection import WebsocketConnection
-from huobiclient.ws.enums import TradeDetailMode
-from huobiclient.ws.subscribers.market import BaseMarketStream
+from huobiclient.ws.enums import SubscribeAction, TradeDetailMode
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
 
@@ -36,13 +36,77 @@ class HuobiMarketWebsocket:
     async def _pong(self, timestamp: int) -> None:
         await self._connection.send({'pong': timestamp})
 
-    async def subscribe(self, stream: BaseMarketStream):
-        for message in stream.subscribe():
-            await self._connection.send(message)
+    async def market_candlestick_stream(
+            self,
+            symbols: Iterable[str],
+            interval: CandleInterval,
+            action: SubscribeAction,
+    ) -> None:
+        for symbol in symbols:
+            await self._connection.send({
+                action.value: f'market.{symbol}.kline.{interval.value}'
+            })
 
-    async def unsubscribe(self, stream: BaseMarketStream):
-        for message in stream.unsubscribe():
-            await self._connection.send(message)
+    async def ticker_stream(
+            self,
+            symbols: Iterable[str],
+            action: SubscribeAction,
+    ) -> None:
+        for symbol in symbols:
+            await self._connection.send({
+                action.value: f'market.{symbol}.ticker',
+            })
+
+    async def market_depth_stream(
+            self,
+            symbols: Iterable[str],
+            action: SubscribeAction,
+            aggregation_level: MarketDepthAggregationLevel = MarketDepthAggregationLevel.step0,
+    ) -> None:
+        for symbol in symbols:
+            await self._connection.send({
+                action.value: f'market.{symbol}.depth.{aggregation_level.value}',
+            })
+
+    async def best_bid_offer_stream(
+            self,
+            symbols: Iterable[str],
+            action: SubscribeAction,
+    ) -> None:
+        for symbol in symbols:
+            await self._connection.send({
+                action.value: f'market.{symbol}.bbo',
+            })
+
+    async def trade_detail_stream(
+            self,
+            symbols: Iterable[str],
+            action: SubscribeAction,
+    ) -> None:
+        for symbol in symbols:
+            await self._connection.send({
+                action.value: f'market.{symbol}.trade.detail',
+            })
+
+    async def market_detail_stream(
+            self,
+            symbols: Iterable[str],
+            action: SubscribeAction,
+    ) -> None:
+        for symbol in symbols:
+            await self._connection.send({
+                action.value: f'market.{symbol}.detail',
+            })
+
+    async def etp_stream(
+            self,
+            symbols: Iterable[str],
+            action: SubscribeAction,
+    ) -> None:
+        for symbol in symbols:
+            await self._connection.send({
+                action.value: f'market.{symbol}.etp',
+            })
 
     async def __aiter__(self) -> AsyncGenerator[Dict, None]:
         async for message in self._connection:
