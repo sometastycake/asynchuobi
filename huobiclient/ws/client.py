@@ -1,4 +1,3 @@
-import asyncio
 import gzip
 import json
 from typing import Any, AsyncGenerator, Callable, Dict, Type, Union
@@ -49,7 +48,7 @@ class HuobiMarketWebsocket:
         async for message in self._connection:
             data = self._loads(self._decompress(message))
             if 'ping' in data:
-                asyncio.create_task(self._pong(data['ping']))
+                await self._pong(data['ping'])
                 continue
             yield data
 
@@ -141,6 +140,6 @@ class HuobiAccountOrderWebsocket:
         async for message in self._connection:
             data = self._loads(message)
             if data.get('action', '') == 'ping':
-                asyncio.create_task(self._pong(data['data']['ts']))
+                await self._pong(data['data']['ts'])
                 continue
             yield data
