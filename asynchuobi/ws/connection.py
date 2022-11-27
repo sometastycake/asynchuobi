@@ -1,7 +1,7 @@
-from typing import Any, AsyncGenerator, Dict, Optional, Type
+from typing import Dict, Optional, Type
 
 import aiohttp
-from aiohttp import ClientWebSocketResponse
+from aiohttp import ClientWebSocketResponse, WSMessage
 
 
 class WebsocketConnection:
@@ -27,18 +27,12 @@ class WebsocketConnection:
     async def connect(self, **kwargs) -> None:
         self._socket = await self._session.ws_connect(url=self._url, **kwargs)
 
-    async def receive(self) -> Dict:
+    async def receive(self, timeout: Optional[float] = None) -> WSMessage:
         if self._socket is None:
             raise RuntimeError('Web socket is not connected')
-        return await self._socket.receive_json()
+        return await self._socket.receive(timeout)
 
     async def send(self, message: Dict) -> None:
         if self._socket is None or self._socket.closed:
             await self.connect()
         await self._socket.send_json(message)
-
-    async def __aiter__(self) -> AsyncGenerator[Any, None]:
-        if self._socket is None:
-            raise RuntimeError('Web socket is not connected')
-        async for message in self._socket:
-            yield message.data  # type:ignore

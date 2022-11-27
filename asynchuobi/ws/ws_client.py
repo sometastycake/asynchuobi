@@ -1,15 +1,24 @@
 import gzip
 import json
-from typing import Any, AsyncGenerator, Callable, Dict, Iterable, Type, Union
+from typing import Any, AsyncGenerator, Callable, Dict, Type, Union
+
+from aiohttp import WSMsgType
 
 from asynchuobi.auth import WebsocketAuth
-from asynchuobi.enums import CandleInterval, MarketDepthAggregationLevel
+from asynchuobi.enums import CandleInterval
+from asynchuobi.enums import MarketDepthAggregationLevel as Aggregation
 from asynchuobi.exceptions import WSHuobiError
 from asynchuobi.urls import HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
 from asynchuobi.ws.connection import WebsocketConnection
-from asynchuobi.ws.enums import SubscribeAction, TradeDetailMode
+from asynchuobi.ws.enums import SubUnsub, TradeDetailMode
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
+
+_CLOSING_STATUSES = (
+    WSMsgType.CLOSE,
+    WSMsgType.CLOSING,
+    WSMsgType.CLOSED,
+)
 
 
 class HuobiMarketWebsocket:
@@ -23,15 +32,19 @@ class HuobiMarketWebsocket:
         **connection_kwargs,
     ):
         self._loads = loads
+        self._closed = True
         self._decompress = decompress
         self._connection = connection(url=url, **connection_kwargs)
+        self._subscribed_ch = set()
 
     async def __aenter__(self):
         await self._connection.connect()
+        self._closed = False
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
         await self._connection.close()
+        self._closed = True
 
     async def _pong(self, timestamp: int) -> None:
         await self._connection.send({'pong': timestamp})
@@ -39,81 +52,79 @@ class HuobiMarketWebsocket:
     async def send(self, message: Dict) -> None:
         await self._connection.send(message)
 
-    async def market_candlestick_stream(
-            self,
-            symbols: Iterable[str],
-            interval: CandleInterval,
-            action: SubscribeAction,
-    ) -> None:
-        for symbol in symbols:
-            await self._connection.send({
-                action.value: f'market.{symbol}.kline.{interval.value}'
-            })
+    async def _handle_sub_unsub(self, topic: str, action: SubUnsub):
+        await self._connection.send({
+            action.value: topic,
+        })
+        if action is SubUnsub.sub:
+            self._subscribed_ch.add(topic)
+        else:
+            self._subscribed_ch.discard(topic)
 
-    async def ticker_stream(
+    async def market_candlestick(
             self,
-            symbols: Iterable[str],
-            action: SubscribeAction,
+            symbol: str,
+            interval: CandleInterval,
+            action: SubUnsub,
     ) -> None:
-        for symbol in symbols:
-            await self._connection.send({
-                action.value: f'market.{symbol}.ticker',
-            })
+        await self._handle_sub_unsub(
+            topic=f'market.{symbol}.kline.{interval.value}',
+            action=action,
+        )
+
+    async def ticker_stream(self, symbol: str, action: SubUnsub) -> None:
+        await self._handle_sub_unsub(
+            topic=f'market.{symbol}.ticker',
+            action=action,
+        )
 
     async def market_depth_stream(
             self,
-            symbols: Iterable[str],
-            action: SubscribeAction,
-            aggregation_level: MarketDepthAggregationLevel = MarketDepthAggregationLevel.step0,
+            symbol: str,
+            action: SubUnsub,
+            aggregation_level: Aggregation = Aggregation.step0,
     ) -> None:
-        for symbol in symbols:
-            await self._connection.send({
-                action.value: f'market.{symbol}.depth.{aggregation_level.value}',
-            })
+        topic = f'market.{symbol}.depth.{aggregation_level.value}'
+        await self._handle_sub_unsub(
+            topic=topic,
+            action=action,
+        )
 
-    async def best_bid_offer_stream(
-            self,
-            symbols: Iterable[str],
-            action: SubscribeAction,
-    ) -> None:
-        for symbol in symbols:
-            await self._connection.send({
-                action.value: f'market.{symbol}.bbo',
-            })
+    async def best_bid_offer_stream(self, symbol: str, action: SubUnsub) -> None:
+        await self._handle_sub_unsub(
+            topic=f'market.{symbol}.bbo',
+            action=action,
+        )
 
-    async def trade_detail_stream(
-            self,
-            symbols: Iterable[str],
-            action: SubscribeAction,
-    ) -> None:
-        for symbol in symbols:
-            await self._connection.send({
-                action.value: f'market.{symbol}.trade.detail',
-            })
+    async def trade_detail_stream(self, symbol: str, action: SubUnsub) -> None:
+        await self._handle_sub_unsub(
+            topic=f'market.{symbol}.trade.detail',
+            action=action,
+        )
 
-    async def market_detail_stream(
-            self,
-            symbols: Iterable[str],
-            action: SubscribeAction,
-    ) -> None:
-        for symbol in symbols:
-            await self._connection.send({
-                action.value: f'market.{symbol}.detail',
-            })
+    async def market_detail_stream(self, symbol: str, action: SubUnsub) -> None:
+        await self._handle_sub_unsub(
+            topic=f'market.{symbol}.detail',
+            action=action,
+        )
 
-    async def etp_stream(
-            self,
-            symbols: Iterable[str],
-            action: SubscribeAction,
-    ) -> None:
-        for symbol in symbols:
-            await self._connection.send({
-                action.value: f'market.{symbol}.etp',
-            })
+    async def etp_stream(self, symbol: str, action: SubUnsub) -> None:
+        await self._handle_sub_unsub(
+            topic=f'market.{symbol}.etp',
+            action=action,
+        )
 
     async def __aiter__(self) -> AsyncGenerator[Dict, None]:
-        async for message in self._connection:
-            data = self._loads(self._decompress(message))
+        while True:
+            message = await self._connection.receive()
+            if message.type in _CLOSING_STATUSES:
+                if not self._closed and self._subscribed_ch:
+                    await self._connection.connect()
+                    for topic in self._subscribed_ch:
+                        await self._connection.send({'sub': topic})
+                    continue
+                break
+            data = self._loads(self._decompress(message.data))
             if 'ping' in data:
                 await self._pong(data['ping'])
                 continue
@@ -171,11 +182,12 @@ class HuobiAccountOrderWebsocket:
         }
         await self._connection.send(message)
         recv = await self._connection.receive()
-        code = recv['code']
+        data = self._loads(recv.data)
+        code = data['code']
         if code != 200:
             raise WSHuobiError(
                 err_code=code,
-                err_msg=recv['message'],
+                err_msg=data['message'],
             )
 
     async def subscribe_order_updates(self, symbol: str) -> None:
@@ -207,8 +219,11 @@ class HuobiAccountOrderWebsocket:
         })
 
     async def __aiter__(self) -> AsyncGenerator[Dict, None]:
-        async for message in self._connection:
-            data = self._loads(message)
+        while True:
+            message = await self._connection.receive()
+            if message.type in _CLOSING_STATUSES:
+                break
+            data = self._loads(message.data)
             if data.get('action', '') == 'ping':
                 await self._pong(data['data']['ts'])
                 continue
