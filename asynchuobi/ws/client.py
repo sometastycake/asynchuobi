@@ -2,12 +2,12 @@ import gzip
 import json
 from typing import Any, AsyncGenerator, Callable, Dict, Iterable, Type, Union
 
-from huobiclient.auth import WebsocketAuth
-from huobiclient.enums import CandleInterval, MarketDepthAggregationLevel
-from huobiclient.exceptions import WSHuobiError
-from huobiclient.urls import HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
-from huobiclient.ws.connection import WebsocketConnection
-from huobiclient.ws.enums import SubscribeAction, TradeDetailMode
+from asynchuobi.auth import WebsocketAuth
+from asynchuobi.enums import CandleInterval, MarketDepthAggregationLevel
+from asynchuobi.exceptions import WSHuobiError
+from asynchuobi.urls import HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
+from asynchuobi.ws.connection import WebsocketConnection
+from asynchuobi.ws.enums import SubscribeAction, TradeDetailMode
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
 

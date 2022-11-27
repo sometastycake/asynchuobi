@@ -2,7 +2,7 @@ from urllib.parse import urljoin
 
 import pytest
 
-from huobiclient.urls import HUOBI_API_URL
+from asynchuobi.urls import HUOBI_API_URL
 
 
 @pytest.mark.asyncio

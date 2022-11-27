@@ -4,8 +4,8 @@ from urllib.parse import urljoin
 import pytest
 from freezegun import freeze_time
 
-from huobiclient.enums import AccountTypeCode, Sort
-from huobiclient.urls import HUOBI_API_URL
+from asynchuobi.enums import AccountTypeCode, Sort
+from asynchuobi.urls import HUOBI_API_URL
 
 
 @pytest.mark.asyncio

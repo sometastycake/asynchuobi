@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 from urllib.parse import urljoin
 
-from huobiclient.api.schemas import (
+from asynchuobi.api.schemas import (
     _CreateWithdrawRequest,
     _QueryDepositAddress,
     _QueryWithdrawAddress,
@@ -9,11 +9,11 @@ from huobiclient.api.schemas import (
     _QueryWithdrawQuota,
     _SearchExistedWithdrawsAndDeposits,
 )
-from huobiclient.api.strategy.abstract import RequestStrategyAbstract
-from huobiclient.api.strategy.request import BaseRequestStrategy
-from huobiclient.auth import APIAuth
-from huobiclient.enums import Direct
-from huobiclient.urls import HUOBI_API_URL
+from asynchuobi.api.strategy.abstract import RequestStrategyAbstract
+from asynchuobi.api.strategy.request import BaseRequestStrategy
+from asynchuobi.auth import APIAuth
+from asynchuobi.enums import Direct
+from asynchuobi.urls import HUOBI_API_URL
 
 
 class WalletHuobiClient:

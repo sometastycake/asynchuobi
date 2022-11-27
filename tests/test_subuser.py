@@ -4,8 +4,8 @@ from urllib.parse import urljoin
 import pytest
 from freezegun import freeze_time
 
-from huobiclient.api.schemas import SubUser, SubUserCreation
-from huobiclient.enums import (
+from asynchuobi.api.schemas import SubUser, SubUserCreation
+from asynchuobi.enums import (
     ApiKeyPermission,
     DeductMode,
     LockSubUserAction,
@@ -14,7 +14,7 @@ from huobiclient.enums import (
     Sort,
     TransferTypeBetweenParentAndSubUser,
 )
-from huobiclient.urls import HUOBI_API_URL
+from asynchuobi.urls import HUOBI_API_URL
 
 
 @pytest.mark.asyncio

@@ -1,7 +1,7 @@
 from typing import Dict, Iterable, List, Optional
 from urllib.parse import urljoin
 
-from huobiclient.api.schemas import (
+from asynchuobi.api.schemas import (
     NewOrder,
     _BatchCancelOpenOrders,
     _CancelOrder,
@@ -12,11 +12,11 @@ from huobiclient.api.schemas import (
     _SearchMatchResult,
     _SearchPastOrder,
 )
-from huobiclient.api.strategy.abstract import RequestStrategyAbstract
-from huobiclient.api.strategy.request import BaseRequestStrategy
-from huobiclient.auth import APIAuth
-from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
-from huobiclient.urls import HUOBI_API_URL
+from asynchuobi.api.strategy.abstract import RequestStrategyAbstract
+from asynchuobi.api.strategy.request import BaseRequestStrategy
+from asynchuobi.auth import APIAuth
+from asynchuobi.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
+from asynchuobi.urls import HUOBI_API_URL
 
 
 class OrderHuobiClient:

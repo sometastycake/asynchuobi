@@ -4,13 +4,13 @@ from unittest.mock import AsyncMock
 import pytest
 from freezegun import freeze_time
 
-from huobiclient.api.clients.account import AccountHuobiClient
-from huobiclient.api.clients.generic import GenericHuobiClient
-from huobiclient.api.clients.market import MarketHuobiClient
-from huobiclient.api.clients.order import OrderHuobiClient
-from huobiclient.api.clients.subuser import SubUserHuobiClient
-from huobiclient.api.clients.wallet import WalletHuobiClient
-from huobiclient.auth import APIAuth
+from asynchuobi.api.clients.account import AccountHuobiClient
+from asynchuobi.api.clients.generic import GenericHuobiClient
+from asynchuobi.api.clients.market import MarketHuobiClient
+from asynchuobi.api.clients.order import OrderHuobiClient
+from asynchuobi.api.clients.subuser import SubUserHuobiClient
+from asynchuobi.api.clients.wallet import WalletHuobiClient
+from asynchuobi.auth import APIAuth
 
 
 @pytest.fixture

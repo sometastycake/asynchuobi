@@ -1,10 +1,10 @@
 from typing import Dict, Iterable, Optional
 from urllib.parse import urljoin
 
-from huobiclient.api.schemas import _GetChainsInformationRequest, _GetMarketSymbolsSettings
-from huobiclient.api.strategy.abstract import RequestStrategyAbstract
-from huobiclient.api.strategy.request import BaseRequestStrategy
-from huobiclient.urls import HUOBI_API_URL
+from asynchuobi.api.schemas import _GetChainsInformationRequest, _GetMarketSymbolsSettings
+from asynchuobi.api.strategy.abstract import RequestStrategyAbstract
+from asynchuobi.api.strategy.request import BaseRequestStrategy
+from asynchuobi.urls import HUOBI_API_URL
 
 
 class GenericHuobiClient:

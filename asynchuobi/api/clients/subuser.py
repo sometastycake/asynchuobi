@@ -1,7 +1,7 @@
 from typing import Dict, Iterable, List, Optional
 from urllib.parse import urljoin
 
-from huobiclient.api.schemas import (
+from asynchuobi.api.schemas import (
     SubUserCreation,
     _APIKeyQuery,
     _GetAccountBalanceOfSubUser,
@@ -13,10 +13,10 @@ from huobiclient.api.schemas import (
     _SubUserApiKeyCreation,
     _SubUserApiKeyModification,
 )
-from huobiclient.api.strategy.abstract import RequestStrategyAbstract
-from huobiclient.api.strategy.request import BaseRequestStrategy
-from huobiclient.auth import APIAuth
-from huobiclient.enums import (
+from asynchuobi.api.strategy.abstract import RequestStrategyAbstract
+from asynchuobi.api.strategy.request import BaseRequestStrategy
+from asynchuobi.auth import APIAuth
+from asynchuobi.enums import (
     ApiKeyPermission,
     DeductMode,
     LockSubUserAction,
@@ -25,7 +25,7 @@ from huobiclient.enums import (
     Sort,
     TransferTypeBetweenParentAndSubUser,
 )
-from huobiclient.urls import HUOBI_API_URL
+from asynchuobi.urls import HUOBI_API_URL
 
 
 class SubUserHuobiClient:

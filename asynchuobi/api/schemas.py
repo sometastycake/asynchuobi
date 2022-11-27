@@ -2,8 +2,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from huobiclient.auth import APIAuth
-from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSource, OrderType
+from asynchuobi.auth import APIAuth
+from asynchuobi.enums import Direct, OperatorCharacterOfStopPrice, OrderSource, OrderType
 
 
 class _GetChainsInformationRequest(BaseModel):

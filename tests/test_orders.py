@@ -4,9 +4,9 @@ from urllib.parse import urljoin
 import pytest
 from freezegun import freeze_time
 
-from huobiclient.api.schemas import NewOrder
-from huobiclient.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
-from huobiclient.urls import HUOBI_API_URL
+from asynchuobi.api.schemas import NewOrder
+from asynchuobi.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
+from asynchuobi.urls import HUOBI_API_URL
 
 
 @pytest.mark.asyncio
