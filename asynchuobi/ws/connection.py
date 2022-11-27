@@ -33,7 +33,7 @@ class WebsocketConnection:
         return await self._socket.receive_json()
 
     async def send(self, message: Dict) -> None:
-        if self._socket is None:
+        if self._socket is None or self._socket.closed:
             await self.connect()
         await self._socket.send_json(message)
 
