@@ -18,11 +18,16 @@ class WebsocketConnection:
         self._session = session(**session_kwargs)
         self._socket: Optional[ClientWebSocketResponse] = None
 
+    @property
+    def closed(self) -> bool:
+        if self._socket is None:
+            return True
+        return self._socket.closed and self._session.closed
+
     async def close(self) -> None:
         await self._session.close()
         if self._socket is not None:
             await self._socket.close()
-            self._socket = None
 
     async def connect(self, **kwargs) -> None:
         self._socket = await self._session.ws_connect(url=self._url, **kwargs)

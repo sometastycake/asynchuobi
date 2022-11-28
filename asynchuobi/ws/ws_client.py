@@ -32,19 +32,16 @@ class HuobiMarketWebsocket:
         **connection_kwargs,
     ):
         self._loads = loads
-        self._closed = True
         self._decompress = decompress
         self._connection = connection(url=url, **connection_kwargs)
         self._subscribed_ch = set()
 
     async def __aenter__(self):
         await self._connection.connect()
-        self._closed = False
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
         await self._connection.close()
-        self._closed = True
 
     async def _pong(self, timestamp: int) -> None:
         await self._connection.send({'pong': timestamp})
@@ -115,12 +112,10 @@ class HuobiMarketWebsocket:
         )
 
     async def __aiter__(self) -> AsyncGenerator[Dict, None]:
-        if self._closed and self._subscribed_ch:
-            self._closed = False
         while True:
             message = await self._connection.receive()
             if message.type in _CLOSING_STATUSES:
-                if not self._closed and self._subscribed_ch:
+                if not self._connection.closed and self._subscribed_ch:
                     await self._connection.connect()
                     for topic in self._subscribed_ch:
                         await self._connection.send({'sub': topic})
