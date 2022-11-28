@@ -1,6 +1,6 @@
 import gzip
 import json
-from typing import Any, AsyncGenerator, Callable, Dict, Type, Union
+from typing import Any, Callable, Dict, Set, Type, Union
 
 from aiohttp import WSMsgType
 
@@ -34,7 +34,7 @@ class HuobiMarketWebsocket:
         self._loads = loads
         self._decompress = decompress
         self._connection = connection(url=url, **connection_kwargs)
-        self._subscribed_ch = set()
+        self._subscribed_ch: Set[str] = set()
 
     async def __aenter__(self):
         await self._connection.connect()
@@ -111,7 +111,10 @@ class HuobiMarketWebsocket:
             action=action,
         )
 
-    async def __aiter__(self) -> AsyncGenerator[Dict, None]:
+    def __aiter__(self) -> 'HuobiMarketWebsocket':
+        return self
+
+    async def __anext__(self) -> Dict:
         while True:
             message = await self._connection.receive()
             if message.type in _CLOSING_STATUSES:
@@ -120,12 +123,12 @@ class HuobiMarketWebsocket:
                     for topic in self._subscribed_ch:
                         await self._connection.send({'sub': topic})
                     continue
-                break
+                raise StopAsyncIteration
             data = self._loads(self._decompress(message.data))
             if 'ping' in data:
                 await self._pong(data['ping'])
                 continue
-            yield data
+            return data
 
 
 class HuobiAccountOrderWebsocket:
@@ -215,13 +218,16 @@ class HuobiAccountOrderWebsocket:
             'ch': f'accounts.update#{mode}',
         })
 
-    async def __aiter__(self) -> AsyncGenerator[Dict, None]:
+    def __aiter__(self) -> 'HuobiAccountOrderWebsocket':
+        return self
+
+    async def __anext__(self) -> Dict:
         while True:
             message = await self._connection.receive()
             if message.type in _CLOSING_STATUSES:
-                break
+                raise StopAsyncIteration
             data = self._loads(message.data)
             if data.get('action', '') == 'ping':
                 await self._pong(data['data']['ts'])
                 continue
-            yield data
+            return data

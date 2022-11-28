@@ -25,9 +25,9 @@ class WebsocketConnection:
         return self._socket.closed and self._session.closed
 
     async def close(self) -> None:
-        await self._session.close()
         if self._socket is not None:
             await self._socket.close()
+        await self._session.close()
 
     async def connect(self, **kwargs) -> None:
         self._socket = await self._session.ws_connect(url=self._url, **kwargs)
@@ -38,6 +38,6 @@ class WebsocketConnection:
         return await self._socket.receive(timeout)
 
     async def send(self, message: Dict) -> None:
-        if self._socket is None or self._socket.closed:
+        if self._socket is None:
             await self.connect()
-        await self._socket.send_json(message)
+        await self._socket.send_json(message)  # type:ignore[union-attr]

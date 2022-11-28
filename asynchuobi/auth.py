@@ -2,15 +2,19 @@ import base64
 import datetime
 import hashlib
 import hmac
-from typing import Dict, Optional
-from urllib.parse import urlencode
+from typing import Dict, Optional, Tuple
+from urllib.parse import urlencode, urlparse
 
 from pydantic import BaseModel, Field
-from yarl import URL
 
 
 def _utcnow() -> str:
     return datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
+
+
+def _parse_url(url: str) -> Tuple[Optional[str], str]:
+    parsed = urlparse(url)
+    return parsed.hostname, parsed.path
 
 
 class _BaseAuth(BaseModel):
@@ -37,20 +41,14 @@ class _BaseAuth(BaseModel):
 
     def _sign(self, path: str, method: str, host: str) -> str:
         params = self._get_params()
-        payload = '%s\n%s\n%s\n%s' % (  # noqa:FS001
-            method,
-            host,
-            path,
-            urlencode(params),
-        )
+        payload = '\n'.join([method, host, path, urlencode(params)])
         return self._calculate_hash(payload)
 
     def to_request(self, url: str, method: str) -> Dict:
-        self.Signature = self._sign(
-            path=URL(url).path,
-            method=method,
-            host=URL(url).host,
-        )
+        host, path = _parse_url(url)
+        if host is None:
+            raise ValueError('Host cannot be None')
+        self.Signature = self._sign(path, method, host)
         return self.dict(
             exclude_none=True,
             by_alias=True,
@@ -85,11 +83,10 @@ class WebsocketAuth(_BaseAuth):
         )
 
     def to_request(self, url: str, method: str) -> Dict:
-        self.signature = self._sign(
-            path=URL(url).path,
-            method=method,
-            host=URL(url).host,
-        )
+        host, path = _parse_url(url)
+        if host is None:
+            raise ValueError('Host cannot be None')
+        self.signature = self._sign(path, method, host)
         return self.dict(
             exclude_none=True,
             by_alias=True,
