@@ -9,8 +9,8 @@ from asynchuobi.enums import CandleInterval
 from asynchuobi.enums import MarketDepthAggregationLevel as Aggregation
 from asynchuobi.exceptions import WSHuobiError
 from asynchuobi.urls import HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
-from asynchuobi.ws.connection import WebsocketConnection
-from asynchuobi.ws.enums import SubUnsub, TradeDetailMode
+from asynchuobi.ws.ws_connection import WebsocketConnection
+from asynchuobi.ws.ws_enums import SubUnsub, WSTradeDetailMode
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
 
@@ -61,7 +61,7 @@ class HuobiMarketWebsocket:
         else:
             self._subscribed_ch.discard(topic)
 
-    async def market_candlestick(
+    async def market_candlestick_stream(
             self,
             symbol: str,
             interval: CandleInterval,
@@ -115,6 +115,8 @@ class HuobiMarketWebsocket:
         )
 
     async def __aiter__(self) -> AsyncGenerator[Dict, None]:
+        if self._closed and self._subscribed_ch:
+            self._closed = False
         while True:
             message = await self._connection.receive()
             if message.type in _CLOSING_STATUSES:
@@ -201,7 +203,7 @@ class HuobiAccountOrderWebsocket:
     async def subscribe_trade_detail(
             self,
             symbol: str,
-            mode: TradeDetailMode = TradeDetailMode.only_trade_event,
+            mode: WSTradeDetailMode = WSTradeDetailMode.only_trade_event,
     ) -> None:
         if not isinstance(symbol, str):
             raise TypeError('Symbol is not str')

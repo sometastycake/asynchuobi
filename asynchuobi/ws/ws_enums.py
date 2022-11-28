@@ -1,7 +1,7 @@
 from enum import Enum, IntEnum
 
 
-class TradeDetailMode(IntEnum):
+class WSTradeDetailMode(IntEnum):
     only_trade_event = 0
     trade_and_cancellation_events = 1
 
