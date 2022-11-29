@@ -119,7 +119,7 @@ class OrderSide(Enum):
 
 
 class Direct(Enum):
-    next = 'next'
+    next = 'next'  # noqa:VNE003
     prev = 'prev'
 
 
