@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_get_params_ws(ws_auth):
     params = ws_auth._get_params()
     assert params == {
@@ -37,3 +40,11 @@ def test_to_request_ws(ws_auth):
         'signatureVersion': '2.1',
         'timestamp': '2023-01-01T00:01:01'
     }
+
+
+def test_to_request_without_host(ws_auth):
+    with pytest.raises(ValueError):
+        ws_auth.to_request(
+            url='/path',
+            method='GET',
+        )

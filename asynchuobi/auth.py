@@ -22,12 +22,13 @@ class _BaseAuth(BaseModel):
     Signature: Optional[str]
 
     def _calculate_hash(self, payload: str) -> str:
-        digest = hmac.new(
-            key=self.SecretKey.encode('utf-8'),
+        secret = self.SecretKey.encode('utf-8')
+        value: hmac.HMAC = hmac.new(
+            key=secret,
             msg=payload.encode('utf-8'),
             digestmod=hashlib.sha256,
-        ).digest()
-        return base64.b64encode(digest).decode()
+        )
+        return base64.b64encode(value.digest()).decode()
 
     def _get_params(self) -> Dict:
         return self.dict(
@@ -58,16 +59,16 @@ class _BaseAuth(BaseModel):
 
 class APIAuth(_BaseAuth):
     AccessKeyId: str
-    SignatureMethod: str = Field(default='HmacSHA256', const=True)
-    SignatureVersion: str = Field(default='2', const=True)
+    SignatureMethod: str = 'HmacSHA256'
+    SignatureVersion: str = '2'
     Timestamp: str = Field(default_factory=_utcnow)
 
 
 class WebsocketAuth(_BaseAuth):
-    authType: str = Field(default='api', const=True)
+    authType: str = 'api'
     accessKey: str
-    signatureMethod: str = Field(default='HmacSHA256', const=True)
-    signatureVersion: str = Field(default='2.1', const=True)
+    signatureMethod: str = 'HmacSHA256'
+    signatureVersion: str = '2.1'
     timestamp: str = Field(default_factory=_utcnow)
     signature: Optional[str]
 

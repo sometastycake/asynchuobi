@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_get_params(api_auth):
     params = api_auth._get_params()
     assert params == {
@@ -36,3 +39,11 @@ def test_to_request(api_auth):
         'Timestamp': '2023-01-01T00:01:01',
         'param': 'param',
     }
+
+
+def test_to_request_without_host(api_auth):
+    with pytest.raises(ValueError):
+        api_auth.to_request(
+            url='/path',
+            method='GET',
+        )
