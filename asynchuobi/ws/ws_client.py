@@ -50,6 +50,8 @@ class HuobiMarketWebsocket:
         await self._connection.send(message)
 
     async def _handle_sub_unsub(self, topic: str, action: SubUnsub):
+        if not isinstance(action, SubUnsub):
+            raise TypeError('Action type is not SubUnsub')
         await self._connection.send({
             action.value: topic,
         })
@@ -61,15 +63,25 @@ class HuobiMarketWebsocket:
     async def market_candlestick_stream(
             self,
             symbol: str,
-            interval: CandleInterval,
+            interval: Union[CandleInterval, str],
             action: SubUnsub,
     ) -> None:
+        if not isinstance(symbol, str):
+            raise TypeError('Symbol is not str')
+        if isinstance(interval, CandleInterval):
+            interval_ = interval.value
+        elif isinstance(interval, str):
+            interval_ = interval
+        else:
+            raise TypeError('Wrong type for interval')
         await self._handle_sub_unsub(
-            topic=f'market.{symbol}.kline.{interval.value}',
+            topic=f'market.{symbol}.kline.{interval_}',
             action=action,
         )
 
     async def ticker_stream(self, symbol: str, action: SubUnsub) -> None:
+        if not isinstance(symbol, str):
+            raise TypeError('Symbol is not str')
         await self._handle_sub_unsub(
             topic=f'market.{symbol}.ticker',
             action=action,
@@ -81,6 +93,8 @@ class HuobiMarketWebsocket:
             action: SubUnsub,
             aggregation_level: Aggregation = Aggregation.step0,
     ) -> None:
+        if not isinstance(symbol, str):
+            raise TypeError('Symbol is not str')
         topic = f'market.{symbol}.depth.{aggregation_level.value}'
         await self._handle_sub_unsub(
             topic=topic,
@@ -88,24 +102,32 @@ class HuobiMarketWebsocket:
         )
 
     async def best_bid_offer_stream(self, symbol: str, action: SubUnsub) -> None:
+        if not isinstance(symbol, str):
+            raise TypeError('Symbol is not str')
         await self._handle_sub_unsub(
             topic=f'market.{symbol}.bbo',
             action=action,
         )
 
     async def trade_detail_stream(self, symbol: str, action: SubUnsub) -> None:
+        if not isinstance(symbol, str):
+            raise TypeError('Symbol is not str')
         await self._handle_sub_unsub(
             topic=f'market.{symbol}.trade.detail',
             action=action,
         )
 
     async def market_detail_stream(self, symbol: str, action: SubUnsub) -> None:
+        if not isinstance(symbol, str):
+            raise TypeError('Symbol is not str')
         await self._handle_sub_unsub(
             topic=f'market.{symbol}.detail',
             action=action,
         )
 
     async def etp_stream(self, symbol: str, action: SubUnsub) -> None:
+        if not isinstance(symbol, str):
+            raise TypeError('Symbol is not str')
         await self._handle_sub_unsub(
             topic=f'market.{symbol}.etp',
             action=action,
