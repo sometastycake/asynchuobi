@@ -51,6 +51,7 @@ class HuobiMarketWebsocket:
         loads: LOADS_TYPE = json.loads,
         decompress: DECOMPRESS_TYPE = gzip.decompress,
         default_message_id: Callable[..., str] = _default_message_id,
+        raise_if_error: bool = False,
         connection: Type[WebsocketConnection] = WebsocketConnection,
         **connection_kwargs,
     ):
@@ -58,6 +59,7 @@ class HuobiMarketWebsocket:
         self._decompress = decompress
         self._connection = connection(url=url, **connection_kwargs)
         self._default_message_id = default_message_id
+        self._raise_if_error = raise_if_error
         self._subscribed_ch: Set[str] = set()
         self._callbacks: Dict[str, CALLBACK_TYPE] = {}
 
@@ -228,6 +230,11 @@ class HuobiMarketWebsocket:
             if 'ping' in data:
                 await self._pong(data['ping'])
                 continue
+            if data.get('status', '') == 'error' and self._raise_if_error:
+                raise WSHuobiError(
+                    err_code=data['err-code'],
+                    err_msg=data['err-msg'],
+                )
             return data
 
     async def run_with_callbacks(self) -> None:
