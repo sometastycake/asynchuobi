@@ -1,6 +1,7 @@
+import asyncio
 import gzip
 import json
-from typing import Any, Callable, Dict, Set, Type, Union
+from typing import Any, Awaitable, Callable, Dict, Optional, Set, Type, Union, cast
 
 from aiohttp import WSMsgType
 
@@ -23,6 +24,13 @@ from asynchuobi.ws.ws_connection import WebsocketConnection
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
 
+DECOMPRESS_TYPE = Callable[[bytes], Union[str, bytes]]
+
+CALLBACK_TYPE = Union[
+    Callable[[Dict], Awaitable[Any]],
+    Callable[[Dict], Any]
+]
+
 _CLOSING_STATUSES = (
     WSMsgType.CLOSE,
     WSMsgType.CLOSING,
@@ -36,7 +44,7 @@ class HuobiMarketWebsocket:
         self,
         url: str = HUOBI_WS_MARKET_URL,
         loads: LOADS_TYPE = json.loads,
-        decompress: Callable[[bytes], Union[str, bytes]] = gzip.decompress,
+        decompress: DECOMPRESS_TYPE = gzip.decompress,
         connection: Type[WebsocketConnection] = WebsocketConnection,
         **connection_kwargs,
     ):
@@ -44,6 +52,7 @@ class HuobiMarketWebsocket:
         self._decompress = decompress
         self._connection = connection(url=url, **connection_kwargs)
         self._subscribed_ch: Set[str] = set()
+        self._callbacks: Dict[str, CALLBACK_TYPE] = {}
 
     async def __aenter__(self):
         await self._connection.connect()
@@ -55,17 +64,23 @@ class HuobiMarketWebsocket:
     async def _pong(self, timestamp: int) -> None:
         await self._connection.send({'pong': timestamp})
 
-    async def send(self, message: Dict) -> None:
-        await self._connection.send(message)
-
-    async def _handle_sub_unsub(self, topic: str, action: SubUnsub):
+    async def _handle_sub_unsub(
+            self,
+            topic: str,
+            action: SubUnsub,
+            callback: Optional[CALLBACK_TYPE] = None,
+    ) -> None:
         if not isinstance(action, SubUnsub):
-            raise TypeError('Action type is not SubUnsub')
+            raise TypeError(f'Action type is not SubUnsub, received type "{type(action)}"')
         await self._connection.send({
             action.value: topic,
         })
         if action is SubUnsub.sub:
             self._subscribed_ch.add(topic)
+            if callback:
+                if not callable(callback):
+                    raise TypeError(f'Object {callback} is not callable')
+                self._callbacks[topic] = callback
         else:
             self._subscribed_ch.discard(topic)
 
@@ -74,26 +89,34 @@ class HuobiMarketWebsocket:
             symbol: str,
             interval: Union[CandleInterval, str],
             action: SubUnsub,
+            callback: Optional[CALLBACK_TYPE] = None,
     ) -> None:
         if not isinstance(symbol, str):
-            raise TypeError('Symbol is not str')
+            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         if isinstance(interval, CandleInterval):
             period = interval.value
         elif isinstance(interval, str):
             period = interval
         else:
-            raise TypeError('Wrong type for interval')
+            raise TypeError(f'Wrong type "{type(interval)}" for interval')
         await self._handle_sub_unsub(
             topic=market_candlestick_topic(symbol, period),
             action=action,
+            callback=callback,
         )
 
-    async def ticker_stream(self, symbol: str, action: SubUnsub) -> None:
+    async def ticker_stream(
+            self,
+            symbol: str,
+            action: SubUnsub,
+            callback: Optional[CALLBACK_TYPE] = None,
+    ) -> None:
         if not isinstance(symbol, str):
-            raise TypeError('Symbol is not str')
+            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
             topic=ticker_topic(symbol),
             action=action,
+            callback=callback,
         )
 
     async def market_depth_stream(
@@ -101,44 +124,70 @@ class HuobiMarketWebsocket:
             symbol: str,
             action: SubUnsub,
             aggregation_level: Aggregation = Aggregation.step0,
+            callback: Optional[CALLBACK_TYPE] = None,
     ) -> None:
         if not isinstance(symbol, str):
-            raise TypeError('Symbol is not str')
+            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
             topic=market_depth_topic(symbol, aggregation_level),
             action=action,
+            callback=callback,
         )
 
-    async def best_bid_offer_stream(self, symbol: str, action: SubUnsub) -> None:
+    async def best_bid_offer_stream(
+            self,
+            symbol: str,
+            action: SubUnsub,
+            callback: Optional[CALLBACK_TYPE] = None,
+    ) -> None:
         if not isinstance(symbol, str):
-            raise TypeError('Symbol is not str')
+            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
             topic=bbo_topic(symbol),
             action=action,
+            callback=callback,
         )
 
-    async def trade_detail_stream(self, symbol: str, action: SubUnsub) -> None:
+    async def trade_detail_stream(
+            self,
+            symbol: str,
+            action: SubUnsub,
+            callback: Optional[CALLBACK_TYPE] = None,
+    ) -> None:
         if not isinstance(symbol, str):
-            raise TypeError('Symbol is not str')
+            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
             topic=trade_detail_topic(symbol),
             action=action,
+            callback=callback,
         )
 
-    async def market_detail_stream(self, symbol: str, action: SubUnsub) -> None:
+    async def market_detail_stream(
+            self,
+            symbol: str,
+            action: SubUnsub,
+            callback: Optional[CALLBACK_TYPE] = None,
+    ) -> None:
         if not isinstance(symbol, str):
-            raise TypeError('Symbol is not str')
+            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
             topic=market_detail_topic(symbol),
             action=action,
+            callback=callback,
         )
 
-    async def etp_stream(self, symbol: str, action: SubUnsub) -> None:
+    async def etp_stream(
+            self,
+            symbol: str,
+            action: SubUnsub,
+            callback: Optional[CALLBACK_TYPE] = None,
+    ) -> None:
         if not isinstance(symbol, str):
-            raise TypeError('Symbol is not str')
+            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
             topic=etp_topic(symbol),
             action=action,
+            callback=callback,
         )
 
     def __aiter__(self) -> 'HuobiMarketWebsocket':
@@ -159,6 +208,21 @@ class HuobiMarketWebsocket:
                 await self._pong(data['ping'])
                 continue
             return data
+
+    async def run_with_callbacks(self) -> None:
+        if not self._callbacks:
+            raise RuntimeError('Callbacks not specified')
+        async for message in self:
+            message = cast(dict, message)
+            channel = message.get('ch') or message.get('subbed')
+            if channel:
+                if channel not in self._callbacks:
+                    continue
+                callback = self._callbacks[channel]
+                if asyncio.iscoroutinefunction(callback):
+                    asyncio.create_task(callback(message))
+                else:
+                    callback(message)
 
 
 class HuobiAccountOrderWebsocket:
