@@ -2,6 +2,7 @@ import asyncio
 import gzip
 import json
 import uuid
+import warnings
 from typing import Any, Awaitable, Callable, Dict, Optional, Set, Type, Union, cast
 
 from aiohttp import WSMsgType
@@ -243,14 +244,16 @@ class HuobiMarketWebsocket:
         async for message in self:
             message = cast(dict, message)
             channel = message.get('ch') or message.get('subbed')
-            if channel:
-                if channel not in self._callbacks:
-                    continue
-                callback = self._callbacks[channel]
-                if asyncio.iscoroutinefunction(callback):
-                    asyncio.create_task(callback(message))
-                else:
-                    callback(message)
+            if not channel:
+                warnings.warn(f'Channel not found in message {message}')
+                continue
+            if channel not in self._callbacks:
+                continue
+            callback = self._callbacks[channel]
+            if asyncio.iscoroutinefunction(callback):
+                asyncio.create_task(callback(message))
+            else:
+                callback(message)
 
 
 class HuobiAccountOrderWebsocket:
