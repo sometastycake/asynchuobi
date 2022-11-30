@@ -30,7 +30,7 @@ DECOMPRESS_TYPE = Callable[[bytes], Union[str, bytes]]
 
 CALLBACK_TYPE = Union[
     Callable[[Dict], Awaitable[Any]],
-    Callable[[Dict], Any]
+    Callable[[Dict], Any],
 ]
 
 _CLOSING_STATUSES = (
@@ -38,6 +38,7 @@ _CLOSING_STATUSES = (
     WSMsgType.CLOSING,
     WSMsgType.CLOSED,
 )
+
 
 
 def _default_message_id() -> str:
@@ -240,14 +241,13 @@ class HuobiMarketWebsocket:
 
     async def run_with_callbacks(self) -> None:
         if not self._callbacks:
-            raise RuntimeError('Callbacks not specified')
+            warnings.warn('Callbacks not specified')
+            return
         async for message in self:
             message = cast(dict, message)
             channel = message.get('ch') or message.get('subbed')
             if not channel:
                 warnings.warn(f'Channel not found in message {message}')
-                continue
-            if channel not in self._callbacks:
                 continue
             callback = self._callbacks[channel]
             if asyncio.iscoroutinefunction(callback):
