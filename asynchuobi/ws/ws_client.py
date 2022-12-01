@@ -22,15 +22,14 @@ from asynchuobi.ws.topics import (
     ticker_topic,
     trade_detail_topic,
 )
-from asynchuobi.ws.ws_connection import WebsocketConnection
+from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnection
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
-
 DECOMPRESS_TYPE = Callable[[bytes], Union[str, bytes]]
 
 CALLBACK_TYPE = Union[
-    Callable[[Dict], Awaitable[Any]],
-    Callable[[Dict], Any],
+    Callable[[WS_MESSAGE_TYPE], Awaitable[Any]],
+    Callable[[WS_MESSAGE_TYPE], Any],
 ]
 
 _CLOSING_STATUSES = (
@@ -218,7 +217,7 @@ class HuobiMarketWebsocket:
     def __aiter__(self) -> 'HuobiMarketWebsocket':
         return self
 
-    async def __anext__(self) -> Dict:
+    async def __anext__(self) -> WS_MESSAGE_TYPE:
         while True:
             message = await self._connection.receive()
             if message.type in _CLOSING_STATUSES:
@@ -244,7 +243,7 @@ class HuobiMarketWebsocket:
             warnings.warn('Callbacks not specified')
             return
         async for message in self:
-            message = cast(dict, message)
+            message = cast(WS_MESSAGE_TYPE, message)
             channel = message.get('ch') or message.get('subbed')
             if not channel:
                 warnings.warn(f'Channel not found in message {message}')

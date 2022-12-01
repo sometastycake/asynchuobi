@@ -3,6 +3,8 @@ from typing import Dict, Optional, Type
 import aiohttp
 from aiohttp import ClientWebSocketResponse, WSMessage
 
+WS_MESSAGE_TYPE = Dict
+
 
 class WebsocketConnection:
 
@@ -37,7 +39,7 @@ class WebsocketConnection:
             raise RuntimeError('Web socket is not connected')
         return await self._socket.receive(timeout)
 
-    async def send(self, message: Dict) -> None:
+    async def send(self, message: WS_MESSAGE_TYPE) -> None:
         if self._socket is None:
             await self.connect()
         await self._socket.send_json(message)  # type:ignore[union-attr]
