@@ -52,6 +52,7 @@ class HuobiMarketWebsocket:
         decompress: DECOMPRESS_TYPE = gzip.decompress,
         default_message_id: Callable[[], str] = _default_message_id,
         raise_if_error: bool = False,
+        run_callbacks_in_asyncio_tasks: bool = True,
         connection: Type[WebsocketConnectionAbstract] = WebsocketConnection,
         **connection_kwargs,
     ):
@@ -60,6 +61,7 @@ class HuobiMarketWebsocket:
         self._connection = connection(url=url, **connection_kwargs)
         self._default_message_id = default_message_id
         self._raise_if_error = raise_if_error
+        self._run_callbacks_in_asyncio_tasks = run_callbacks_in_asyncio_tasks
         self._subscribed_ch: Set[str] = set()
         self._callbacks: Dict[str, CALLBACK_TYPE] = {}
 
@@ -249,7 +251,10 @@ class HuobiMarketWebsocket:
                 continue
             callback = self._callbacks[channel]
             if asyncio.iscoroutinefunction(callback):
-                asyncio.create_task(callback(message))
+                if self._run_callbacks_in_asyncio_tasks:
+                    asyncio.create_task(callback(message))
+                else:
+                    await callback(message)
             else:
                 callback(message)
 
