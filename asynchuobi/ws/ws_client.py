@@ -50,7 +50,7 @@ class HuobiMarketWebsocket:
         url: str = HUOBI_WS_MARKET_URL,
         loads: LOADS_TYPE = json.loads,
         decompress: DECOMPRESS_TYPE = gzip.decompress,
-        default_message_id: Callable[..., str] = _default_message_id,
+        default_message_id: Callable[[], str] = _default_message_id,
         raise_if_error: bool = False,
         connection: Type[WebsocketConnectionAbstract] = WebsocketConnection,
         **connection_kwargs,
