@@ -22,7 +22,7 @@ from asynchuobi.ws.topics import (
     ticker_topic,
     trade_detail_topic,
 )
-from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnection
+from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnection, WebsocketConnectionAbstract
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
 DECOMPRESS_TYPE = Callable[[bytes], Union[str, bytes]]
@@ -39,7 +39,6 @@ _CLOSING_STATUSES = (
 )
 
 
-
 def _default_message_id() -> str:
     return str(uuid.uuid4())
 
@@ -53,7 +52,7 @@ class HuobiMarketWebsocket:
         decompress: DECOMPRESS_TYPE = gzip.decompress,
         default_message_id: Callable[..., str] = _default_message_id,
         raise_if_error: bool = False,
-        connection: Type[WebsocketConnection] = WebsocketConnection,
+        connection: Type[WebsocketConnectionAbstract] = WebsocketConnection,
         **connection_kwargs,
     ):
         self._loads = loads

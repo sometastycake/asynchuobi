@@ -1,3 +1,4 @@
+import abc
 from typing import Dict, Optional, Type
 
 import aiohttp
@@ -6,7 +7,29 @@ from aiohttp import ClientWebSocketResponse, WSMessage
 WS_MESSAGE_TYPE = Dict
 
 
-class WebsocketConnection:
+class WebsocketConnectionAbstract(abc.ABC):
+
+    @abc.abstractmethod
+    def __init__(self, *args, **kwargs): ...
+
+    @property
+    @abc.abstractmethod
+    def closed(self) -> bool: ...
+
+    @abc.abstractmethod
+    async def close(self) -> None: ...
+
+    @abc.abstractmethod
+    async def connect(self, **kwargs) -> None: ...
+
+    @abc.abstractmethod
+    async def receive(self, timeout: Optional[float] = None) -> WSMessage: ...
+
+    @abc.abstractmethod
+    async def send(self, message: WS_MESSAGE_TYPE) -> None: ...
+
+
+class WebsocketConnection(WebsocketConnectionAbstract):
 
     def __init__(
         self,
