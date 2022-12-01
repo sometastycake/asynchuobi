@@ -44,7 +44,46 @@ def _default_message_id() -> str:
 
 
 class HuobiMarketWebsocket:
+    """
+    Websocket class for retrieving market data.
 
+    Usage:
+
+        async with HuobiMarketWebsocket() as ws:
+            await ws.market_candlestick_stream('btcusdt', CandleInterval.min_1, SubUnsub.sub)
+            await ws.market_detail_stream('ethusdt', SubUnsub.sub)
+            async for message in ws:
+                ...
+
+    You can define callbacks which will called when message was received from Huobi websocket:
+
+        def callback_market_detail(message: dict):
+            print(message)
+
+        async with HuobiMarketWebsocket() as ws:
+            await ws.market_detail_stream(
+                symbol='ethusdt',
+                action=SubUnsub.sub,
+                callback=callback_market_detail,
+            )
+            await ws.run_with_callbacks()
+
+        You can also define async callback
+
+    Parameters:
+        url - websocket url
+        loads - method of json deserialize (default json.loads)
+        decompress - method of gzip decompress (default gzip.decompress)
+        default_message_id - method of generating messages id
+            Identifiers are sent in some messages, for example:
+            {
+                'sub': 'market.btcusdt.kline.1min',
+                'id': 'id_example'
+            }
+        raise_if_error - raise exception if error message was received from websocket
+        run_callbacks_in_asyncio_tasks - if True, than callbacks are run into asyncio.create_task
+        connection - object for managing websocket connection
+    """
     def __init__(
         self,
         url: str = HUOBI_WS_MARKET_URL,
@@ -98,6 +137,14 @@ class HuobiMarketWebsocket:
                 self._callbacks[topic] = callback
         else:
             self._subscribed_ch.discard(topic)
+
+    async def unsubscribe_all(self) -> None:
+        """
+        Unsubscribe all topics.
+        """
+        for topic in self._subscribed_ch:
+            await self._connection.send({'unsub': topic})
+        self._subscribed_ch.clear()
 
     async def market_candlestick_stream(
             self,
