@@ -71,18 +71,18 @@ class HuobiMarketWebsocket:
         You can also define async callback
 
     Parameters:
-        url - websocket url
-        loads - method of json deserialize (default json.loads)
-        decompress - method of gzip decompress (default gzip.decompress)
-        default_message_id - method of generating messages id
+        url - Websocket url
+        loads - Method of json deserialize (default json.loads)
+        decompress - Method of gzip decompress (default gzip.decompress)
+        default_message_id - Method of generating messages id
             Identifiers are sent in some messages, for example:
             {
                 'sub': 'market.btcusdt.kline.1min',
                 'id': 'id_example'
             }
-        raise_if_error - raise exception if error message was received from websocket
-        run_callbacks_in_asyncio_tasks - if True, than callbacks are run into asyncio.create_task
-        connection - object for managing websocket connection
+        raise_if_error - Raise exception if error message was received from websocket
+        run_callbacks_in_asyncio_tasks - If True, than callbacks are run into asyncio.create_task
+        connection - Object for managing websocket connection
     """
     def __init__(
         self,
@@ -312,7 +312,28 @@ class HuobiMarketWebsocket:
 
 
 class HuobiAccountOrderWebsocket:
+    """
+    Websocket class for retrieving information about orders and account.
 
+        async with HuobiAccountOrderWebsocket(
+            access_key='access_key',
+            secret_key='secret_key',
+        ) as ws:
+            await ws.subscribe_account_change(mode=1)
+            for symbol in {'dogeusdt', 'btcusdt'}:
+                await ws.subscribe_order_updates(symbol)
+                await ws.subscribe_trade_detail(symbol, mode=WSTradeDetailMode.trade_and_cancellation_events)
+            async for message in ws:
+                print(message)
+
+    Parameters
+        access_key - Access key
+        secret_key - Secret key
+        url - Websocket url
+        loads - Method of json deserialize (default json.loads)
+        raise_if_error - Raise exception if error message was received from websocket
+        connection - Object for managing websocket connection
+    """
     def __init__(
         self,
         access_key: str,
