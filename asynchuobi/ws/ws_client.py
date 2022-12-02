@@ -139,9 +139,8 @@ class HuobiMarketWebsocket:
             self._subscribed_ch.discard(topic)
 
     async def unsubscribe_all(self) -> None:
-        """
-        Unsubscribe all topics.
-        """
+        if self._connection.closed:
+            return
         for topic in self._subscribed_ch:
             await self._connection.send({'unsub': topic})
         self._subscribed_ch.clear()
@@ -276,10 +275,12 @@ class HuobiMarketWebsocket:
                     continue
                 raise StopAsyncIteration
             data = self._loads(self._decompress(message.data))
-            if 'ping' in data:
-                await self._pong(data['ping'])
+            ping = data.get('ping')
+            if ping:
+                await self._pong(ping)
                 continue
-            if data.get('status', '') == 'error' and self._raise_if_error:
+            status = data.get('status') or ''
+            if status == 'error' and self._raise_if_error:
                 raise WSHuobiError(
                     err_code=data['err-code'],
                     err_msg=data['err-msg'],
