@@ -138,6 +138,10 @@ class HuobiMarketWebsocket:
         else:
             self._subscribed_ch.discard(topic)
 
+    async def close(self) -> None:
+        if not self._connection.closed:
+            await self._connection.close()
+
     async def unsubscribe_all(self) -> None:
         if self._connection.closed:
             return
