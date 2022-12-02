@@ -10,7 +10,7 @@ from aiohttp import WSMsgType
 from asynchuobi.auth import WebsocketAuth
 from asynchuobi.enums import CandleInterval
 from asynchuobi.enums import MarketDepthAggregationLevel as Aggregation
-from asynchuobi.exceptions import WSHuobiError
+from asynchuobi.exceptions import WSConnectionNotAuthorized, WSHuobiError
 from asynchuobi.urls import HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
 from asynchuobi.ws.enums import SubUnsub, WSTradeDetailMode
 from asynchuobi.ws.topics import (
@@ -329,10 +329,11 @@ class HuobiAccountOrderWebsocket:
         self._access_key = access_key
         self._secret_key = secret_key
         self._connection = connection(url=url, **connection_kwargs)
+        self._is_auth = False
 
     async def __aenter__(self) -> 'HuobiAccountOrderWebsocket':
         await self._connection.connect()
-        await self.auth()
+        await self.authorize()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa: U100
@@ -347,10 +348,14 @@ class HuobiAccountOrderWebsocket:
         }
         await self._connection.send(message)
 
-    async def send(self, message: Dict) -> None:
-        await self._connection.send(message)
+    async def close(self) -> None:
+        if not self._connection.closed:
+            await self._connection.close()
 
-    async def auth(self) -> None:
+    async def authorize(self) -> None:
+        """
+        Authenticate the connection.
+        """
         auth = WebsocketAuth(
             SecretKey=self._secret_key,
             accessKey=self._access_key,
@@ -365,18 +370,22 @@ class HuobiAccountOrderWebsocket:
         data = self._loads(recv.data)
         code = data['code']
         if code != 200:
-            raise WSHuobiError(
-                err_code=code,
-                err_msg=data['message'],
-            )
+            raise WSHuobiError(err_code=code, err_msg=data['message'])
+        else:
+            self._is_auth = True
+
+    async def subscribe(self, topic: str) -> None:
+        if not self._is_auth:
+            raise WSConnectionNotAuthorized('Connection is not authorized')
+        await self._connection.send({
+            'action': 'sub',
+            'ch': topic,
+        })
 
     async def subscribe_order_updates(self, symbol: str) -> None:
         if not isinstance(symbol, str):
-            raise TypeError('Symbol is not str')
-        await self._connection.send({
-            'action': 'sub',
-            'ch': f'orders#{symbol}',
-        })
+            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
+        await self.subscribe(f'orders#{symbol}')
 
     async def subscribe_trade_detail(
             self,
@@ -384,30 +393,25 @@ class HuobiAccountOrderWebsocket:
             mode: WSTradeDetailMode = WSTradeDetailMode.only_trade_event,
     ) -> None:
         if not isinstance(symbol, str):
-            raise TypeError('Symbol is not str')
-        await self._connection.send({
-            'action': 'sub',
-            'ch': f'trade.clearing#{symbol}#{mode.value}',
-        })
+            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
+        await self.subscribe(f'trade.clearing#{symbol}#{mode.value}')
 
     async def subscribe_account_change(self, mode: int = 0) -> None:
         if mode not in (0, 1, 2):
             raise ValueError('Wrong mode value')
-        await self._connection.send({
-            'action': 'sub',
-            'ch': f'accounts.update#{mode}',
-        })
+        await self.subscribe(f'accounts.update#{mode}')
 
     def __aiter__(self) -> 'HuobiAccountOrderWebsocket':
         return self
 
-    async def __anext__(self) -> Dict:
+    async def __anext__(self) -> WS_MESSAGE_TYPE:
         while True:
             message = await self._connection.receive()
             if message.type in _CLOSING_STATUSES:
                 raise StopAsyncIteration
             data = self._loads(message.data)
-            if data.get('action', '') == 'ping':
+            action = data.get('action') or ''
+            if action == 'ping':
                 await self._pong(data['data']['ts'])
                 continue
             return data

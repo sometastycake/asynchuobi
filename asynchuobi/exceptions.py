@@ -10,3 +10,7 @@ class HuobiError(Exception):
 
 class WSHuobiError(HuobiError):
     ...
+
+
+class WSConnectionNotAuthorized(Exception):
+    ...
