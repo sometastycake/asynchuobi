@@ -319,6 +319,7 @@ class HuobiAccountOrderWebsocket:
         secret_key: str,
         url: str = HUOBI_WS_ASSET_AND_ORDER_URL,
         loads: LOADS_TYPE = json.loads,
+        raise_if_error: bool = False,
         connection: Type[WebsocketConnection] = WebsocketConnection,
         **connection_kwargs,
     ):
@@ -330,6 +331,7 @@ class HuobiAccountOrderWebsocket:
         self._secret_key = secret_key
         self._connection = connection(url=url, **connection_kwargs)
         self._is_auth = False
+        self._raise_if_error = raise_if_error
 
     async def __aenter__(self) -> 'HuobiAccountOrderWebsocket':
         await self._connection.connect()
@@ -370,7 +372,10 @@ class HuobiAccountOrderWebsocket:
         data = self._loads(recv.data)
         code = data['code']
         if code != 200:
-            raise WSHuobiError(err_code=code, err_msg=data['message'])
+            raise WSHuobiError(
+                err_code=code,
+                err_msg=data['message'],
+            )
         else:
             self._is_auth = True
 
@@ -414,4 +419,10 @@ class HuobiAccountOrderWebsocket:
             if action == 'ping':
                 await self._pong(data['data']['ts'])
                 continue
+            code = data.get('code') or -1
+            if code != 200 and self._raise_if_error:
+                raise WSHuobiError(
+                    err_code=code,
+                    err_msg=data['message'],
+                )
             return data
