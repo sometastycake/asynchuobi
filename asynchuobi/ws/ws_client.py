@@ -13,15 +13,6 @@ from asynchuobi.enums import MarketDepthAggregationLevel as Aggregation
 from asynchuobi.exceptions import WSConnectionNotAuthorized, WSHuobiError
 from asynchuobi.urls import HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
 from asynchuobi.ws.enums import SubUnsub, WSTradeDetailMode
-from asynchuobi.ws.topics import (
-    bbo_topic,
-    etp_topic,
-    market_candlestick_topic,
-    market_depth_topic,
-    market_detail_topic,
-    ticker_topic,
-    trade_detail_topic,
-)
 from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnection, WebsocketConnectionAbstract
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
@@ -166,7 +157,7 @@ class HuobiMarketWebsocket:
         else:
             raise TypeError(f'Wrong type "{type(interval)}" for interval')
         await self._handle_sub_unsub(
-            topic=market_candlestick_topic(symbol, period),
+            topic=f'market.{symbol}.kline.{period}',
             action=action,
             callback=callback,
             message_id=message_id or self._default_message_id(),
@@ -181,7 +172,7 @@ class HuobiMarketWebsocket:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
-            topic=ticker_topic(symbol),
+            topic=f'market.{symbol}.ticker',
             action=action,
             callback=callback,
         )
@@ -190,14 +181,14 @@ class HuobiMarketWebsocket:
             self,
             symbol: str,
             action: SubUnsub,
-            aggregation_level: Aggregation = Aggregation.step0,
+            level: Aggregation = Aggregation.step0,
             callback: Optional[CALLBACK_TYPE] = None,
             message_id: Optional[str] = None,
     ) -> None:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
-            topic=market_depth_topic(symbol, aggregation_level),
+            topic=f'market.{symbol}.depth.{level.value}',
             action=action,
             callback=callback,
             message_id=message_id or self._default_message_id(),
@@ -213,7 +204,7 @@ class HuobiMarketWebsocket:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
-            topic=bbo_topic(symbol),
+            topic=f'market.{symbol}.bbo',
             action=action,
             callback=callback,
             message_id=message_id or self._default_message_id(),
@@ -229,7 +220,7 @@ class HuobiMarketWebsocket:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
-            topic=trade_detail_topic(symbol),
+            topic=f'market.{symbol}.trade.detail',
             action=action,
             callback=callback,
             message_id=message_id or self._default_message_id(),
@@ -245,7 +236,7 @@ class HuobiMarketWebsocket:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
-            topic=market_detail_topic(symbol),
+            topic=f'market.{symbol}.detail',
             action=action,
             callback=callback,
             message_id=message_id or self._default_message_id(),
@@ -260,7 +251,7 @@ class HuobiMarketWebsocket:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
         await self._handle_sub_unsub(
-            topic=etp_topic(symbol),
+            topic=f'market.{symbol}.etp',
             action=action,
             callback=callback,
         )
