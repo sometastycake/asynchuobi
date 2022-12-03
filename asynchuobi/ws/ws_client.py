@@ -114,12 +114,6 @@ class HuobiMarketWebsocket:
     ) -> None:
         if not isinstance(action, SubUnsub):
             raise TypeError(f'Action type is not SubUnsub, received type "{type(action)}"')
-        message = {
-            action.value: topic,
-        }
-        if message_id is not None:
-            message['id'] = message_id
-        await self._connection.send(message)
         if action is SubUnsub.sub:
             self._subscribed_ch.add(topic)
             if callback:
@@ -128,12 +122,21 @@ class HuobiMarketWebsocket:
                 self._callbacks[topic] = callback
         else:
             self._subscribed_ch.discard(topic)
+        message = {
+            action.value: topic,
+        }
+        if message_id is not None:
+            message['id'] = message_id
+        await self._connection.send(message)
 
     async def close(self) -> None:
         if not self._connection.closed:
             await self._connection.close()
 
     async def unsubscribe_all(self) -> None:
+        """
+        Unsubscribe from all topics.
+        """
         if self._connection.closed:
             return
         for topic in self._subscribed_ch:
@@ -377,6 +380,9 @@ class HuobiAccountOrderWebsocket:
         await self._connection.close()
 
     async def _pong(self, timestamp: int) -> None:
+        """
+        Send pong.
+        """
         message = {
             'action': 'pong',
             'data': {
@@ -386,6 +392,9 @@ class HuobiAccountOrderWebsocket:
         await self._connection.send(message)
 
     async def close(self) -> None:
+        """
+        Close connection.
+        """
         if not self._connection.closed:
             await self._connection.close()
 
@@ -415,6 +424,9 @@ class HuobiAccountOrderWebsocket:
             self._is_auth = True
 
     async def subscribe(self, topic: str, callback: Optional[CALLBACK_TYPE] = None) -> None:
+        """
+        Subscribe to topic.
+        """
         if not self._is_auth:
             raise WSConnectionNotAuthorized('Connection is not authorized')
         if callback:
