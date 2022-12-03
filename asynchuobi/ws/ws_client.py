@@ -81,7 +81,7 @@ class HuobiMarketWebsocket:
                 'id': 'id_example'
             }
         raise_if_error - Raise exception if error message was received from websocket
-        run_callbacks_in_asyncio_tasks - If True, than callbacks are run into asyncio.create_task
+        run_callbacks_in_asyncio_tasks - If True, then callbacks are run into asyncio.create_task
         connection - Object for managing websocket connection
     """
     def __init__(
@@ -315,6 +315,8 @@ class HuobiAccountOrderWebsocket:
     """
     Websocket class for retrieving information about orders and account.
 
+    Usage:
+
         async with HuobiAccountOrderWebsocket(
             access_key='access_key',
             secret_key='secret_key',
@@ -326,12 +328,30 @@ class HuobiAccountOrderWebsocket:
             async for message in ws:
                 print(message)
 
-    Parameters
+    You can define callbacks which will called when message was received from Huobi websocket:
+
+        def callback_balance_update(message):
+            print(message)
+
+        async with HuobiAccountOrderWebsocket(
+            access_key='access_key',
+            secret_key='secret_key',
+        ) as ws:
+            await ws.subscribe_account_change(
+                mode=1,
+                callback=callback_balance_update,
+            )
+            await ws.run_with_callbacks()
+
+        You can also define async callback
+
+    Parameters:
         access_key - Access key
         secret_key - Secret key
         url - Websocket url
         loads - Method of json deserialize (default json.loads)
         raise_if_error - Raise exception if error message was received from websocket
+        run_callbacks_in_asyncio_tasks - If True, then callbacks are run into asyncio.create_task
         connection - Object for managing websocket connection
     """
     def __init__(
@@ -341,6 +361,7 @@ class HuobiAccountOrderWebsocket:
         url: str = HUOBI_WS_ASSET_AND_ORDER_URL,
         loads: LOADS_TYPE = json.loads,
         raise_if_error: bool = False,
+        run_callbacks_in_asyncio_tasks: bool = True,
         connection: Type[WebsocketConnection] = WebsocketConnection,
         **connection_kwargs,
     ):
@@ -353,6 +374,8 @@ class HuobiAccountOrderWebsocket:
         self._connection = connection(url=url, **connection_kwargs)
         self._is_auth = False
         self._raise_if_error = raise_if_error
+        self._callbacks: Dict[str, CALLBACK_TYPE] = {}
+        self._run_callbacks_in_asyncio_tasks = run_callbacks_in_asyncio_tasks
 
     async def __aenter__(self) -> 'HuobiAccountOrderWebsocket':
         await self._connection.connect()
@@ -400,32 +423,54 @@ class HuobiAccountOrderWebsocket:
         else:
             self._is_auth = True
 
-    async def subscribe(self, topic: str) -> None:
+    async def subscribe(self, topic: str, callback: Optional[CALLBACK_TYPE] = None) -> None:
         if not self._is_auth:
             raise WSConnectionNotAuthorized('Connection is not authorized')
+        if callback:
+            if not callable(callback):
+                raise TypeError(f'Object {callback} is not callable')
+            self._callbacks[topic] = callback
         await self._connection.send({
             'action': 'sub',
             'ch': topic,
         })
 
-    async def subscribe_order_updates(self, symbol: str) -> None:
+    async def subscribe_order_updates(
+            self,
+            symbol: str,
+            callback: Optional[CALLBACK_TYPE] = None,
+    ) -> None:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self.subscribe(f'orders#{symbol}')
+        await self.subscribe(
+            topic=f'orders#{symbol}',
+            callback=callback,
+        )
 
     async def subscribe_trade_detail(
             self,
             symbol: str,
             mode: WSTradeDetailMode = WSTradeDetailMode.only_trade_event,
+            callback: Optional[CALLBACK_TYPE] = None,
     ) -> None:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self.subscribe(f'trade.clearing#{symbol}#{mode.value}')
+        await self.subscribe(
+            topic=f'trade.clearing#{symbol}#{mode.value}',
+            callback=callback,
+        )
 
-    async def subscribe_account_change(self, mode: int = 0) -> None:
+    async def subscribe_account_change(
+            self,
+            mode: int = 0,
+            callback: Optional[CALLBACK_TYPE] = None,
+    ) -> None:
         if mode not in (0, 1, 2):
             raise ValueError('Wrong mode value')
-        await self.subscribe(f'accounts.update#{mode}')
+        await self.subscribe(
+            topic=f'accounts.update#{mode}',
+            callback=callback,
+        )
 
     def __aiter__(self) -> 'HuobiAccountOrderWebsocket':
         return self
@@ -440,10 +485,26 @@ class HuobiAccountOrderWebsocket:
             if action == 'ping':
                 await self._pong(data['data']['ts'])
                 continue
-            code = data.get('code') or -1
-            if code != 200 and self._raise_if_error:
+            code = data.get('code')
+            if code and code != 200 and self._raise_if_error:
                 raise WSHuobiError(
                     err_code=code,
                     err_msg=data['message'],
                 )
             return data
+
+    async def run_with_callbacks(self) -> None:
+        if not self._callbacks:
+            warnings.warn('Callbacks not specified')
+            return
+        async for message in self:
+            message = cast(WS_MESSAGE_TYPE, message)
+            channel = message['ch']
+            callback = self._callbacks[channel]
+            if asyncio.iscoroutinefunction(callback):
+                if self._run_callbacks_in_asyncio_tasks:
+                    asyncio.create_task(callback(message))
+                else:
+                    await callback(message)
+            else:
+                callback(message)
