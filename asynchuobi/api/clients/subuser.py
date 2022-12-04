@@ -48,7 +48,7 @@ class SubUserHuobiClient:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
-        ...
+        await self._rstrategy.close()
 
     async def set_deduction_for_parent_and_sub_user(self, sub_uids: Iterable[int], deduct_mode: DeductMode) -> Dict:
         """

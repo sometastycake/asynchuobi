@@ -36,7 +36,7 @@ class AccountHuobiClient:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
-        ...
+        await self._rstrategy.close()
 
     async def accounts(self) -> Dict:
         """

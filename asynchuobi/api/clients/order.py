@@ -39,7 +39,7 @@ class OrderHuobiClient:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
-        ...
+        await self._rstrategy.close()
 
     async def new_order(
             self,

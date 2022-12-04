@@ -11,15 +11,15 @@ class BaseRequestStrategy(RequestStrategyAbstract):
         self._kwargs = kwargs
         self._session: Optional[aiohttp.ClientSession] = None
 
-    def __del__(self):
-        if self._session:
-            self._session.connector.close()
+    async def close(self) -> None:
+        if self._session and not self._session.closed:
+            await self._session.close()
 
     def _create_session(self) -> aiohttp.ClientSession:
-        return aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(ssl=False),
-            **self._kwargs,
-        )
+        kwargs = self._kwargs
+        if 'connector' not in kwargs:
+            kwargs['connector'] = aiohttp.TCPConnector(ssl=False)
+        return aiohttp.ClientSession(**kwargs)
 
     async def request(self, url: str, method: str, **kwargs: Any) -> Any:
         if self._session is None:

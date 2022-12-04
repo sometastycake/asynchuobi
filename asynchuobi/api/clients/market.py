@@ -21,7 +21,7 @@ class MarketHuobiClient:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
-        ...
+        await self._rstrategy.close()
 
     async def get_candles(self, symbol: str, interval: CandleInterval, size: int = 150) -> Dict:
         """
