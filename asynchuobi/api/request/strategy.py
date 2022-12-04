@@ -24,15 +24,14 @@ class BaseRequestStrategy(RequestStrategyAbstract):
     async def request(self, url: str, method: str, **kwargs: Any) -> Any:
         if self._session is None:
             self._session = self._create_session()
+        if 'headers' not in kwargs:
+            kwargs['headers'] = {
+                'Content-Type': 'application/json',
+            }
         response = await self._session.request(
             url=url,
             method=method,
-            params=kwargs.get('params'),
-            data=kwargs.get('data'),
-            json=kwargs.get('json'),
-            headers={
-                'Content-Type': 'application/json',
-            },
+            **kwargs,
         )
         return await response.json()
 
