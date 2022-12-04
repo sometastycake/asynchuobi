@@ -28,12 +28,8 @@ class GenericHuobiClient:
         This endpoint allows users to get system status, Incidents and planned maintenance
         https://huobiapi.github.io/docs/spot/v1/en/#get-system-status
         """
-        return await self._requests.request(
+        return await self._requests.get(
             url='https://status.huobigroup.com/api/v2/summary.json',
-            method='GET',
-            headers={
-                'Content-Type': 'application/json',
-            },
         )
 
     async def get_market_status(self) -> Dict:
@@ -41,8 +37,7 @@ class GenericHuobiClient:
         The endpoint returns current market status
         https://huobiapi.github.io/docs/spot/v1/en/#get-market-status
         """
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/v2/market-status'),
         )
 
@@ -59,8 +54,7 @@ class GenericHuobiClient:
         params = {}
         if timestamp_milliseconds is not None:
             params['ts'] = timestamp_milliseconds
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/v2/settings/common/symbols'),
             params=params,
         )
@@ -78,8 +72,7 @@ class GenericHuobiClient:
         params = {}
         if timestamp_milliseconds is not None:
             params['ts'] = timestamp_milliseconds
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/v2/settings/common/currencies'),
             params=params,
         )
@@ -97,8 +90,7 @@ class GenericHuobiClient:
         params = {}
         if timestamp_milliseconds is not None:
             params['ts'] = timestamp_milliseconds
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/v1/settings/common/currencys'),
             params=params,
         )
@@ -116,8 +108,7 @@ class GenericHuobiClient:
         params = {}
         if timestamp_milliseconds is not None:
             params['ts'] = timestamp_milliseconds
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/v1/settings/common/symbols'),
             params=params,
         )
@@ -140,8 +131,7 @@ class GenericHuobiClient:
             ts=timestamp_milliseconds,
             symbols=','.join(symbols) if symbols else None,
         )
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/v1/settings/common/market-symbols'),
             params=params.dict(exclude_none=True),
         )
@@ -165,8 +155,7 @@ class GenericHuobiClient:
             ts=timestamp_milliseconds,
             currency=currency,
         )
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/v1/settings/common/chains'),
             params=params.dict(by_alias=True, exclude_none=True),
         )
@@ -186,8 +175,7 @@ class GenericHuobiClient:
         }
         if currency is not None:
             params['currency'] = currency.lower()
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/v2/reference/currencies'),
             params=params,
         )
@@ -198,7 +186,6 @@ class GenericHuobiClient:
         milliseconds that have elapsed since 00:00:00 UTC on 1 January 1970.
         https://huobiapi.github.io/docs/spot/v1/en/#get-current-timestamp
         """
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/v1/common/timestamp'),
         )

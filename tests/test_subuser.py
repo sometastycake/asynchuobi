@@ -26,11 +26,10 @@ async def test_set_deduction_for_parent_and_sub_user(subuser_client, sub_uids, d
         sub_uids=sub_uids,
         deduct_mode=deduct_mode,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert subuser_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/deduct-mode')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'subUids': ','.join([str(sub_uid) for sub_uid in sub_uids]),
         'deductMode': deduct_mode.value,
@@ -65,11 +64,10 @@ async def test_api_key_query(subuser_client, access_key, signature):
         uid=1,
         access_key=access_key,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert subuser_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/user/api-key')
-    assert kwargs['method'] == 'GET'
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -87,11 +85,10 @@ async def test_api_key_query(subuser_client, access_key, signature):
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_get_uid(subuser_client):
     await subuser_client.get_uid()
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert subuser_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/user/uid')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'aNAXON0BI5Cg/rcmSRHW/Gsfrk1VwgK2FaE+QN6ukZw=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -112,11 +109,10 @@ async def test_sub_user_creation(subuser_client):
             ],
         ),
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert subuser_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/creation')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'userList': [
             {'userName': 'user 1', 'note': 'note'},
@@ -142,11 +138,10 @@ async def test_get_sub_users_list(subuser_client, from_id, signature):
     await subuser_client.get_sub_users_list(
         from_id=from_id,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert subuser_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/user-list')
-    assert kwargs['method'] == 'GET'
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -169,11 +164,10 @@ async def test_lock_unlock_sub_user(subuser_client, action):
         sub_uid=1,
         action=action,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert subuser_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/management')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'subUid': 1,
         'action': action.value,
@@ -193,11 +187,10 @@ async def test_get_sub_user_status(subuser_client):
     await subuser_client.get_sub_user_status(
         sub_uid=1,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert subuser_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/user-state')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'gGsMa2p5CgZ9DZKPZKaynAzyXFANmKmeJR7gB8TaGEk=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -225,11 +218,10 @@ async def test_set_tradable_market_for_sub_users(
         account_type=account_type,
         activation=activation,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert subuser_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/tradable-market')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'subUids': ','.join([str(sub_uid) for sub_uid in sub_uids]),
         'accountType': account_type.value,
@@ -268,11 +260,10 @@ async def test_set_asset_transfer_permission_for_sub_users(
         sub_uids=sub_uids,
         transferrable=transferrable,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert subuser_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/transferability')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'subUids': ','.join([str(sub_uid) for sub_uid in sub_uids]),
         'accountType': 'spot',
@@ -305,11 +296,10 @@ async def test_get_sub_users_account_list(subuser_client):
     await subuser_client.get_sub_users_account_list(
         sub_uid=1,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert subuser_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/account-list')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': '4fH+UeoFpA+GLK3ZT/fDDv9GiXA47McfslTPcV4OulA=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -343,11 +333,10 @@ async def test_sub_user_api_key_creation(
         ip_addresses=ip_addresses,
         otp_token=otp_token,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert subuser_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/api-key-generation')
-    assert kwargs['method'] == 'POST'
     if ApiKeyPermission.readOnly not in permissions:
         permissions.append(ApiKeyPermission.readOnly)
     params = {
@@ -420,11 +409,10 @@ async def test_sub_user_api_key_modification(
         permissions=permissions,
         ip_addresses=ip_addresses,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert subuser_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/api-key-modification')
-    assert kwargs['method'] == 'POST'
     params = {
         'subUid': 1,
         'accessKey': 'key',
@@ -478,11 +466,10 @@ async def test_sub_user_api_key_deletion(subuser_client):
         sub_uid=1,
         access_key='key'
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert subuser_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/api-key-deletion')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'subUid': 1,
         'accessKey': 'key',
@@ -509,11 +496,10 @@ async def test_transfer_asset_between_parent_and_sub_user(subuser_client, transf
         amount=1.0,
         transfer_type=transfer_type,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert subuser_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/subuser/transfer')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'sub-uid': 1,
         'currency': 'btc',
@@ -536,11 +522,10 @@ async def test_query_deposit_address_of_sub_user(subuser_client):
         sub_uid=1,
         currency='btc',
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert subuser_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/deposit-address')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'i229f+09dxI08M3YyVHl0LqcKGSlQe4Om7KEVp8G/h8=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -576,11 +561,10 @@ async def test_query_deposit_history_of_sub_user(
         limit=limit,
         from_id=from_id,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert subuser_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/query-deposit')
-    assert kwargs['method'] == 'GET'
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -618,11 +602,10 @@ async def test_query_deposit_history_of_sub_user_wrong_limit(
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_get_aggregated_balance_of_all_sub_users(subuser_client):
     await subuser_client.get_aggregated_balance_of_all_sub_users()
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert subuser_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/subuser/aggregate-balance')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'FzCcdDBsQh7p1nGKgqOGF/pDwKtf9tDPe8bNor7KJIU=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -638,11 +621,10 @@ async def test_get_account_balance_of_sub_user(subuser_client):
     await subuser_client.get_account_balance_of_sub_user(
         sub_uid=1,
     )
-    kwargs = subuser_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert subuser_client._rstrategy.request.call_count == 1
+    kwargs = subuser_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert subuser_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/accounts/1')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'lmpg2TGL0UrUS6uxfHnJoVII3i5HkiSDR1NrsUJhquo=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',

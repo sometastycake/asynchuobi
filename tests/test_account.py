@@ -12,11 +12,10 @@ from asynchuobi.urls import HUOBI_API_URL
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_accounts(account_client):
     await account_client.accounts()
-    kwargs = account_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert account_client._rstrategy.request.call_count == 1
+    kwargs = account_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert account_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/accounts')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'QlWgsW91USVj7HjtsmLShIb2V6FBbecprJBTKIRJ2e8=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -30,11 +29,10 @@ async def test_accounts(account_client):
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_account_balance(account_client):
     await account_client.account_balance(account_id=1)
-    kwargs = account_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert account_client._rstrategy.request.call_count == 1
+    kwargs = account_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert account_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/accounts/1/balance')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'R/5i5DPhCzsBiTKrFif7rbNBRiBU3gws1gFQlbfXmEU=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -55,11 +53,10 @@ async def test_get_total_valuation_of_platform_assets(account_client, account_ty
     await account_client.get_total_valuation_of_platform_assets(
         account_type_code=account_type_code,
     )
-    kwargs = account_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert account_client._rstrategy.request.call_count == 1
+    kwargs = account_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert account_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/valuation')
-    assert kwargs['method'] == 'GET'
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -87,11 +84,10 @@ async def test_get_asset_valuation(account_client, currency, sub_uid, signature)
         valuation_currency=currency,
         sub_uid=sub_uid,
     )
-    kwargs = account_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert account_client._rstrategy.request.call_count == 1
+    kwargs = account_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert account_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/asset-valuation')
-    assert kwargs['method'] == 'GET'
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -120,11 +116,10 @@ async def test_asset_transfer(account_client):
         currency='btc',
         amount='1',
     )
-    kwargs = account_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert account_client._rstrategy.request.call_count == 1
+    kwargs = account_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert account_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/transfer')
-    assert kwargs['method'] == 'POST'
     assert kwargs['params'] == {
         'Signature': '2ZBuSF+pO5av3I0JKIVdmE1gZzxTyqShWbrNzosDB90=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -172,11 +167,10 @@ async def test_get_account_history(
         size=size,
         sorting=sorting,
     )
-    kwargs = account_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert account_client._rstrategy.request.call_count == 1
+    kwargs = account_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert account_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/history')
-    assert kwargs['method'] == 'GET'
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -244,11 +238,10 @@ async def test_get_account_ledger(
         limit=limit,
         sorting=sorting,
     )
-    kwargs = account_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert account_client._rstrategy.request.call_count == 1
+    kwargs = account_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert account_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/ledger')
-    assert kwargs['method'] == 'GET'
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -289,11 +282,10 @@ async def test_transfer_fund_between_spot_and_futures(account_client):
         amount=1,
         transfer_type='futures-to-pro',
     )
-    kwargs = account_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert account_client._rstrategy.request.call_count == 1
+    kwargs = account_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert account_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/futures/transfer')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'currency': 'btc',
         'amount': 1.0,
@@ -316,11 +308,10 @@ async def test_transfer_fund_between_spot_and_futures(account_client):
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_get_point_balance(account_client, sub_user_id, signature):
     await account_client.get_point_balance(sub_user_id=sub_user_id)
-    kwargs = account_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert account_client._rstrategy.request.call_count == 1
+    kwargs = account_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert account_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/point/account')
-    assert kwargs['method'] == 'GET'
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -342,11 +333,10 @@ async def test_point_transfer(account_client):
         group_id=3,
         amount=1
     )
-    kwargs = account_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert account_client._rstrategy.request.call_count == 1
+    kwargs = account_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert account_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/point/transfer')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'fromUid': '1',
         'toUid': '2',

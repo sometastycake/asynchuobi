@@ -36,8 +36,7 @@ class MarketHuobiClient:
         """
         if size < 1 or size > 2000:
             raise ValueError(f'Wrong size value "{size}"')
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/market/history/kline'),
             params={
                 'symbol': symbol,
@@ -54,8 +53,7 @@ class MarketHuobiClient:
 
         :param symbol: The trading symbol to query
         """
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/market/detail/merged'),
             params={
                 'symbol': symbol,
@@ -67,8 +65,7 @@ class MarketHuobiClient:
         This endpoint retrieves the latest tickers for all supported pairs
         https://huobiapi.github.io/docs/spot/v1/en/#get-latest-tickers-for-all-pairs
         """
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/market/tickers'),
         )
 
@@ -86,8 +83,7 @@ class MarketHuobiClient:
         :param depth: The number of market depth to return on each side
         :param aggregation_level: Market depth aggregation level
         """
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/market/depth'),
             params={
                 'symbol': symbol,
@@ -104,8 +100,7 @@ class MarketHuobiClient:
 
         :param symbol: The trading symbol to query
         """
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/market/trade'),
             params={
                 'symbol': symbol,
@@ -123,8 +118,7 @@ class MarketHuobiClient:
         """
         if size < 1 or size > 2000:
             raise ValueError(f'Wrong size value "{size}"')
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/market/history/trade'),
             params={
                 'symbol': symbol,
@@ -140,8 +134,7 @@ class MarketHuobiClient:
 
         :param symbol: The trading symbol to query
         """
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/market/detail/'),
             params={
                 'symbol': symbol,
@@ -155,8 +148,7 @@ class MarketHuobiClient:
 
         :param symbol: ETP trading symbol
         """
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=urljoin(self._api, '/market/etp/'),
             params={
                 'symbol': symbol,

@@ -14,11 +14,10 @@ async def test_query_deposit_address(wallet_client):
     await wallet_client.query_deposit_address(
         currency='btc',
     )
-    kwargs = wallet_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert wallet_client._rstrategy.request.call_count == 1
+    kwargs = wallet_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert wallet_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/deposit/address')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'CUqQMYGXm8jU1SnPFcFR+wHi90ONFqSJl2HGFCkdu2U=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -35,11 +34,10 @@ async def test_query_withdraw_quota(wallet_client):
     await wallet_client.query_withdraw_quota(
         currency='btc',
     )
-    kwargs = wallet_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert wallet_client._rstrategy.request.call_count == 1
+    kwargs = wallet_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert wallet_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/withdraw/quota')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'EJ4O26ecnb3VgRvuBg0pvtugEzoWONgScKHcHHgu1YA=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -69,11 +67,10 @@ async def test_query_withdraw_address(wallet_client, chain, note, limit, from_id
         limit=limit,
         from_id=from_id,
     )
-    kwargs = wallet_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert wallet_client._rstrategy.request.call_count == 1
+    kwargs = wallet_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert wallet_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/withdraw/address')
-    assert kwargs['method'] == 'GET'
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -120,11 +117,10 @@ async def test_create_withdraw_request(
         addr_tag=addr_tag,
         client_order_id=client_order_id
     )
-    kwargs = wallet_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert wallet_client._rstrategy.request.call_count == 1
+    kwargs = wallet_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert wallet_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/dw/withdraw/api/create')
-    assert kwargs['method'] == 'POST'
     data = {
         'address': 'address',
         'currency': 'btc',
@@ -154,11 +150,10 @@ async def test_cancel_withdraw_request(wallet_client):
     await wallet_client.cancel_withdraw_request(
         withdraw_id=1,
     )
-    kwargs = wallet_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert wallet_client._rstrategy.request.call_count == 1
+    kwargs = wallet_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 2
+    assert wallet_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/dw/withdraw-virtual/1/cancel')
-    assert kwargs['method'] == 'POST'
     assert kwargs['params'] == {
         'Signature': '3mZpCvPLJfswHNyixuBtKkm1lTLCvTTcA2GjadB+EBI=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -189,11 +184,10 @@ async def test_search_for_existed_withraws_and_deposits(
         size=size,
         direct=direct,
     )
-    kwargs = wallet_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert wallet_client._rstrategy.request.call_count == 1
+    kwargs = wallet_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert wallet_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/query/deposit-withdraw')
-    assert kwargs['method'] == 'GET'
     params = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',

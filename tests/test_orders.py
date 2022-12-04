@@ -43,11 +43,10 @@ async def test_new_order(
         operator=operator,
         client_order_id=client_order_id,
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert order_client._rstrategy.request.call_count == 1
+    kwargs = order_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert order_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/place')
-    assert kwargs['method'] == 'POST'
     request = {
         'account-id': 1,
         'amount': 1.0,
@@ -99,11 +98,10 @@ async def test_place_batch_of_orders(
             client_order_id=client_order_id,
         )],
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 4
-    assert order_client._rstrategy.request.call_count == 1
+    kwargs = order_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert order_client._requests.post.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/batch-orders')
-    assert kwargs['method'] == 'POST'
     request = {
         'account-id': 1,
         'symbol': 'btcusdt',
@@ -138,11 +136,10 @@ async def test_cancel_order(order_client, symbol):
         order_id='1',
         symbol=symbol,
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 4
+    kwargs = order_client._requests.post.call_args.kwargs
+    assert order_client._requests.post.call_count == 1
+    assert len(kwargs) == 3
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/1/submitcancel')
-    assert kwargs['method'] == 'POST'
     request = {
         'order-id': '1',
     }
@@ -164,11 +161,10 @@ async def test_cancel_order_by_client_order_id(order_client):
     await order_client.cancel_order_by_client_order_id(
         client_order_id='1',
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 4
+    kwargs = order_client._requests.post.call_args.kwargs
+    assert order_client._requests.post.call_count == 1
+    assert len(kwargs) == 3
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/submitCancelClientOrder')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'client-order-id': '1',
     }
@@ -211,11 +207,10 @@ async def test_get_all_open_orders(
         start_order_id=start_order_id,
         side=side,
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 3
+    kwargs = order_client._requests.get.call_args.kwargs
+    assert order_client._requests.get.call_count == 1
+    assert len(kwargs) == 2
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/openOrders')
-    assert kwargs['method'] == 'GET'
     request = {
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
         'Signature': signature,
@@ -265,11 +260,10 @@ async def test_batch_cancel_open_orders(
         side=side,
         size=size,
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 4
+    kwargs = order_client._requests.post.call_args.kwargs
+    assert order_client._requests.post.call_count == 1
+    assert len(kwargs) == 3
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/batchCancelOpenOrders')
-    assert kwargs['method'] == 'POST'
     request = {
         'size': size,
     }
@@ -325,11 +319,10 @@ async def test_cancel_order_by_ids(order_client, order_ids, client_order_ids):
         order_ids=order_ids,
         client_order_ids=client_order_ids,
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 4
+    kwargs = order_client._requests.post.call_args.kwargs
+    assert order_client._requests.post.call_count == 1
+    assert len(kwargs) == 3
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/batchcancel')
-    assert kwargs['method'] == 'POST'
     request = {}
     if order_ids is not None:
         request['order-ids'] = order_ids
@@ -366,11 +359,10 @@ async def test_cancel_order_by_ids_order_ids_not_list(
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_dead_mans_switch(order_client):
     await order_client.dead_mans_switch(timeout=1)
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 4
+    kwargs = order_client._requests.post.call_args.kwargs
+    assert order_client._requests.post.call_count == 1
+    assert len(kwargs) == 3
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/algo-orders/cancel-all-after')
-    assert kwargs['method'] == 'POST'
     assert kwargs['json'] == {
         'timeout': 1
     }
@@ -387,11 +379,10 @@ async def test_dead_mans_switch(order_client):
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_get_order_detail(order_client):
     await order_client.get_order_detail(order_id=1)
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 3
+    kwargs = order_client._requests.get.call_args.kwargs
+    assert order_client._requests.get.call_count == 1
+    assert len(kwargs) == 2
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/1')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'hrLiWD2+gWnTEc1OW2SnOOTAIRuMYqIqOGtm/dHEiTg=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -407,11 +398,10 @@ async def test_get_order_detail_by_client_order_id(order_client):
     await order_client.get_order_detail_by_client_order_id(
         client_order_id=1
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 3
+    kwargs = order_client._requests.get.call_args.kwargs
+    assert order_client._requests.get.call_count == 1
+    assert len(kwargs) == 2
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/getClientOrder')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'Ls++IMQhqOMNoSB2osuZkjJiyokvPYsC2iMLX85YysI=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -426,11 +416,10 @@ async def test_get_order_detail_by_client_order_id(order_client):
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_get_match_result_of_order(order_client):
     await order_client.get_match_result_of_order(order_id='1')
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 3
+    kwargs = order_client._requests.get.call_args.kwargs
+    assert order_client._requests.get.call_count == 1
+    assert len(kwargs) == 2
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/1/matchresults')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'Signature': 'HDi4YN9iEQzu8irolQJFAg1qooljUjAud4YLxBDlGUU=',
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -471,11 +460,10 @@ async def test_search_past_orders(
         start_time_ms=start_time,
         end_time_ms=end_time,
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 3
+    kwargs = order_client._requests.get.call_args.kwargs
+    assert order_client._requests.get.call_count == 1
+    assert len(kwargs) == 2
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders')
-    assert kwargs['method'] == 'GET'
     request = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -542,11 +530,10 @@ async def test_search_historical_orders_within_48_hours(
         direct=direct,
         size=size
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 3
+    kwargs = order_client._requests.get.call_args.kwargs
+    assert order_client._requests.get.call_count == 1
+    assert len(kwargs) == 2
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/history')
-    assert kwargs['method'] == 'GET'
     request = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -603,11 +590,10 @@ async def test_search_match_results(
         direct=direct,
         size=size,
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 3
+    kwargs = order_client._requests.get.call_args.kwargs
+    assert order_client._requests.get.call_count == 1
+    assert len(kwargs) == 2
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/matchresults')
-    assert kwargs['method'] == 'GET'
     request = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',
@@ -659,11 +645,10 @@ async def test_get_current_fee_rate_applied_to_user(order_client, symbols, signa
     await order_client.get_current_fee_rate_applied_to_user(
         symbols=symbols,
     )
-    kwargs = order_client._rstrategy.request.call_args.kwargs
-    assert order_client._rstrategy.request.call_count == 1
-    assert len(kwargs) == 3
+    kwargs = order_client._requests.get.call_args.kwargs
+    assert order_client._requests.get.call_count == 1
+    assert len(kwargs) == 2
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/reference/transact-fee-rate')
-    assert kwargs['method'] == 'GET'
     request = {
         'Signature': signature,
         'AccessKeyId': 'HUOBI_ACCESS_KEY',

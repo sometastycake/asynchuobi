@@ -35,3 +35,9 @@ class BaseRequestStrategy(RequestStrategyAbstract):
             },
         )
         return await response.json()
+
+    async def get(self, url: str, **kwargs: Any) -> Any:
+        return await self.request(url=url, method='GET', **kwargs)
+
+    async def post(self, url: str, **kwargs: Any) -> Any:
+        return await self.request(url=url, method='POST', **kwargs)

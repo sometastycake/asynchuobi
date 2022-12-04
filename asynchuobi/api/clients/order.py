@@ -87,8 +87,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders/place')
-        return await self._requests.request(
-            method='POST',
+        return await self._requests.post(
             url=url,
             params=auth.to_request(url, 'POST'),
             json=params.dict(by_alias=True, exclude_none=True),
@@ -104,8 +103,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/batch-orders')
-        return await self._requests.request(
-            method='POST',
+        return await self._requests.post(
             url=url,
             params=auth.to_request(url, 'POST'),
             json=[order.dict(by_alias=True, exclude_none=True) for order in orders],
@@ -128,8 +126,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, f'/v1/order/orders/{order_id}/submitcancel')
-        return await self._requests.request(
-            method='POST',
+        return await self._requests.post(
             url=url,
             params=auth.to_request(url, 'POST'),
             json=params.dict(by_alias=True, exclude_none=True),
@@ -148,8 +145,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders/submitCancelClientOrder')
-        return await self._requests.request(
-            method='POST',
+        return await self._requests.post(
             url=url,
             params=auth.to_request(url, 'POST'),
             json={
@@ -190,8 +186,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/openOrders')
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=url,
             params=params.to_request(url, 'GET'),
         )
@@ -237,8 +232,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders/batchCancelOpenOrders')
-        return await self._requests.request(
-            method='POST',
+        return await self._requests.post(
             url=url,
             params=auth.to_request(url, 'POST'),
             json=params.dict(
@@ -280,8 +274,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders/batchcancel')
-        return await self._requests.request(
-            method='POST',
+        return await self._requests.post(
             url=url,
             params=auth.to_request(url, 'POST'),
             json=params,
@@ -300,8 +293,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/algo-orders/cancel-all-after')
-        return await self._requests.request(
-            method='POST',
+        return await self._requests.post(
             url=url,
             params=auth.to_request(url, 'POST'),
             json={
@@ -322,8 +314,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, f'/v1/order/orders/{order_id}')
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=url,
             params=auth.to_request(url, 'GET'),
         )
@@ -339,8 +330,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders/getClientOrder')
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=url,
             params=params.to_request(url, 'GET'),
         )
@@ -357,8 +347,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, f'/v1/order/orders/{order_id}/matchresults')
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=url,
             params=auth.to_request(url, 'GET'),
         )
@@ -410,8 +399,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders')
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=url,
             params=params.to_request(url, 'GET'),
         )
@@ -446,8 +434,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/history')
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=url,
             params=params.to_request(url, 'GET'),
         )
@@ -497,8 +484,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/matchresults')
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=url,
             params=params.to_request(url, 'GET'),
         )
@@ -518,8 +504,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/reference/transact-fee-rate')
-        return await self._requests.request(
-            method='GET',
+        return await self._requests.get(
             url=url,
             params=params.to_request(url, 'GET'),
         )

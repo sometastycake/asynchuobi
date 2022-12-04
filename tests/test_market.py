@@ -22,11 +22,10 @@ from asynchuobi.urls import HUOBI_API_URL
 @pytest.mark.parametrize('size', [1, 2000])
 async def test_get_candles(market_client, interval, size):
     await market_client.get_candles('btcusdt', interval, size)
-    kwargs = market_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert market_client._rstrategy.request.call_count == 1
+    kwargs = market_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert market_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/history/kline')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'symbol': 'btcusdt',
         'period': interval.value,
@@ -44,22 +43,20 @@ async def test_get_candles_wrong_size(market_client, size):
 @pytest.mark.asyncio
 async def test_get_latest_aggregated_ticker(market_client):
     await market_client.get_latest_aggregated_ticker('btcusdt')
-    kwargs = market_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert market_client._rstrategy.request.call_count == 1
+    kwargs = market_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert market_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/detail/merged')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {'symbol': 'btcusdt'}
 
 
 @pytest.mark.asyncio
 async def test_get_latest_tickers_for_all_pairs(market_client):
     await market_client.get_latest_tickers_for_all_pairs()
-    kwargs = market_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 2
-    assert market_client._rstrategy.request.call_count == 1
+    kwargs = market_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 1
+    assert market_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/tickers')
-    assert kwargs['method'] == 'GET'
 
 
 @pytest.mark.asyncio
@@ -76,11 +73,10 @@ async def test_get_market_depth(market_client, depth, aggregation_level):
         depth=depth,
         aggregation_level=aggregation_level,
     )
-    kwargs = market_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert market_client._rstrategy.request.call_count == 1
+    kwargs = market_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert market_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/depth')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'symbol': 'btcusdt',
         'depth': depth.value,
@@ -93,11 +89,10 @@ async def test_get_last_trade(market_client):
     await market_client.get_last_trade(
         symbol='btcusdt'
     )
-    kwargs = market_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert market_client._rstrategy.request.call_count == 1
+    kwargs = market_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert market_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/trade')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'symbol': 'btcusdt',
     }
@@ -110,11 +105,10 @@ async def test_get_most_recent_trades(market_client, size):
         symbol='btcusdt',
         size=size,
     )
-    kwargs = market_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert market_client._rstrategy.request.call_count == 1
+    kwargs = market_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert market_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/history/trade')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {
         'symbol': 'btcusdt',
         'size': size,
@@ -134,20 +128,18 @@ async def test_get_most_recent_trades(market_client, size):
 @pytest.mark.asyncio
 async def test_get_last_market_summary(market_client):
     await market_client.get_last_market_summary(symbol='btcusdt')
-    kwargs = market_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert market_client._rstrategy.request.call_count == 1
+    kwargs = market_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert market_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/detail/')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {'symbol': 'btcusdt'}
 
 
 @pytest.mark.asyncio
 async def test_get_real_time_nav(market_client):
     await market_client.get_real_time_nav(symbol='btcusdt')
-    kwargs = market_client._rstrategy.request.call_args.kwargs
-    assert len(kwargs) == 3
-    assert market_client._rstrategy.request.call_count == 1
+    kwargs = market_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert market_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/etp/')
-    assert kwargs['method'] == 'GET'
     assert kwargs['params'] == {'symbol': 'btcusdt'}
