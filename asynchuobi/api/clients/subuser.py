@@ -1,6 +1,8 @@
 from typing import Dict, Iterable, List, Optional
 from urllib.parse import urljoin
 
+from asynchuobi.api.request_strategy.abstract import RequestStrategyAbstract
+from asynchuobi.api.request_strategy.strategy import BaseRequestStrategy
 from asynchuobi.api.schemas import (
     SubUserCreation,
     _APIKeyQuery,
@@ -13,8 +15,6 @@ from asynchuobi.api.schemas import (
     _SubUserApiKeyCreation,
     _SubUserApiKeyModification,
 )
-from asynchuobi.api.strategy.abstract import RequestStrategyAbstract
-from asynchuobi.api.strategy.request import BaseRequestStrategy
 from asynchuobi.auth import APIAuth
 from asynchuobi.enums import (
     ApiKeyPermission,

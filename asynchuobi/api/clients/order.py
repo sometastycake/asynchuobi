@@ -1,6 +1,8 @@
 from typing import Dict, Iterable, List, Optional
 from urllib.parse import urljoin
 
+from asynchuobi.api.request_strategy.abstract import RequestStrategyAbstract
+from asynchuobi.api.request_strategy.strategy import BaseRequestStrategy
 from asynchuobi.api.schemas import (
     NewOrder,
     _BatchCancelOpenOrders,
@@ -12,8 +14,6 @@ from asynchuobi.api.schemas import (
     _SearchMatchResult,
     _SearchPastOrder,
 )
-from asynchuobi.api.strategy.abstract import RequestStrategyAbstract
-from asynchuobi.api.strategy.request import BaseRequestStrategy
 from asynchuobi.auth import APIAuth
 from asynchuobi.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
 from asynchuobi.urls import HUOBI_API_URL

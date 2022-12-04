@@ -1,6 +1,8 @@
 from typing import Dict, Optional
 from urllib.parse import urljoin
 
+from asynchuobi.api.request_strategy.abstract import RequestStrategyAbstract
+from asynchuobi.api.request_strategy.strategy import BaseRequestStrategy
 from asynchuobi.api.schemas import (
     _CreateWithdrawRequest,
     _QueryDepositAddress,
@@ -9,8 +11,6 @@ from asynchuobi.api.schemas import (
     _QueryWithdrawQuota,
     _SearchExistedWithdrawsAndDeposits,
 )
-from asynchuobi.api.strategy.abstract import RequestStrategyAbstract
-from asynchuobi.api.strategy.request import BaseRequestStrategy
 from asynchuobi.auth import APIAuth
 from asynchuobi.enums import Direct
 from asynchuobi.urls import HUOBI_API_URL

@@ -1,9 +1,9 @@
 from typing import Dict, Iterable, Optional
 from urllib.parse import urljoin
 
+from asynchuobi.api.request_strategy.abstract import RequestStrategyAbstract
+from asynchuobi.api.request_strategy.strategy import BaseRequestStrategy
 from asynchuobi.api.schemas import _GetChainsInformationRequest, _GetMarketSymbolsSettings
-from asynchuobi.api.strategy.abstract import RequestStrategyAbstract
-from asynchuobi.api.strategy.request import BaseRequestStrategy
 from asynchuobi.urls import HUOBI_API_URL
 
 

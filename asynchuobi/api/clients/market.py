@@ -1,8 +1,8 @@
 from typing import Dict
 from urllib.parse import urljoin
 
-from asynchuobi.api.strategy.abstract import RequestStrategyAbstract
-from asynchuobi.api.strategy.request import BaseRequestStrategy
+from asynchuobi.api.request_strategy.abstract import RequestStrategyAbstract
+from asynchuobi.api.request_strategy.strategy import BaseRequestStrategy
 from asynchuobi.enums import CandleInterval, MarketDepth, MarketDepthAggregationLevel
 from asynchuobi.urls import HUOBI_API_URL
 
