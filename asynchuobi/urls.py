@@ -12,7 +12,7 @@ HUOBI_WS_MARKET_FEED_URL: str = os.getenv(
     key='HUOBI_WS_MARKET_FEED_URL',
     default='wss://api.huobi.pro/feed',
 )
-HUOBI_WS_ASSET_AND_ORDER_URL: str = os.getenv(
-    key='HUOBI_WS_ASSET_AND_ORDER_URL',
+HUOBI_WS_ACCOUNT_URL: str = os.getenv(
+    key='HUOBI_WS_ACCOUNT_URL',
     default='wss://api.huobi.pro/ws/v2',
 )

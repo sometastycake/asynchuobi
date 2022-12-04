@@ -11,7 +11,7 @@ from asynchuobi.auth import WebsocketAuth
 from asynchuobi.enums import CandleInterval
 from asynchuobi.enums import MarketDepthAggregationLevel as Aggregation
 from asynchuobi.exceptions import WSConnectionNotAuthorized, WSHuobiError
-from asynchuobi.urls import HUOBI_WS_ASSET_AND_ORDER_URL, HUOBI_WS_MARKET_URL
+from asynchuobi.urls import HUOBI_WS_ACCOUNT_URL, HUOBI_WS_MARKET_URL
 from asynchuobi.ws.enums import SubUnsub, WSTradeDetailMode
 from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnection, WebsocketConnectionAbstract
 
@@ -305,34 +305,31 @@ class HuobiMarketWebsocket:
                 callback(message)
 
 
-class HuobiAccountOrderWebsocket:
+class HuobiAccountWebsocket:
     """
     Websocket class for retrieving information about orders and account.
 
     Usage:
 
-        async with HuobiAccountOrderWebsocket(
+        async with HuobiAccountWebsocket(
             access_key='access_key',
             secret_key='secret_key',
         ) as ws:
-            await ws.subscribe_account_change(mode=1)
-            for symbol in {'dogeusdt', 'btcusdt'}:
-                await ws.subscribe_order_updates(symbol)
-                await ws.subscribe_trade_detail(symbol, mode=WSTradeDetailMode.trade_and_cancellation_events)
+            await ws.subscribe_account_change()
+            await ws.subscribe_order_updates('btcusdt')
             async for message in ws:
-                print(message)
+                ...
 
     You can define callbacks which will called when message was received from Huobi websocket:
 
         def callback_balance_update(message):
             print(message)
 
-        async with HuobiAccountOrderWebsocket(
+        async with HuobiAccountWebsocket(
             access_key='access_key',
             secret_key='secret_key',
         ) as ws:
             await ws.subscribe_account_change(
-                mode=1,
                 callback=callback_balance_update,
             )
             await ws.run_with_callbacks()
@@ -345,14 +342,14 @@ class HuobiAccountOrderWebsocket:
         url - Websocket url
         loads - Method of json deserialize (default json.loads)
         raise_if_error - Raise exception if error message was received from websocket
-        run_callbacks_in_asyncio_tasks - If True, then callbacks are run into asyncio.create_task
+        run_callbacks_in_asyncio_tasks - If True, then callbacks run into asyncio.create_task
         connection - Object for managing websocket connection
     """
     def __init__(
         self,
         access_key: str,
         secret_key: str,
-        url: str = HUOBI_WS_ASSET_AND_ORDER_URL,
+        url: str = HUOBI_WS_ACCOUNT_URL,
         loads: LOADS_TYPE = json.loads,
         raise_if_error: bool = False,
         run_callbacks_in_asyncio_tasks: bool = True,
@@ -371,7 +368,7 @@ class HuobiAccountOrderWebsocket:
         self._callbacks: Dict[str, CALLBACK_TYPE] = {}
         self._run_callbacks_in_asyncio_tasks = run_callbacks_in_asyncio_tasks
 
-    async def __aenter__(self) -> 'HuobiAccountOrderWebsocket':
+    async def __aenter__(self) -> 'HuobiAccountWebsocket':
         await self._connection.connect()
         await self.authorize()
         return self
@@ -380,9 +377,6 @@ class HuobiAccountOrderWebsocket:
         await self._connection.close()
 
     async def _pong(self, timestamp: int) -> None:
-        """
-        Send pong.
-        """
         message = {
             'action': 'pong',
             'data': {
@@ -392,9 +386,6 @@ class HuobiAccountOrderWebsocket:
         await self._connection.send(message)
 
     async def close(self) -> None:
-        """
-        Close connection.
-        """
         if not self._connection.closed:
             await self._connection.close()
 
@@ -475,7 +466,7 @@ class HuobiAccountOrderWebsocket:
             callback=callback,
         )
 
-    def __aiter__(self) -> 'HuobiAccountOrderWebsocket':
+    def __aiter__(self) -> 'HuobiAccountWebsocket':
         return self
 
     async def __anext__(self) -> WS_MESSAGE_TYPE:
