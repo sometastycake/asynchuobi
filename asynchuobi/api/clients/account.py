@@ -1,8 +1,8 @@
 from typing import Dict, Iterable, Optional
 from urllib.parse import urljoin
 
-from asynchuobi.api.request_strategy.abstract import RequestStrategyAbstract
-from asynchuobi.api.request_strategy.strategy import BaseRequestStrategy
+from asynchuobi.api.request.abstract import RequestStrategyAbstract
+from asynchuobi.api.request.strategy import BaseRequestStrategy
 from asynchuobi.api.schemas import (
     _AssetTransfer,
     _GetAccountHistory,

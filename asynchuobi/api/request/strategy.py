@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 import aiohttp
 
-from asynchuobi.api.request_strategy.abstract import RequestStrategyAbstract
+from asynchuobi.api.request.abstract import RequestStrategyAbstract
 
 
 class BaseRequestStrategy(RequestStrategyAbstract):
