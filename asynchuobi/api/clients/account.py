@@ -30,13 +30,13 @@ class AccountHuobiClient:
         self._api = api_url
         self._access_key = access_key
         self._secret_key = secret_key
-        self._rstrategy = request_strategy
+        self._requests = request_strategy
 
     async def __aenter__(self) -> 'AccountHuobiClient':
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
-        await self._rstrategy.close()
+        await self._requests.close()
 
     async def accounts(self) -> Dict:
         """
@@ -48,7 +48,7 @@ class AccountHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/account/accounts')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=auth.to_request(url, 'GET'),
@@ -67,7 +67,7 @@ class AccountHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, f'/v1/account/accounts/{account_id}/balance')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=auth.to_request(url, 'GET'),
@@ -93,7 +93,7 @@ class AccountHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/account/valuation')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -122,7 +122,7 @@ class AccountHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/account/asset-valuation')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -167,7 +167,7 @@ class AccountHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/account/transfer')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -219,7 +219,7 @@ class AccountHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/account/history')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -264,7 +264,7 @@ class AccountHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/account/ledger')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -291,7 +291,7 @@ class AccountHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/futures/transfer')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -315,7 +315,7 @@ class AccountHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/point/account')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -343,7 +343,7 @@ class AccountHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/point/transfer')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),

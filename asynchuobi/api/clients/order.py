@@ -33,13 +33,13 @@ class OrderHuobiClient:
         self._api = api_url
         self._access_key = access_key
         self._secret_key = secret_key
-        self._rstrategy = request_strategy
+        self._requests = request_strategy
 
     async def __aenter__(self) -> 'OrderHuobiClient':
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
-        await self._rstrategy.close()
+        await self._requests.close()
 
     async def new_order(
             self,
@@ -87,7 +87,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders/place')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -104,7 +104,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/batch-orders')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -128,7 +128,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, f'/v1/order/orders/{order_id}/submitcancel')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -148,7 +148,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders/submitCancelClientOrder')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -190,7 +190,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/openOrders')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -237,7 +237,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders/batchCancelOpenOrders')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -280,7 +280,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders/batchcancel')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -300,7 +300,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/algo-orders/cancel-all-after')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -322,7 +322,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, f'/v1/order/orders/{order_id}')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=auth.to_request(url, 'GET'),
@@ -339,7 +339,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders/getClientOrder')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -357,7 +357,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, f'/v1/order/orders/{order_id}/matchresults')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=auth.to_request(url, 'GET'),
@@ -410,7 +410,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/orders')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -446,7 +446,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/history')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -497,7 +497,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/order/matchresults')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -518,7 +518,7 @@ class OrderHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/reference/transact-fee-rate')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),

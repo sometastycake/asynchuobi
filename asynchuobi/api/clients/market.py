@@ -15,13 +15,13 @@ class MarketHuobiClient:
         request_strategy: RequestStrategyAbstract = BaseRequestStrategy(),
     ):
         self._api = api_url
-        self._rstrategy = request_strategy
+        self._requests = request_strategy
 
     async def __aenter__(self) -> 'MarketHuobiClient':
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
-        await self._rstrategy.close()
+        await self._requests.close()
 
     async def get_candles(self, symbol: str, interval: CandleInterval, size: int = 150) -> Dict:
         """
@@ -36,7 +36,7 @@ class MarketHuobiClient:
         """
         if size < 1 or size > 2000:
             raise ValueError(f'Wrong size value "{size}"')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=urljoin(self._api, '/market/history/kline'),
             params={
@@ -54,7 +54,7 @@ class MarketHuobiClient:
 
         :param symbol: The trading symbol to query
         """
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=urljoin(self._api, '/market/detail/merged'),
             params={
@@ -67,7 +67,7 @@ class MarketHuobiClient:
         This endpoint retrieves the latest tickers for all supported pairs
         https://huobiapi.github.io/docs/spot/v1/en/#get-latest-tickers-for-all-pairs
         """
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=urljoin(self._api, '/market/tickers'),
         )
@@ -86,7 +86,7 @@ class MarketHuobiClient:
         :param depth: The number of market depth to return on each side
         :param aggregation_level: Market depth aggregation level
         """
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=urljoin(self._api, '/market/depth'),
             params={
@@ -104,7 +104,7 @@ class MarketHuobiClient:
 
         :param symbol: The trading symbol to query
         """
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=urljoin(self._api, '/market/trade'),
             params={
@@ -123,7 +123,7 @@ class MarketHuobiClient:
         """
         if size < 1 or size > 2000:
             raise ValueError(f'Wrong size value "{size}"')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=urljoin(self._api, '/market/history/trade'),
             params={
@@ -140,7 +140,7 @@ class MarketHuobiClient:
 
         :param symbol: The trading symbol to query
         """
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=urljoin(self._api, '/market/detail/'),
             params={
@@ -155,7 +155,7 @@ class MarketHuobiClient:
 
         :param symbol: ETP trading symbol
         """
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=urljoin(self._api, '/market/etp/'),
             params={

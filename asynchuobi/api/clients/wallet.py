@@ -30,13 +30,13 @@ class WalletHuobiClient:
         self._api = api_url
         self._access_key = access_key
         self._secret_key = secret_key
-        self._rstrategy = request_strategy
+        self._requests = request_strategy
 
     async def __aenter__(self) -> 'WalletHuobiClient':
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):  # noqa:U100
-        await self._rstrategy.close()
+        await self._requests.close()
 
     async def query_deposit_address(self, currency: str) -> Dict:
         """
@@ -52,7 +52,7 @@ class WalletHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/account/deposit/address')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -71,7 +71,7 @@ class WalletHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/account/withdraw/quota')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -107,7 +107,7 @@ class WalletHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/account/withdraw/address')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -150,7 +150,7 @@ class WalletHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/dw/withdraw/api/create')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -170,7 +170,7 @@ class WalletHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/query/withdraw/client-order-id')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
@@ -188,7 +188,7 @@ class WalletHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, f'/v1/dw/withdraw-virtual/{withdraw_id}/cancel')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='POST',
             url=url,
             params=auth.to_request(url, 'POST'),
@@ -224,7 +224,7 @@ class WalletHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/query/deposit-withdraw')
-        return await self._rstrategy.request(
+        return await self._requests.request(
             method='GET',
             url=url,
             params=params.to_request(url, 'GET'),
