@@ -1,8 +1,12 @@
 from datetime import datetime
-from unittest.mock import AsyncMock
 
 import pytest
 from freezegun import freeze_time
+
+try:
+    from unittest.mock import AsyncMock
+except ImportError:
+    from mock.mock import AsyncMock
 
 from asynchuobi.api.clients.account import AccountHuobiClient
 from asynchuobi.api.clients.generic import GenericHuobiClient
