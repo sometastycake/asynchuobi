@@ -2,6 +2,8 @@ import setuptools
 from setuptools import setup
 
 requirements = [
+    "aiohttp>=3.8.3",
+    "pydantic>=1.10.2"
 ]
 
 
