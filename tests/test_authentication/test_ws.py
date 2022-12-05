@@ -43,7 +43,7 @@ def test_to_request_ws(ws_auth):
 
 
 def test_to_request_without_host(ws_auth):
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         ws_auth.to_request(
             url='/path',
             method='GET',
