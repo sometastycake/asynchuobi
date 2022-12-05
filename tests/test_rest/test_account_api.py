@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from asynchuobi.enums import AccountTypeCode, Sort
 from asynchuobi.urls import HUOBI_API_URL
+from tests.keys import HUOBI_ACCESS_KEY
 
 
 @pytest.mark.asyncio
@@ -18,7 +19,7 @@ async def test_accounts(account_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/accounts')
     assert kwargs['params'] == {
         'Signature': 'QlWgsW91USVj7HjtsmLShIb2V6FBbecprJBTKIRJ2e8=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -35,7 +36,7 @@ async def test_account_balance(account_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/accounts/1/balance')
     assert kwargs['params'] == {
         'Signature': 'R/5i5DPhCzsBiTKrFif7rbNBRiBU3gws1gFQlbfXmEU=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -59,7 +60,7 @@ async def test_get_total_valuation_of_platform_assets(account_client, account_ty
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/valuation')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -90,7 +91,7 @@ async def test_get_asset_valuation(account_client, currency, sub_uid, signature)
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/asset-valuation')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -122,7 +123,7 @@ async def test_asset_transfer(account_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/transfer')
     assert kwargs['params'] == {
         'Signature': '2ZBuSF+pO5av3I0JKIVdmE1gZzxTyqShWbrNzosDB90=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -173,7 +174,7 @@ async def test_get_account_history(
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/history')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -244,7 +245,7 @@ async def test_get_account_ledger(
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/ledger')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -293,7 +294,7 @@ async def test_transfer_fund_between_spot_and_futures(account_client):
     }
     assert kwargs['params'] == {
         'Signature': '3JiFoPuH2PWPF6OXKvMtRleh+Tt7ebuMi5dEVuaaCcQ=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -314,7 +315,7 @@ async def test_get_point_balance(account_client, sub_user_id, signature):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/point/account')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -345,7 +346,7 @@ async def test_point_transfer(account_client):
     }
     assert kwargs['params'] == {
         'Signature': 'e0hoJaZk/l+dWCrChzwaVnOcRb4YC3T3Efv6GQzwpzM=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'

@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from asynchuobi.enums import Direct
 from asynchuobi.urls import HUOBI_API_URL
+from tests.keys import HUOBI_ACCESS_KEY
 
 
 @pytest.mark.asyncio
@@ -20,7 +21,7 @@ async def test_query_deposit_address(wallet_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/deposit/address')
     assert kwargs['params'] == {
         'Signature': 'CUqQMYGXm8jU1SnPFcFR+wHi90ONFqSJl2HGFCkdu2U=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -40,7 +41,7 @@ async def test_query_withdraw_quota(wallet_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/withdraw/quota')
     assert kwargs['params'] == {
         'Signature': 'EJ4O26ecnb3VgRvuBg0pvtugEzoWONgScKHcHHgu1YA=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -73,7 +74,7 @@ async def test_query_withdraw_address(wallet_client, chain, note, limit, from_id
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/withdraw/address')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -137,7 +138,7 @@ async def test_create_withdraw_request(
     assert kwargs['json'] == data
     assert kwargs['params'] == {
         'Signature': '5x3R4I/B0Ig8A8LPrHlyraN5ltcwgskF9XhOEq3sCQ8=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -156,7 +157,7 @@ async def test_cancel_withdraw_request(wallet_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/dw/withdraw-virtual/1/cancel')
     assert kwargs['params'] == {
         'Signature': '3mZpCvPLJfswHNyixuBtKkm1lTLCvTTcA2GjadB+EBI=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -190,7 +191,7 @@ async def test_search_for_existed_withraws_and_deposits(
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/query/deposit-withdraw')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',

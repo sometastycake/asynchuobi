@@ -15,6 +15,7 @@ from asynchuobi.enums import (
     TransferTypeBetweenParentAndSubUser,
 )
 from asynchuobi.urls import HUOBI_API_URL
+from tests.keys import HUOBI_ACCESS_KEY
 
 
 @pytest.mark.asyncio
@@ -36,7 +37,7 @@ async def test_set_deduction_for_parent_and_sub_user(subuser_client, sub_uids, d
     }
     assert kwargs['params'] == {
         'Signature': 'HZQtpXz6A6FTKIA+5Q1K2MV3HuHzpNjYOW7VSyjd9H0=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -70,7 +71,7 @@ async def test_api_key_query(subuser_client, access_key, signature):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/user/api-key')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -91,7 +92,7 @@ async def test_get_uid(subuser_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/user/uid')
     assert kwargs['params'] == {
         'Signature': 'aNAXON0BI5Cg/rcmSRHW/Gsfrk1VwgK2FaE+QN6ukZw=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -121,7 +122,7 @@ async def test_sub_user_creation(subuser_client):
     }
     assert kwargs['params'] == {
         'Signature': 'lOAMO8Q1El2v3IiT4Ywc0P0TJbduR+oreHYmmYM0H+s=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -144,7 +145,7 @@ async def test_get_sub_users_list(subuser_client, from_id, signature):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/user-list')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -174,7 +175,7 @@ async def test_lock_unlock_sub_user(subuser_client, action):
     }
     assert kwargs['params'] == {
         'Signature': '3VkQrvWzUxXA4Zq4KZu586guHzw2r1HDaXQeiUiizLk=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -193,7 +194,7 @@ async def test_get_sub_user_status(subuser_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/user-state')
     assert kwargs['params'] == {
         'Signature': 'gGsMa2p5CgZ9DZKPZKaynAzyXFANmKmeJR7gB8TaGEk=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -229,7 +230,7 @@ async def test_set_tradable_market_for_sub_users(
     }
     assert kwargs['params'] == {
         'Signature': 'oZGKnsqoyGXtHlBPQ2YvcXdot2V8g2OW0OSXB10LS+Y=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -271,7 +272,7 @@ async def test_set_asset_transfer_permission_for_sub_users(
     }
     assert kwargs['params'] == {
         'Signature': 'V75FYLYnhN8XK9HSS4ZIPDdHWu/vwLi8wP1jneug51k=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -302,7 +303,7 @@ async def test_get_sub_users_account_list(subuser_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/account-list')
     assert kwargs['params'] == {
         'Signature': '4fH+UeoFpA+GLK3ZT/fDDv9GiXA47McfslTPcV4OulA=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -351,7 +352,7 @@ async def test_sub_user_api_key_creation(
     assert kwargs['json'] == params
     assert kwargs['params'] == {
         'Signature': 'LKG+yaQCmQ/FzGxF7xLoLj/uEnJmIVABL3IHMnf7qxw=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -426,7 +427,7 @@ async def test_sub_user_api_key_modification(
     assert kwargs['json'] == params
     assert kwargs['params'] == {
         'Signature': '1xkV0+eOpkRKVoqpPs9uyEL4nDrfa2wTCIYBEgnvwUU=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -476,7 +477,7 @@ async def test_sub_user_api_key_deletion(subuser_client):
     }
     assert kwargs['params'] == {
         'Signature': 'p1eIczo3gEifzlad6uDh4pCuI/LRvlm1dvhG4ypqsdU=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -508,7 +509,7 @@ async def test_transfer_asset_between_parent_and_sub_user(subuser_client, transf
     }
     assert kwargs['params'] == {
         'Signature': '+GbGqMqCQa8Lpk6nIMrUutrY35FoFARwnjf5gq1Ku4E=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -528,7 +529,7 @@ async def test_query_deposit_address_of_sub_user(subuser_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/deposit-address')
     assert kwargs['params'] == {
         'Signature': 'i229f+09dxI08M3YyVHl0LqcKGSlQe4Om7KEVp8G/h8=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -567,7 +568,7 @@ async def test_query_deposit_history_of_sub_user(
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/sub-user/query-deposit')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -608,7 +609,7 @@ async def test_get_aggregated_balance_of_all_sub_users(subuser_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/subuser/aggregate-balance')
     assert kwargs['params'] == {
         'Signature': 'FzCcdDBsQh7p1nGKgqOGF/pDwKtf9tDPe8bNor7KJIU=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -627,7 +628,7 @@ async def test_get_account_balance_of_sub_user(subuser_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/account/accounts/1')
     assert kwargs['params'] == {
         'Signature': 'lmpg2TGL0UrUS6uxfHnJoVII3i5HkiSDR1NrsUJhquo=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',

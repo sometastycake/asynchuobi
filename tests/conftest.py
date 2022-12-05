@@ -3,6 +3,8 @@ from datetime import datetime
 import pytest
 from freezegun import freeze_time
 
+from tests.keys import HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY
+
 try:
     from unittest.mock import AsyncMock
 except ImportError:
@@ -34,8 +36,8 @@ def market_client():
 @pytest.fixture
 def account_client():
     return AccountHuobiClient(
-        access_key='HUOBI_ACCESS_KEY',
-        secret_key='HUOBI_SECRET_KEY',
+        access_key=HUOBI_ACCESS_KEY,
+        secret_key=HUOBI_SECRET_KEY,
         request_strategy=AsyncMock(),
     )
 
@@ -43,8 +45,8 @@ def account_client():
 @pytest.fixture
 def order_client():
     return OrderHuobiClient(
-        access_key='HUOBI_ACCESS_KEY',
-        secret_key='HUOBI_SECRET_KEY',
+        access_key=HUOBI_ACCESS_KEY,
+        secret_key=HUOBI_SECRET_KEY,
         request_strategy=AsyncMock(),
     )
 
@@ -52,8 +54,8 @@ def order_client():
 @pytest.fixture
 def wallet_client():
     return WalletHuobiClient(
-        access_key='HUOBI_ACCESS_KEY',
-        secret_key='HUOBI_SECRET_KEY',
+        access_key=HUOBI_ACCESS_KEY,
+        secret_key=HUOBI_SECRET_KEY,
         request_strategy=AsyncMock(),
     )
 
@@ -61,8 +63,8 @@ def wallet_client():
 @pytest.fixture
 def subuser_client():
     return SubUserHuobiClient(
-        access_key='HUOBI_ACCESS_KEY',
-        secret_key='HUOBI_SECRET_KEY',
+        access_key=HUOBI_ACCESS_KEY,
+        secret_key=HUOBI_SECRET_KEY,
         request_strategy=AsyncMock(),
     )
 
@@ -75,8 +77,8 @@ def api_auth():
     with freeze_time(datetime(2023, 1, 1, 0, 1, 1)):
         return Data(
             param='param',
-            AccessKeyId='HUOBI_ACCESS_KEY',
-            SecretKey='HUOBI_SECRET_KEY',
+            AccessKeyId=HUOBI_ACCESS_KEY,
+            SecretKey=HUOBI_SECRET_KEY,
         )
 
 
@@ -88,6 +90,6 @@ def ws_auth():
     with freeze_time(datetime(2023, 1, 1, 0, 1, 1)):
         return Data(
             param='param',
-            accessKey='HUOBI_ACCESS_KEY',
-            SecretKey='HUOBI_SECRET_KEY',
+            accessKey=HUOBI_ACCESS_KEY,
+            SecretKey=HUOBI_SECRET_KEY,
         )

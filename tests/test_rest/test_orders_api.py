@@ -7,6 +7,7 @@ from freezegun import freeze_time
 from asynchuobi.api.schemas import NewOrder
 from asynchuobi.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
 from asynchuobi.urls import HUOBI_API_URL
+from tests.keys import HUOBI_ACCESS_KEY
 
 
 @pytest.mark.asyncio
@@ -66,7 +67,7 @@ async def test_new_order(
     assert kwargs['json'] == request
     assert kwargs['params'] == {
         'Signature': 'Lh6NnZaA4C8hWKdjXgP5DJyAp4vGBgvwuviSHBc19dc=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -121,7 +122,7 @@ async def test_place_batch_of_orders(
     assert kwargs['json'] == [request]
     assert kwargs['params'] == {
         'Signature': 'HqsPxnqe+sCQ1mtSEbTCfObGtVib+sPCwMoq3uLhyw0=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -148,7 +149,7 @@ async def test_cancel_order(order_client, symbol):
     assert kwargs['json'] == request
     assert kwargs['params'] == {
         'Signature': 'PGMuhp9Civ0igcvOTUFanAehxfvWLcGelId9wJwT2NM=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -170,7 +171,7 @@ async def test_cancel_order_by_client_order_id(order_client):
     }
     assert kwargs['params'] == {
         'Signature': 'RsqkdFqvhLhYM/789snt6v3QBdeevWlhJ+zwFKzAvgQ=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -212,7 +213,7 @@ async def test_get_all_open_orders(
     assert len(kwargs) == 2
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/openOrders')
     request = {
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'Signature': signature,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
@@ -278,7 +279,7 @@ async def test_batch_cancel_open_orders(
     assert kwargs['json'] == request
     assert kwargs['params'] == {
         'Signature': 'u1sIQFk+GFaCCBdbQ9Dc2oE4yYz8R9QOPjk+1gzSPps=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -331,7 +332,7 @@ async def test_cancel_order_by_ids(order_client, order_ids, client_order_ids):
     assert kwargs['json'] == request
     assert kwargs['params'] == {
         'Signature': 'XnfPrcRrRO7e6ttLn7iwzV/C0dwqD1Of4EySZskG1gQ=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -368,7 +369,7 @@ async def test_dead_mans_switch(order_client):
     }
     assert kwargs['params'] == {
         'Signature': 'YV/PR4WvcLLRV340xAzocPIrWXFcdjA9fCmzQlsSDv4=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -385,7 +386,7 @@ async def test_get_order_detail(order_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/1')
     assert kwargs['params'] == {
         'Signature': 'hrLiWD2+gWnTEc1OW2SnOOTAIRuMYqIqOGtm/dHEiTg=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -404,7 +405,7 @@ async def test_get_order_detail_by_client_order_id(order_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/getClientOrder')
     assert kwargs['params'] == {
         'Signature': 'Ls++IMQhqOMNoSB2osuZkjJiyokvPYsC2iMLX85YysI=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -422,7 +423,7 @@ async def test_get_match_result_of_order(order_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders/1/matchresults')
     assert kwargs['params'] == {
         'Signature': 'HDi4YN9iEQzu8irolQJFAg1qooljUjAud4YLxBDlGUU=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01'
@@ -466,7 +467,7 @@ async def test_search_past_orders(
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/orders')
     request = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -536,7 +537,7 @@ async def test_search_historical_orders_within_48_hours(
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/history')
     request = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -596,7 +597,7 @@ async def test_search_match_results(
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/order/matchresults')
     request = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -651,7 +652,7 @@ async def test_get_current_fee_rate_applied_to_user(order_client, symbols, signa
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/reference/transact-fee-rate')
     request = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
