@@ -26,10 +26,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
-      - name: Tests
+      - name: tests
         run: |
           export PYTHONPATH=$PWD && pytest
-      - name: Mypy
+      - name: mypy
         run: |
           pip install mypy
           mypy .
@@ -37,3 +37,7 @@ jobs:
         run: |
           pip install flake8
           flake8 --benchmark .
+      - name: bandit
+        run: |
+          pip install bandit
+          bandit -r asynchuobi/
