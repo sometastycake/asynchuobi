@@ -12,4 +12,4 @@ def test_parse_url():
 def test_utcnow():
     now_ = _utcnow()
     assert isinstance(now_, str)
-    assert re.match('\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', now_)
+    assert re.match(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', now_)

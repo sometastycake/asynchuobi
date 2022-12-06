@@ -117,7 +117,7 @@ async def test_get_most_recent_trades(market_client, size):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('size', [0, 2001])
-async def test_get_most_recent_trades(market_client, size):
+async def test_get_most_recent_trades_wrong_size(market_client, size):
     with pytest.raises(ValueError):
         await market_client.get_most_recent_trades(
             symbol='btcusdt',
