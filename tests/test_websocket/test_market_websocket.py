@@ -5,8 +5,10 @@ from typing import Dict
 import pytest
 
 from asynchuobi.enums import CandleInterval, MarketDepthAggregationLevel
+from asynchuobi.exceptions import WSHuobiError
 from asynchuobi.ws.enums import Subcription
 from asynchuobi.ws.ws_client import HuobiMarketWebsocket, _default_message_id  # noqa
+from tests.test_websocket.stubs import HuobiMarketWebsocketConnectionStub
 
 
 def callback(msg: Dict):
@@ -394,3 +396,85 @@ async def test_etp_stream_unsubscribe(market_websocket):
     market_websocket._connection.send.assert_called_once_with({'unsub': topic})
     assert market_websocket._subscribed_ch == set()
     assert market_websocket._callbacks == {}
+
+
+@pytest.mark.asyncio
+async def test_market_websocket():
+    received = []
+    ws = HuobiMarketWebsocket(
+        connection=HuobiMarketWebsocketConnectionStub,
+    )
+    await ws.candlestick(
+        symbol='btcusdt',
+        interval=CandleInterval.min_1,
+        action=Subcription.sub,
+        message_id='id',
+    )
+    async for message in ws:
+        received.append(message)
+    assert received == [
+        {
+            'id': 'id',
+            'status': 'ok',
+            'subbed': 'market.btcusdt.kline.1min',
+            'ts': 1,
+        },
+        {
+            'id': 'id',
+            'status': 'error',
+            'err-code': 'code',
+            'err-msg': 'msg',
+            'ts': 1,
+        },
+    ]
+    assert ws._connection._sent_messages == [
+        {
+            'sub': 'market.btcusdt.kline.1min',
+            'id': 'id',
+        },
+        {
+            'pong': 1,
+        },
+        {
+            'pong': 2,
+        },
+    ]
+
+
+@pytest.mark.asyncio
+async def test_market_websocket_raise_error():
+    ws = HuobiMarketWebsocket(
+        connection=HuobiMarketWebsocketConnectionStub,
+        raise_if_error=True,
+    )
+    with pytest.raises(WSHuobiError):
+        async for message in ws:
+            ...
+
+
+@pytest.mark.asyncio
+async def test_market_websocket_callbacks():
+    received = []
+
+    def candle_callback(msg: Dict):
+        received.append(msg)
+
+    ws = HuobiMarketWebsocket(
+        connection=HuobiMarketWebsocketConnectionStub,
+    )
+    await ws.candlestick(
+        symbol='btcusdt',
+        interval=CandleInterval.min_1,
+        action=Subcription.sub,
+        message_id='id',
+        callback=candle_callback,
+    )
+    await ws.run_with_callbacks()
+    assert received == [
+        {
+            'id': 'id',
+            'status': 'ok',
+            'subbed': 'market.btcusdt.kline.1min',
+            'ts': 1,
+        },
+    ]
