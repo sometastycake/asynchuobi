@@ -145,7 +145,7 @@ class HuobiMarketWebsocket:
             await self._connection.send({'unsub': topic})
         self._subscribed_ch.clear()
 
-    async def market_candlestick_stream(
+    async def candlestick(
             self,
             symbol: str,
             interval: Union[CandleInterval, str],
@@ -168,7 +168,7 @@ class HuobiMarketWebsocket:
             message_id=message_id or self._default_message_id(),
         )
 
-    async def ticker_stream(
+    async def ticker_info(
             self,
             symbol: str,
             action: SubUnsub,
@@ -182,7 +182,7 @@ class HuobiMarketWebsocket:
             callback=callback,
         )
 
-    async def market_depth_stream(
+    async def orderbook(
             self,
             symbol: str,
             action: SubUnsub,
@@ -199,7 +199,7 @@ class HuobiMarketWebsocket:
             message_id=message_id or self._default_message_id(),
         )
 
-    async def best_bid_offer_stream(
+    async def best_bid_offer(
             self,
             symbol: str,
             action: SubUnsub,
@@ -215,7 +215,7 @@ class HuobiMarketWebsocket:
             message_id=message_id or self._default_message_id(),
         )
 
-    async def trade_detail_stream(
+    async def trade_detail(
             self,
             symbol: str,
             action: SubUnsub,
@@ -231,7 +231,7 @@ class HuobiMarketWebsocket:
             message_id=message_id or self._default_message_id(),
         )
 
-    async def market_detail_stream(
+    async def market_detail(
             self,
             symbol: str,
             action: SubUnsub,
@@ -247,7 +247,7 @@ class HuobiMarketWebsocket:
             message_id=message_id or self._default_message_id(),
         )
 
-    async def etp_stream(
+    async def etp(
             self,
             symbol: str,
             action: SubUnsub,

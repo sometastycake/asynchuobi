@@ -158,7 +158,6 @@ Client supports retrieving information about market data, such as candles, order
 
 ### Usage
 
-
 ```python
 from asynchuobi.enums import CandleInterval, MarketDepthAggregationLevel
 from asynchuobi.ws.enums import SubUnsub
@@ -168,17 +167,17 @@ from asynchuobi.ws.ws_client import HuobiMarketWebsocket
 async def main():
     async with HuobiMarketWebsocket() as ws:
         # Retrieving a new candlestick whenever it is available
-        await ws.market_candlestick_stream('ethusdt', CandleInterval.min_1, SubUnsub.sub)
+        await ws.candlestick('ethusdt', CandleInterval.min_1, SubUnsub.sub)
 
         # Retrieving the latest market stats with 24h summary.
         # It updates in snapshot mode, in frequency of no more than 10 times per second
-        await ws.market_detail_stream('ethusdt', SubUnsub.sub)
+        await ws.market_detail('ethusdt', SubUnsub.sub)
 
         # Retrieving the market ticker, data is pushed every 100ms
-        await ws.ticker_stream('ethusdt', SubUnsub.sub)
+        await ws.ticker_info('ethusdt', SubUnsub.sub)
 
         # Retrieving the latest market by price order book in snapshot mode at 1-second interval
-        await ws.market_depth_stream('ethusdt', SubUnsub.sub, MarketDepthAggregationLevel.step0)
+        await ws.orderbook('ethusdt', SubUnsub.sub, MarketDepthAggregationLevel.step0)
 
         async for message in ws:
             ...
@@ -196,7 +195,7 @@ async def main():
         print(message)
 
     async with HuobiMarketWebsocket() as ws:
-        await ws.market_detail_stream(
+        await ws.market_detail(
             symbol='ethusdt',
             action=SubUnsub.sub,
             callback=callback_market_detail,
