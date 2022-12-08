@@ -23,6 +23,11 @@ CALLBACK_TYPE = Union[
     Callable[[WS_MESSAGE_TYPE], Any],
 ]
 
+ERROR_CALLBACK_TYPE = Union[
+    Callable[[WSHuobiError], Awaitable[Any]],
+    Callable[[WSHuobiError], Any],
+]
+
 _CLOSING_STATUSES = (
     WSMsgType.CLOSE,
     WSMsgType.CLOSING,
@@ -83,9 +88,14 @@ class HuobiMarketWebsocket:
         default_message_id: Callable[[], str] = _default_message_id,
         raise_if_error: bool = False,
         run_callbacks_in_asyncio_tasks: bool = True,
+        error_callback: Optional[ERROR_CALLBACK_TYPE] = None,
         connection: Type[WebsocketConnectionAbstract] = WebsocketConnection,
         **connection_kwargs,
     ):
+        if error_callback and not callable(error_callback):
+            raise TypeError(f'Error callback {error_callback} is not callable')
+        if raise_if_error and error_callback:
+            raise ValueError('Cannot both specify raise_if_error and error_callback')
         self._loads = loads
         self._decompress = decompress
         self._connection = connection(url=url, **connection_kwargs)
@@ -94,6 +104,7 @@ class HuobiMarketWebsocket:
         self._run_callbacks_in_asyncio_tasks = run_callbacks_in_asyncio_tasks
         self._subscribed_ch: Set[str] = set()
         self._callbacks: Dict[str, CALLBACK_TYPE] = {}
+        self._error_callback = error_callback
 
     async def __aenter__(self):
         await self._connection.connect()
@@ -293,9 +304,22 @@ class HuobiMarketWebsocket:
             return
         async for message in self:
             message = cast(WS_MESSAGE_TYPE, message)
+            status = message.get('status') or ''
+            if status == 'error' and self._error_callback:
+                error = WSHuobiError(
+                    err_code=message['err-code'],
+                    err_msg=message['err-msg'],
+                )
+                if asyncio.iscoroutinefunction(self._error_callback):
+                    if self._run_callbacks_in_asyncio_tasks:
+                        asyncio.create_task(self._error_callback(error))
+                    else:
+                        await self._error_callback(error)
+                else:
+                    self._error_callback(error)
+                continue
             channel = message.get('ch') or message.get('subbed')
             if not channel:
-                warnings.warn(f'Channel not found in message {message}')
                 continue
             callback = self._callbacks[channel]
             if asyncio.iscoroutinefunction(callback):

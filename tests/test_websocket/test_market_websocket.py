@@ -1,6 +1,6 @@
 import gzip
 import json
-from typing import Dict
+from typing import Dict, List
 
 import pytest
 
@@ -454,13 +454,18 @@ async def test_market_websocket_raise_error():
 
 @pytest.mark.asyncio
 async def test_market_websocket_callbacks():
-    received = []
+    received: List[Dict] = []
+    errors: List[WSHuobiError] = []
 
     def candle_callback(msg: Dict):
         received.append(msg)
 
+    def error_callback(error: WSHuobiError):
+        errors.append(error)
+
     async with HuobiMarketWebsocket(
         connection=HuobiMarketWebsocketConnectionStub,
+        error_callback=error_callback,
     ) as ws:
         await ws.candlestick(
             symbol='btcusdt',
@@ -478,3 +483,6 @@ async def test_market_websocket_callbacks():
             'ts': 1,
         },
     ]
+    assert len(errors) == 1
+    assert errors[0].err_code == 'code'
+    assert errors[0].err_msg == 'msg'
