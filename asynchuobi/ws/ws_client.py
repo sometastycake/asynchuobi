@@ -78,6 +78,7 @@ class HuobiMarketWebsocket:
             }
         raise_if_error - Raise exception if error message was received from websocket
         run_callbacks_in_asyncio_tasks - If True, then callbacks are run into asyncio.create_task
+        error_callback - Callback for error messages
         connection - Object for managing websocket connection
     """
     def __init__(
@@ -147,9 +148,6 @@ class HuobiMarketWebsocket:
             await self._connection.close()
 
     async def unsubscribe_all(self) -> None:
-        """
-        Unsubscribe from all topics.
-        """
         if self._connection.closed:
             return
         for topic in self._subscribed_ch:
@@ -298,6 +296,19 @@ class HuobiMarketWebsocket:
                 )
             return data
 
+    async def _run_callback(
+            self,
+            callback: Union[CALLBACK_TYPE, ERROR_CALLBACK_TYPE],
+            data: Any,
+    ) -> None:
+        if asyncio.iscoroutinefunction(callback):
+            if self._run_callbacks_in_asyncio_tasks:
+                asyncio.create_task(callback(data))
+            else:
+                await callback(data)
+        else:
+            callback(data)
+
     async def run_with_callbacks(self) -> None:
         if not self._callbacks:
             warnings.warn('Callbacks not specified')
@@ -310,25 +321,18 @@ class HuobiMarketWebsocket:
                     err_code=message['err-code'],
                     err_msg=message['err-msg'],
                 )
-                if asyncio.iscoroutinefunction(self._error_callback):
-                    if self._run_callbacks_in_asyncio_tasks:
-                        asyncio.create_task(self._error_callback(error))
-                    else:
-                        await self._error_callback(error)
-                else:
-                    self._error_callback(error)
+                await self._run_callback(
+                    callback=self._error_callback,
+                    data=error,
+                )
                 continue
             channel = message.get('ch') or message.get('subbed')
             if not channel:
                 continue
-            callback = self._callbacks[channel]
-            if asyncio.iscoroutinefunction(callback):
-                if self._run_callbacks_in_asyncio_tasks:
-                    asyncio.create_task(callback(message))
-                else:
-                    await callback(message)
-            else:
-                callback(message)
+            await self._run_callback(
+                callback=self._callbacks[channel],
+                data=message,
+            )
 
 
 class HuobiAccountWebsocket:
