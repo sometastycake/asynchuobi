@@ -6,6 +6,6 @@ class WSTradeDetailMode(IntEnum):
     trade_and_cancellation_events = 1
 
 
-class SubUnsub(Enum):
+class Subcription(Enum):
     sub = 'sub'
     unsub = 'unsub'

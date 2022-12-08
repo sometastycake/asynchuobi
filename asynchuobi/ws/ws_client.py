@@ -12,7 +12,7 @@ from asynchuobi.enums import CandleInterval
 from asynchuobi.enums import MarketDepthAggregationLevel as Aggregation
 from asynchuobi.exceptions import WSConnectionNotAuthorized, WSHuobiError
 from asynchuobi.urls import HUOBI_WS_ACCOUNT_URL, HUOBI_WS_MARKET_URL
-from asynchuobi.ws.enums import SubUnsub, WSTradeDetailMode
+from asynchuobi.ws.enums import Subcription, WSTradeDetailMode
 from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnection, WebsocketConnectionAbstract
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
@@ -108,13 +108,13 @@ class HuobiMarketWebsocket:
     async def _handler(
             self,
             topic: str,
-            action: SubUnsub,
+            action: Subcription,
             callback: Optional[CALLBACK_TYPE] = None,
             message_id: Optional[str] = None,
     ) -> None:
-        if not isinstance(action, SubUnsub):
+        if not isinstance(action, Subcription):
             raise TypeError(f'Action type is not SubUnsub, received type "{type(action)}"')
-        if action is SubUnsub.sub:
+        if action is Subcription.sub:
             self._subscribed_ch.add(topic)
             if callback:
                 if not callable(callback):
@@ -149,7 +149,7 @@ class HuobiMarketWebsocket:
             self,
             symbol: str,
             interval: Union[CandleInterval, str],
-            action: SubUnsub,
+            action: Subcription,
             callback: Optional[CALLBACK_TYPE] = None,
             message_id: Optional[str] = None,
     ) -> None:
@@ -171,7 +171,7 @@ class HuobiMarketWebsocket:
     async def ticker_info(
             self,
             symbol: str,
-            action: SubUnsub,
+            action: Subcription,
             callback: Optional[CALLBACK_TYPE] = None,
     ) -> None:
         if not isinstance(symbol, str):
@@ -185,7 +185,7 @@ class HuobiMarketWebsocket:
     async def orderbook(
             self,
             symbol: str,
-            action: SubUnsub,
+            action: Subcription,
             level: Aggregation = Aggregation.step0,
             callback: Optional[CALLBACK_TYPE] = None,
             message_id: Optional[str] = None,
@@ -202,7 +202,7 @@ class HuobiMarketWebsocket:
     async def best_bid_offer(
             self,
             symbol: str,
-            action: SubUnsub,
+            action: Subcription,
             callback: Optional[CALLBACK_TYPE] = None,
             message_id: Optional[str] = None,
     ) -> None:
@@ -218,7 +218,7 @@ class HuobiMarketWebsocket:
     async def trade_detail(
             self,
             symbol: str,
-            action: SubUnsub,
+            action: Subcription,
             callback: Optional[CALLBACK_TYPE] = None,
             message_id: Optional[str] = None,
     ) -> None:
@@ -234,7 +234,7 @@ class HuobiMarketWebsocket:
     async def market_detail(
             self,
             symbol: str,
-            action: SubUnsub,
+            action: Subcription,
             callback: Optional[CALLBACK_TYPE] = None,
             message_id: Optional[str] = None,
     ) -> None:
@@ -250,7 +250,7 @@ class HuobiMarketWebsocket:
     async def etp(
             self,
             symbol: str,
-            action: SubUnsub,
+            action: Subcription,
             callback: Optional[CALLBACK_TYPE] = None,
     ) -> None:
         if not isinstance(symbol, str):
