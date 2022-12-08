@@ -105,7 +105,7 @@ class HuobiMarketWebsocket:
     async def _pong(self, timestamp: int) -> None:
         await self._connection.send({'pong': timestamp})
 
-    async def _handle_sub_unsub(
+    async def _handler(
             self,
             topic: str,
             action: SubUnsub,
@@ -161,7 +161,7 @@ class HuobiMarketWebsocket:
             period = interval
         else:
             raise TypeError(f'Wrong type "{type(interval)}" for interval')
-        await self._handle_sub_unsub(
+        await self._handler(
             topic=f'market.{symbol}.kline.{period}',
             action=action,
             callback=callback,
@@ -176,7 +176,7 @@ class HuobiMarketWebsocket:
     ) -> None:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handle_sub_unsub(
+        await self._handler(
             topic=f'market.{symbol}.ticker',
             action=action,
             callback=callback,
@@ -192,7 +192,7 @@ class HuobiMarketWebsocket:
     ) -> None:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handle_sub_unsub(
+        await self._handler(
             topic=f'market.{symbol}.depth.{level.value}',
             action=action,
             callback=callback,
@@ -208,7 +208,7 @@ class HuobiMarketWebsocket:
     ) -> None:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handle_sub_unsub(
+        await self._handler(
             topic=f'market.{symbol}.bbo',
             action=action,
             callback=callback,
@@ -224,7 +224,7 @@ class HuobiMarketWebsocket:
     ) -> None:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handle_sub_unsub(
+        await self._handler(
             topic=f'market.{symbol}.trade.detail',
             action=action,
             callback=callback,
@@ -240,7 +240,7 @@ class HuobiMarketWebsocket:
     ) -> None:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handle_sub_unsub(
+        await self._handler(
             topic=f'market.{symbol}.detail',
             action=action,
             callback=callback,
@@ -255,7 +255,7 @@ class HuobiMarketWebsocket:
     ) -> None:
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handle_sub_unsub(
+        await self._handler(
             topic=f'market.{symbol}.etp',
             action=action,
             callback=callback,

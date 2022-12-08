@@ -57,15 +57,15 @@ async def test_unsubscribe_all_with_closed_connection(market_websocket, monkeypa
 
 
 @pytest.mark.asyncio
-async def test_handle_sub_unsub_wrong_action(market_websocket):
+async def test_handler_wrong_action(market_websocket):
     with pytest.raises(TypeError):
-        await market_websocket._handle_sub_unsub('topic', 'action')
+        await market_websocket._handler('topic', 'action')
 
 
 @pytest.mark.asyncio
-async def test_handle_sub_unsub_wrong_callback(market_websocket):
+async def test_handler_wrong_callback(market_websocket):
     with pytest.raises(TypeError):
-        await market_websocket._handle_sub_unsub(
+        await market_websocket._handler(
             topic='topic',
             action=SubUnsub.sub,
             callback='callback',
@@ -75,8 +75,8 @@ async def test_handle_sub_unsub_wrong_callback(market_websocket):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('message_id', [None, 'id'])
 @pytest.mark.parametrize('topic', ['topic1', 'topic2'])
-async def test_handle_sub_unsub_subscribe(market_websocket, message_id, topic):
-    await market_websocket._handle_sub_unsub(
+async def test_handler_subscribe(market_websocket, message_id, topic):
+    await market_websocket._handler(
         topic=topic,
         action=SubUnsub.sub,
         message_id=message_id,
@@ -89,9 +89,9 @@ async def test_handle_sub_unsub_subscribe(market_websocket, message_id, topic):
 
 
 @pytest.mark.asyncio
-async def test_handle_sub_unsub_unsubscribe(market_websocket, monkeypatch):
+async def test_handler_unsubscribe(market_websocket, monkeypatch):
     monkeypatch.setattr(market_websocket, '_subscribed_ch', {'topic'})
-    await market_websocket._handle_sub_unsub(
+    await market_websocket._handler(
         topic='topic',
         action=SubUnsub.unsub,
     )
