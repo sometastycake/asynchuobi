@@ -96,7 +96,7 @@ def ws_auth():
         )
 
 
-@pytest.fixture()
+@pytest.fixture(scope='function')
 def market_websocket():
     return HuobiMarketWebsocket(
         connection=AsyncMock,

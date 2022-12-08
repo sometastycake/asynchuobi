@@ -3,6 +3,7 @@ import json
 
 import pytest
 
+from asynchuobi.enums import CandleInterval, MarketDepthAggregationLevel
 from asynchuobi.ws.enums import SubUnsub
 from asynchuobi.ws.ws_client import HuobiMarketWebsocket, _default_message_id  # noqa
 
@@ -97,3 +98,384 @@ async def test_handle_sub_unsub_unsubscribe(market_websocket, monkeypatch):
     message = {SubUnsub.unsub.value: 'topic'}
     market_websocket._connection.send.assert_called_once_with(message)
     assert market_websocket._subscribed_ch == set()
+
+
+@pytest.mark.asyncio
+async def test_market_candlestick_stream_wrong_symbol(market_websocket):
+    with pytest.raises(TypeError):
+        await market_websocket.market_candlestick_stream(
+            symbol=10,
+            action=SubUnsub.sub,
+        )
+
+
+@pytest.mark.asyncio
+async def test_market_candlestick_stream_wrong_interval(market_websocket):
+    with pytest.raises(TypeError):
+        await market_websocket.market_candlestick_stream(
+            symbol='btcusdt',
+            action=SubUnsub.sub,
+            interval=10,
+        )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('interval', [CandleInterval.min_1, '1min'])
+async def test_market_candlestick_stream(market_websocket, interval):
+    def callback(msg):
+        ...
+
+    await market_websocket.market_candlestick_stream(
+        symbol='btcusdt',
+        interval=interval,
+        action=SubUnsub.sub,
+        message_id='id',
+        callback=callback,
+    )
+    message = {
+        'sub': 'market.btcusdt.kline.1min',
+        'id': 'id',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == {'market.btcusdt.kline.1min'}
+    assert market_websocket._callbacks['market.btcusdt.kline.1min'] == callback
+
+
+@pytest.mark.asyncio
+async def test_market_candlestick_stream_unsubscribe(market_websocket):
+    def callback(msg):
+        ...
+
+    market_websocket._subscribed_ch = {'market.btcusdt.kline.1min'}
+    market_websocket._callbacks['market.btcusdt.kline.1min'] = callback
+
+    await market_websocket.market_candlestick_stream(
+        symbol='btcusdt',
+        interval='1min',
+        action=SubUnsub.unsub,
+        message_id='id',
+        callback=callback,
+    )
+    message = {
+        'unsub': 'market.btcusdt.kline.1min',
+        'id': 'id',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == set()
+    assert market_websocket._callbacks == {}
+
+
+@pytest.mark.asyncio
+async def test_ticker_stream_wrong_symbol(market_websocket):
+    with pytest.raises(TypeError):
+        await market_websocket.ticker_stream(10, SubUnsub.sub)
+
+
+@pytest.mark.asyncio
+async def test_ticker_stream(market_websocket):
+    def callback(msg):
+        ...
+
+    await market_websocket.ticker_stream(
+        symbol='btcusdt',
+        action=SubUnsub.sub,
+        callback=callback,
+    )
+    message = {
+        'sub': 'market.btcusdt.ticker',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == {'market.btcusdt.ticker'}
+    assert market_websocket._callbacks['market.btcusdt.ticker'] == callback
+
+
+@pytest.mark.asyncio
+async def test_ticker_stream_unsubscribe(market_websocket):
+    def callback(msg):
+        ...
+
+    market_websocket._subscribed_ch = {'market.btcusdt.ticker'}
+    market_websocket._callbacks['market.btcusdt.ticker'] = callback
+
+    await market_websocket.ticker_stream(
+        symbol='btcusdt',
+        action=SubUnsub.unsub,
+        callback=callback,
+    )
+    message = {
+        'unsub': 'market.btcusdt.ticker',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == set()
+    assert market_websocket._callbacks == {}
+
+
+@pytest.mark.asyncio
+async def test_market_depth_stream_wrong_symbol(market_websocket):
+    with pytest.raises(TypeError):
+        await market_websocket.market_depth_stream(
+            symbol=10,
+            action=SubUnsub.sub,
+        )
+
+
+@pytest.mark.asyncio
+async def test_market_depth_stream(market_websocket):
+    def callback(msg):
+        ...
+
+    level = MarketDepthAggregationLevel.step0
+    await market_websocket.market_depth_stream(
+        symbol='btcusdt',
+        action=SubUnsub.sub,
+        callback=callback,
+        level=level,
+        message_id='id',
+    )
+    topic = f'market.btcusdt.depth.{level.value}'
+    message = {
+        'sub': topic,
+        'id': 'id',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == {topic}
+    assert market_websocket._callbacks[topic] == callback
+
+
+@pytest.mark.asyncio
+async def test_market_depth_stream_unsubscribe(market_websocket):
+    def callback(msg):
+        ...
+
+    level = MarketDepthAggregationLevel.step0
+    topic = f'market.btcusdt.depth.{level.value}'
+
+    market_websocket._subscribed_ch = {topic}
+    market_websocket._callbacks[topic] = callback
+
+    await market_websocket.market_depth_stream(
+        symbol='btcusdt',
+        action=SubUnsub.unsub,
+        callback=callback,
+        level=level,
+        message_id='id',
+    )
+    message = {
+        'unsub': topic,
+        'id': 'id',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == set()
+    assert market_websocket._callbacks == {}
+
+
+@pytest.mark.asyncio
+async def test_best_bid_offer_stream_wrong_symbol(market_websocket):
+    with pytest.raises(TypeError):
+        await market_websocket.best_bid_offer_stream(
+            symbol=10,
+            action=SubUnsub.sub,
+        )
+
+
+@pytest.mark.asyncio
+async def test_best_bid_offer_stream(market_websocket):
+    def callback(msg):
+        ...
+
+    await market_websocket.best_bid_offer_stream(
+        symbol='btcusdt',
+        action=SubUnsub.sub,
+        callback=callback,
+        message_id='id',
+    )
+    topic = 'market.btcusdt.bbo'
+    message = {
+        'sub': topic,
+        'id': 'id',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == {topic}
+    assert market_websocket._callbacks[topic] == callback
+
+
+@pytest.mark.asyncio
+async def test_best_bid_offer_stream_unsubscribe(market_websocket):
+    def callback(msg):
+        ...
+
+    topic = 'market.btcusdt.bbo'
+    market_websocket._subscribed_ch = {topic}
+    market_websocket._callbacks[topic] = callback
+
+    await market_websocket.best_bid_offer_stream(
+        symbol='btcusdt',
+        action=SubUnsub.unsub,
+        callback=callback,
+        message_id='id',
+    )
+    message = {
+        'unsub': topic,
+        'id': 'id',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == set()
+    assert market_websocket._callbacks == {}
+
+
+@pytest.mark.asyncio
+async def test_trade_detail_stream_wrong_symbol(market_websocket):
+    with pytest.raises(TypeError):
+        await market_websocket.trade_detail_stream(
+            symbol=10,
+            action=SubUnsub.sub,
+        )
+
+
+@pytest.mark.asyncio
+async def test_trade_detail_stream(market_websocket):
+    def callback(msg):
+        ...
+
+    await market_websocket.trade_detail_stream(
+        symbol='btcusdt',
+        action=SubUnsub.sub,
+        callback=callback,
+        message_id='id',
+    )
+    topic = 'market.btcusdt.trade.detail'
+    message = {
+        'sub': topic,
+        'id': 'id',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == {topic}
+    assert market_websocket._callbacks[topic] == callback
+
+
+@pytest.mark.asyncio
+async def test_trade_detail_stream_unsubscribe(market_websocket):
+    def callback(msg):
+        ...
+
+    topic = 'market.btcusdt.trade.detail'
+    market_websocket._subscribed_ch = {topic}
+    market_websocket._callbacks[topic] = callback
+
+    await market_websocket.trade_detail_stream(
+        symbol='btcusdt',
+        action=SubUnsub.unsub,
+        callback=callback,
+        message_id='id',
+    )
+    message = {
+        'unsub': topic,
+        'id': 'id',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == set()
+    assert market_websocket._callbacks == {}
+
+
+@pytest.mark.asyncio
+async def test_market_detail_stream_wrong_symbol(market_websocket):
+    with pytest.raises(TypeError):
+        await market_websocket.market_detail_stream(
+            symbol=10,
+            action=SubUnsub.sub,
+        )
+
+
+@pytest.mark.asyncio
+async def test_market_detail_stream(market_websocket):
+    def callback(msg):
+        ...
+
+    await market_websocket.market_detail_stream(
+        symbol='btcusdt',
+        action=SubUnsub.sub,
+        callback=callback,
+        message_id='id',
+    )
+    topic = 'market.btcusdt.detail'
+    message = {
+        'sub': topic,
+        'id': 'id',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == {topic}
+    assert market_websocket._callbacks[topic] == callback
+
+
+@pytest.mark.asyncio
+async def test_market_detail_stream_unsubscribe(market_websocket):
+    def callback(msg):
+        ...
+
+    topic = 'market.btcusdt.detail'
+    market_websocket._subscribed_ch = {topic}
+    market_websocket._callbacks[topic] = callback
+
+    await market_websocket.market_detail_stream(
+        symbol='btcusdt',
+        action=SubUnsub.unsub,
+        callback=callback,
+        message_id='id',
+    )
+    message = {
+        'unsub': topic,
+        'id': 'id',
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == set()
+    assert market_websocket._callbacks == {}
+
+
+@pytest.mark.asyncio
+async def test_etp_stream_wrong_symbol(market_websocket):
+    with pytest.raises(TypeError):
+        await market_websocket.etp_stream(
+            symbol=10,
+            action=SubUnsub.sub,
+        )
+
+
+@pytest.mark.asyncio
+async def test_etp_stream(market_websocket):
+    def callback(msg):
+        ...
+
+    await market_websocket.etp_stream(
+        symbol='btcusdt',
+        action=SubUnsub.sub,
+        callback=callback,
+    )
+    topic = 'market.btcusdt.etp'
+    message = {
+        'sub': topic,
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == {topic}
+    assert market_websocket._callbacks[topic] == callback
+
+
+@pytest.mark.asyncio
+async def test_etp_stream_unsubscribe(market_websocket):
+    def callback(msg):
+        ...
+
+    topic = 'market.btcusdt.etp'
+    market_websocket._subscribed_ch = {topic}
+    market_websocket._callbacks[topic] = callback
+
+    await market_websocket.etp_stream(
+        symbol='btcusdt',
+        action=SubUnsub.unsub,
+        callback=callback,
+    )
+    message = {
+        'unsub': topic,
+    }
+    market_websocket._connection.send.assert_called_once_with(message)
+    assert market_websocket._subscribed_ch == set()
+    assert market_websocket._callbacks == {}

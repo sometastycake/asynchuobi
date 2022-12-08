@@ -121,6 +121,8 @@ class HuobiMarketWebsocket:
                     raise TypeError(f'Object {callback} is not callable')
                 self._callbacks[topic] = callback
         else:
+            if topic in self._callbacks:
+                del self._callbacks[topic]
             self._subscribed_ch.discard(topic)
         message = {
             action.value: topic,
