@@ -401,17 +401,17 @@ async def test_etp_stream_unsubscribe(market_websocket):
 @pytest.mark.asyncio
 async def test_market_websocket():
     received = []
-    ws = HuobiMarketWebsocket(
+    async with HuobiMarketWebsocket(
         connection=HuobiMarketWebsocketConnectionStub,
-    )
-    await ws.candlestick(
-        symbol='btcusdt',
-        interval=CandleInterval.min_1,
-        action=Subcription.sub,
-        message_id='id',
-    )
-    async for message in ws:
-        received.append(message)
+    ) as ws:
+        await ws.candlestick(
+            symbol='btcusdt',
+            interval=CandleInterval.min_1,
+            action=Subcription.sub,
+            message_id='id',
+        )
+        async for message in ws:
+            received.append(message)
     assert received == [
         {
             'id': 'id',
@@ -459,17 +459,17 @@ async def test_market_websocket_callbacks():
     def candle_callback(msg: Dict):
         received.append(msg)
 
-    ws = HuobiMarketWebsocket(
+    async with HuobiMarketWebsocket(
         connection=HuobiMarketWebsocketConnectionStub,
-    )
-    await ws.candlestick(
-        symbol='btcusdt',
-        interval=CandleInterval.min_1,
-        action=Subcription.sub,
-        message_id='id',
-        callback=candle_callback,
-    )
-    await ws.run_with_callbacks()
+    ) as ws:
+        await ws.candlestick(
+            symbol='btcusdt',
+            interval=CandleInterval.min_1,
+            action=Subcription.sub,
+            message_id='id',
+            callback=candle_callback,
+        )
+        await ws.run_with_callbacks()
     assert received == [
         {
             'id': 'id',

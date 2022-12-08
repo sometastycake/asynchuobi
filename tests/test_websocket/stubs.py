@@ -9,7 +9,7 @@ from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnectionAbst
 
 class HuobiMarketWebsocketConnectionStub(WebsocketConnectionAbstract):
 
-    def __init__(self, *arg, **kwargs):
+    def __init__(self, *args, **kwargs):
         self._closed = True
         self._position = 0
         self._sent_messages = []
@@ -78,6 +78,8 @@ class HuobiMarketWebsocketConnectionStub(WebsocketConnectionAbstract):
         message = self._messages[self._position]
         if self._position < len(self._messages) - 1:
             self._position += 1
+        else:
+            await self.close()
         return message
 
     async def send(self, message: WS_MESSAGE_TYPE) -> None:
