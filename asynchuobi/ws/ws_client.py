@@ -253,8 +253,11 @@ class MarketWebsocket:
             callback(data)
 
     async def run_with_callbacks(self, error_callback: ERROR_CALLBACK_TYPE) -> None:
+        """
+        Run stream with callbacks.
+        """
         if not callable(error_callback):
-            raise ValueError(
+            raise TypeError(
                 f'Callback {error_callback} is not callable',
             )
         async for message in self:

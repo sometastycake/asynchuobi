@@ -20,7 +20,6 @@ TOPICS = [
         type=WSMsgType.BINARY,
         data=gzip.compress(
             data=json.dumps({
-                'id': 'id',
                 'status': 'ok',
                 'subbed': 'market.btcusdt.kline.1min',
                 'ts': 1,
@@ -41,7 +40,6 @@ TOPICS = [
         type=WSMsgType.BINARY,
         data=gzip.compress(
             data=json.dumps({
-                'id': 'id',
                 'status': 'error',
                 'err-code': 'code',
                 'err-msg': 'msg',

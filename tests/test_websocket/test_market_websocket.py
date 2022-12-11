@@ -184,41 +184,23 @@ async def test_market_stats_unsubscribe(market_websocket):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_market_websocket():
     received = []
     async with MarketWebsocket(
         connection=HuobiMarketWebsocketConnectionStub,
         topics=TOPICS,
     ) as ws:
-        await ws.candlestick('btcusdt', CandleInterval.min_1).sub()
+        await ws.candlestick('btcusdt', '1min').sub()
         async for message in ws:
             received.append(message)
     assert received == [
-        {
-            'status': 'ok',
-            'subbed': 'market.btcusdt.kline.1min',
-            'ts': 1,
-        },
-        {
-            'id': 'id',
-            'status': 'error',
-            'err-code': 'code',
-            'err-msg': 'msg',
-            'ts': 1,
-        },
+        {'status': 'ok', 'subbed': 'market.btcusdt.kline.1min', 'ts': 1},
+        {'status': 'error', 'err-code': 'code', 'err-msg': 'msg', 'ts': 1},
     ]
     assert ws._connection._sent_messages == [
-        {
-            'sub': 'market.btcusdt.kline.1min',
-            'id': 'id',
-        },
-        {
-            'pong': 1,
-        },
-        {
-            'pong': 2,
-        },
+        {'sub': 'market.btcusdt.kline.1min'},
+        {'pong': 1},
+        {'pong': 2},
     ]
 
 
@@ -237,17 +219,12 @@ async def test_market_websocket_callbacks():
         connection=HuobiMarketWebsocketConnectionStub,
         topics=TOPICS,
     ) as ws:
-        await ws.candlestick('btcusdt', CandleInterval.min_1).sub(candle_callback)
+        await ws.candlestick('btcusdt', '1min').sub(candle_callback)
         await ws.run_with_callbacks(
             error_callback=error_callback,
         )
     assert received == [
-        {
-            'id': 'id',
-            'status': 'ok',
-            'subbed': 'market.btcusdt.kline.1min',
-            'ts': 1,
-        },
+        {'status': 'ok', 'subbed': 'market.btcusdt.kline.1min', 'ts': 1},
     ]
     assert len(errors) == 1
     assert errors[0].err_code == 'code'
@@ -255,10 +232,7 @@ async def test_market_websocket_callbacks():
 
 
 @pytest.mark.asyncio
-async def test_market_websocket_callbacks_not_found_topic():
-    def candle_callback(msg: Dict):
-        ...
-
+async def test_market_websocket_not_found_topic():
     def error_callback(error: WSHuobiError):
         ...
 
@@ -266,19 +240,15 @@ async def test_market_websocket_callbacks_not_found_topic():
         connection=HuobiMarketWebsocketConnectionStub,
         topics=NOT_FOUND_TOPIC,
     ) as ws:
-
-        ws._callbacks['topic'] = candle_callback
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             await ws.run_with_callbacks(
                 error_callback=error_callback,
             )
+        assert err.value.args[0] == 'Not found topic in {}'
 
 
 @pytest.mark.asyncio
-async def test_market_websocket_callbacks_not_specified_callback():
-    def candle_callback(msg: Dict):
-        ...
-
+async def test_market_websocket_not_specified_callback():
     def error_callback(error: WSHuobiError):
         ...
 
@@ -286,24 +256,20 @@ async def test_market_websocket_callbacks_not_specified_callback():
         connection=HuobiMarketWebsocketConnectionStub,
         topics=TOPICS,
     ) as ws:
-        ws._callbacks['unknown_topic'] = candle_callback
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             await ws.run_with_callbacks(
                 error_callback=error_callback,
             )
+        assert err.value.args[0] == 'Not specified callback for topic "market.btcusdt.kline.1min"'
 
 
 @pytest.mark.asyncio
-async def test_market_websocket_callbacks_not_callable():
-    def candle_callback(msg: Dict):
-        ...
-
+async def test_market_websocket_error_callback_not_callable():
     async with MarketWebsocket(
         connection=HuobiMarketWebsocketConnectionStub,
-        topics=TOPICS,
     ) as ws:
-        ws._callbacks['unknown_topic'] = candle_callback
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError) as err:
             await ws.run_with_callbacks(
                 error_callback=10,
             )
+        assert err.value.args[0] == 'Callback 10 is not callable'
