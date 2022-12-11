@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from freezegun import freeze_time
 
-from asynchuobi.ws.ws_client import HuobiMarketWebsocket
+from asynchuobi.ws.ws_client import MarketWebsocket
 from tests.keys import HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY
 
 try:
@@ -98,6 +98,6 @@ def ws_auth():
 
 @pytest.fixture(scope='function')
 def market_websocket():
-    return HuobiMarketWebsocket(
+    return MarketWebsocket(
         connection=AsyncMock,
     )

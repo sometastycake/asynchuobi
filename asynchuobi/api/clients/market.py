@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 
 from asynchuobi.api.request.abstract import RequestStrategyAbstract
 from asynchuobi.api.request.strategy import BaseRequestStrategy
-from asynchuobi.enums import CandleInterval, MarketDepth, MarketDepthAggregationLevel
+from asynchuobi.enums import CandleInterval, DepthLevel, MarketDepth
 from asynchuobi.urls import HUOBI_API_URL
 
 
@@ -73,7 +73,7 @@ class MarketHuobiClient:
         self,
         symbol: str,
         depth: MarketDepth = MarketDepth.depth_20,
-        aggregation_level: MarketDepthAggregationLevel = MarketDepthAggregationLevel.step0,
+        aggregation_level: DepthLevel = DepthLevel.step0,
     ) -> Dict:
         """
         This endpoint retrieves the current order book of a specific pair

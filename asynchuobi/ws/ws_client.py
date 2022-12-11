@@ -1,18 +1,16 @@
 import asyncio
 import gzip
 import json
-import uuid
 import warnings
 from typing import Any, Awaitable, Callable, Dict, Optional, Set, Type, Union, cast
 
 from aiohttp import WSMsgType
 
 from asynchuobi.auth import WebsocketAuth
-from asynchuobi.enums import CandleInterval
-from asynchuobi.enums import MarketDepthAggregationLevel as Aggregation
+from asynchuobi.enums import CandleInterval, DepthLevel
 from asynchuobi.exceptions import WSConnectionNotAuthorized, WSHuobiError
 from asynchuobi.urls import HUOBI_WS_ACCOUNT_URL, HUOBI_WS_MARKET_URL
-from asynchuobi.ws.enums import Subcription, WSTradeDetailMode
+from asynchuobi.ws.enums import WSTradeDetailMode
 from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnection, WebsocketConnectionAbstract
 
 LOADS_TYPE = Callable[[Union[str, bytes]], Any]
@@ -35,34 +33,99 @@ _CLOSING_STATUSES = (
 )
 
 
-def _default_message_id() -> str:
-    return str(uuid.uuid4())
+class _base_stream:
+
+    def __init__(self, ws: 'MarketWebsocket', symbol: str):
+        if not isinstance(symbol, str):
+            raise TypeError(f'Symbol {symbol} is not str')
+        self._ws = ws
+        self._symbol = symbol
+
+    def topic(self) -> str:
+        raise NotImplementedError
+
+    async def sub(self, callback: Optional[CALLBACK_TYPE] = None):
+        await self._ws.send_message_handler(
+            topic=self.topic(),
+            action='sub',
+            callback=callback,
+        )
+
+    async def unsub(self):
+        await self._ws.send_message_handler(
+            topic=self.topic(),
+            action='unsub',
+        )
 
 
-class HuobiMarketWebsocket:
+class _candles(_base_stream):
+
+    def __init__(self, ws: 'MarketWebsocket', symbol: str, interval: str):
+        super().__init__(ws, symbol)
+        self._interval = interval
+
+    def topic(self) -> str:
+        return f'market.{self._symbol}.kline.{self._interval}'
+
+
+class _market_ticker_info(_base_stream):
+
+    def topic(self) -> str:
+        return f'market.{self._symbol}.ticker'
+
+
+class _orderbook(_base_stream):
+
+    def __init__(self, ws: 'MarketWebsocket', symbol: str, level: DepthLevel):
+        super().__init__(ws, symbol)
+        self._level = level
+
+    def topic(self) -> str:
+        return f'market.{self._symbol}.depth.{self._level.value}'
+
+
+class _best_bid_offer(_base_stream):
+
+    def topic(self) -> str:
+        return f'market.{self._symbol}.bbo'
+
+
+class _latest_trades(_base_stream):
+
+    def topic(self) -> str:
+        return f'market.{self._symbol}.trade.detail'
+
+
+class _market_stats(_base_stream):
+
+    def topic(self) -> str:
+        return f'market.{self._symbol}.detail'
+
+
+class MarketWebsocket:
     """
     Websocket class for retrieving market data.
 
     Usage:
 
-        async with HuobiMarketWebsocket() as ws:
-            await ws.market_candlestick_stream('btcusdt', CandleInterval.min_1, SubUnsub.sub)
-            await ws.market_detail_stream('ethusdt', SubUnsub.sub)
+        async with MarketWebsocket() as ws:
+            await ws.candlestick('btcusdt', CandleInterval.min_1).sub()
+            await ws.orderbook('btcusdt').sub()
             async for message in ws:
                 ...
 
     You can define callbacks which will called when message was received from Huobi websocket:
 
-        def callback_market_detail(message: dict):
-            print(message)
+        def callback(msg: Dict):
+            print(msg)
 
-        async with HuobiMarketWebsocket() as ws:
-            await ws.market_detail_stream(
-                symbol='ethusdt',
-                action=SubUnsub.sub,
-                callback=callback_market_detail,
-            )
-            await ws.run_with_callbacks()
+        def error(e: WSHuobiError):
+            print(e)
+
+        async def candles():
+            async with MarketWebsocket() as ws:
+                await ws.orderbook('btcusdt').sub(callback=callback)
+                await ws.run_with_callbacks(error_callback=error)
 
         You can also define async callback
 
@@ -70,15 +133,7 @@ class HuobiMarketWebsocket:
         url - Websocket url
         loads - Method of json deserialize (default json.loads)
         decompress - Method of gzip decompress (default gzip.decompress)
-        default_message_id - Method of generating messages id
-            Identifiers are sent in some messages, for example:
-            {
-                'sub': 'market.btcusdt.kline.1min',
-                'id': 'id_example'
-            }
-        raise_if_error - Raise exception if error message was received from websocket
         run_callbacks_in_asyncio_tasks - If True, then callbacks are run into asyncio.create_task
-        error_callback - Callback for error messages
         connection - Object for managing websocket connection
     """
     def __init__(
@@ -86,26 +141,16 @@ class HuobiMarketWebsocket:
         url: str = HUOBI_WS_MARKET_URL,
         loads: LOADS_TYPE = json.loads,
         decompress: DECOMPRESS_TYPE = gzip.decompress,
-        default_message_id: Callable[[], str] = _default_message_id,
-        raise_if_error: bool = False,
         run_callbacks_in_asyncio_tasks: bool = True,
-        error_callback: Optional[ERROR_CALLBACK_TYPE] = None,
         connection: Type[WebsocketConnectionAbstract] = WebsocketConnection,
         **connection_kwargs,
     ):
-        if error_callback and not callable(error_callback):
-            raise TypeError(f'Error callback {error_callback} is not callable')
-        if raise_if_error and error_callback:
-            raise ValueError('Cannot both specify raise_if_error and error_callback')
         self._loads = loads
         self._decompress = decompress
         self._connection = connection(url=url, **connection_kwargs)
-        self._default_message_id = default_message_id
-        self._raise_if_error = raise_if_error
         self._run_callbacks_in_asyncio_tasks = run_callbacks_in_asyncio_tasks
         self._subscribed_ch: Set[str] = set()
         self._callbacks: Dict[str, CALLBACK_TYPE] = {}
-        self._error_callback = error_callback
 
     async def __aenter__(self):
         await self._connection.connect()
@@ -117,16 +162,13 @@ class HuobiMarketWebsocket:
     async def _pong(self, timestamp: int) -> None:
         await self._connection.send({'pong': timestamp})
 
-    async def _handler(
+    async def send_message_handler(
             self,
             topic: str,
-            action: Subcription,
+            action: str,
             callback: Optional[CALLBACK_TYPE] = None,
-            message_id: Optional[str] = None,
     ) -> None:
-        if not isinstance(action, Subcription):
-            raise TypeError(f'Action type is not SubUnsub, received type "{type(action)}"')
-        if action is Subcription.sub:
+        if action == 'sub':
             self._subscribed_ch.add(topic)
             if callback:
                 if not callable(callback):
@@ -137,140 +179,47 @@ class HuobiMarketWebsocket:
                 del self._callbacks[topic]
             self._subscribed_ch.discard(topic)
         message = {
-            action.value: topic,
+            action: topic,
         }
-        if message_id is not None:
-            message['id'] = message_id
         await self._connection.send(message)
 
     async def close(self) -> None:
         if not self._connection.closed:
             await self._connection.close()
 
-    async def unsubscribe_all(self) -> None:
-        if self._connection.closed:
-            return
-        for topic in self._subscribed_ch:
-            await self._connection.send({'unsub': topic})
-        self._subscribed_ch.clear()
-
-    async def candlestick(
-            self,
-            symbol: str,
-            interval: Union[CandleInterval, str],
-            action: Subcription,
-            callback: Optional[CALLBACK_TYPE] = None,
-            message_id: Optional[str] = None,
-    ) -> None:
-        if not isinstance(symbol, str):
-            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
+    def candlestick(self, symbol: str, interval: Union[CandleInterval, str]) -> _candles:
+        """This topic sends a new candlestick whenever it is available."""
         if isinstance(interval, CandleInterval):
-            period = interval.value
+            period = str(interval.value)
         elif isinstance(interval, str):
             period = interval
         else:
             raise TypeError(f'Wrong type "{type(interval)}" for interval')
-        await self._handler(
-            topic=f'market.{symbol}.kline.{period}',
-            action=action,
-            callback=callback,
-            message_id=message_id or self._default_message_id(),
+        return _candles(
+            ws=self, symbol=symbol, interval=period,
         )
 
-    async def ticker_info(
-            self,
-            symbol: str,
-            action: Subcription,
-            callback: Optional[CALLBACK_TYPE] = None,
-    ) -> None:
-        if not isinstance(symbol, str):
-            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handler(
-            topic=f'market.{symbol}.ticker',
-            action=action,
-            callback=callback,
-        )
+    def market_ticker_info(self, symbol: str) -> _market_ticker_info:
+        """Retrieve the market ticker,data is pushed every 100ms."""
+        return _market_ticker_info(ws=self, symbol=symbol)
 
-    async def orderbook(
-            self,
-            symbol: str,
-            action: Subcription,
-            level: Aggregation = Aggregation.step0,
-            callback: Optional[CALLBACK_TYPE] = None,
-            message_id: Optional[str] = None,
-    ) -> None:
-        if not isinstance(symbol, str):
-            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handler(
-            topic=f'market.{symbol}.depth.{level.value}',
-            action=action,
-            callback=callback,
-            message_id=message_id or self._default_message_id(),
-        )
+    def orderbook(self, symbol: str, level: DepthLevel = DepthLevel.step0) -> _orderbook:
+        """This topic sends the latest market by price order book."""
+        return _orderbook(ws=self, symbol=symbol, level=level)
 
-    async def best_bid_offer(
-            self,
-            symbol: str,
-            action: Subcription,
-            callback: Optional[CALLBACK_TYPE] = None,
-            message_id: Optional[str] = None,
-    ) -> None:
-        if not isinstance(symbol, str):
-            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handler(
-            topic=f'market.{symbol}.bbo',
-            action=action,
-            callback=callback,
-            message_id=message_id or self._default_message_id(),
-        )
+    def best_bid_offer(self, symbol: str) -> _best_bid_offer:
+        """User can receive BBO (Best Bid/Offer) update in tick by tick mode."""
+        return _best_bid_offer(ws=self, symbol=symbol)
 
-    async def trade_detail(
-            self,
-            symbol: str,
-            action: Subcription,
-            callback: Optional[CALLBACK_TYPE] = None,
-            message_id: Optional[str] = None,
-    ) -> None:
-        if not isinstance(symbol, str):
-            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handler(
-            topic=f'market.{symbol}.trade.detail',
-            action=action,
-            callback=callback,
-            message_id=message_id or self._default_message_id(),
-        )
+    def latest_trades(self, symbol: str) -> _latest_trades:
+        """This topic sends the latest completed trades."""
+        return _latest_trades(ws=self, symbol=symbol)
 
-    async def market_detail(
-            self,
-            symbol: str,
-            action: Subcription,
-            callback: Optional[CALLBACK_TYPE] = None,
-            message_id: Optional[str] = None,
-    ) -> None:
-        if not isinstance(symbol, str):
-            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handler(
-            topic=f'market.{symbol}.detail',
-            action=action,
-            callback=callback,
-            message_id=message_id or self._default_message_id(),
-        )
+    def market_stats(self, symbol: str) -> _market_stats:
+        """This topic sends the latest market stats with 24h summary."""
+        return _market_stats(ws=self, symbol=symbol)
 
-    async def etp(
-            self,
-            symbol: str,
-            action: Subcription,
-            callback: Optional[CALLBACK_TYPE] = None,
-    ) -> None:
-        if not isinstance(symbol, str):
-            raise TypeError(f'Symbol is not str, received type "{type(symbol)}"')
-        await self._handler(
-            topic=f'market.{symbol}.etp',
-            action=action,
-            callback=callback,
-        )
-
-    def __aiter__(self) -> 'HuobiMarketWebsocket':
+    def __aiter__(self) -> 'MarketWebsocket':
         return self
 
     async def __anext__(self) -> WS_MESSAGE_TYPE:
@@ -283,20 +232,14 @@ class HuobiMarketWebsocket:
                         await self._connection.send({'sub': topic})
                     continue
                 raise StopAsyncIteration
-            data = self._loads(self._decompress(message.data))
-            ping = data.get('ping')
+            payload = self._loads(self._decompress(message.data))
+            ping = payload.get('ping')
             if ping:
                 await self._pong(ping)
                 continue
-            status = data.get('status') or ''
-            if status == 'error' and self._raise_if_error:
-                raise WSHuobiError(
-                    err_code=data['err-code'],
-                    err_msg=data['err-msg'],
-                )
-            return data
+            return payload
 
-    async def _run_callback(
+    async def _exec_callback(
             self,
             callback: Union[CALLBACK_TYPE, ERROR_CALLBACK_TYPE],
             data: Any,
@@ -309,28 +252,32 @@ class HuobiMarketWebsocket:
         else:
             callback(data)
 
-    async def run_with_callbacks(self) -> None:
-        if not self._callbacks:
-            warnings.warn('Callbacks not specified')
-            return
+    async def run_with_callbacks(self, error_callback: ERROR_CALLBACK_TYPE) -> None:
+        if not callable(error_callback):
+            raise ValueError(
+                f'Callback {error_callback} is not callable',
+            )
         async for message in self:
             message = cast(WS_MESSAGE_TYPE, message)
             status = message.get('status') or ''
-            if status == 'error' and self._error_callback:
+            if status == 'error':
                 error = WSHuobiError(
                     err_code=message['err-code'],
                     err_msg=message['err-msg'],
                 )
-                await self._run_callback(
-                    callback=self._error_callback,
-                    data=error,
+                await self._exec_callback(error_callback, error)
+                continue
+            topic = message.get('ch') or message.get('subbed')
+            if not topic:
+                raise ValueError(
+                    f'Not found topic in {message}',
                 )
-                continue
-            channel = message.get('ch') or message.get('subbed')
-            if not channel:
-                continue
-            await self._run_callback(
-                callback=self._callbacks[channel],
+            if topic not in self._callbacks:
+                raise ValueError(
+                    f'Not specified callback for topic "{topic}"',
+                )
+            await self._exec_callback(
+                callback=self._callbacks[topic],
                 data=message,
             )
 

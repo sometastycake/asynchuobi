@@ -14,7 +14,7 @@ class CandleInterval(Enum):
     year_1 = '1year'
 
 
-class MarketDepthAggregationLevel(Enum):
+class DepthLevel(Enum):
     step0 = 'step0'
     step1 = 'step1'
     step2 = 'step2'

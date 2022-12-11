@@ -2,7 +2,7 @@ from urllib.parse import urljoin
 
 import pytest
 
-from asynchuobi.enums import CandleInterval, MarketDepth, MarketDepthAggregationLevel
+from asynchuobi.enums import CandleInterval, DepthLevel, MarketDepth
 from asynchuobi.urls import HUOBI_API_URL
 
 
@@ -64,8 +64,8 @@ async def test_get_latest_tickers_for_all_pairs(market_client):
     MarketDepth.depth_5, MarketDepth.depth_10, MarketDepth.depth_20
 ])
 @pytest.mark.parametrize('aggregation_level', [
-    MarketDepthAggregationLevel.step0,
-    MarketDepthAggregationLevel.step2
+    DepthLevel.step0,
+    DepthLevel.step2
 ])
 async def test_get_market_depth(market_client, depth, aggregation_level):
     await market_client.get_market_depth(

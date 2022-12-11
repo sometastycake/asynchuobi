@@ -6,6 +6,81 @@ from aiohttp import WSMessage, WSMsgType
 
 from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnectionAbstract
 
+TOPICS = [
+    WSMessage(
+        type=WSMsgType.BINARY,
+        data=gzip.compress(
+            data=json.dumps({
+                'ping': 1,
+            }).encode(),
+        ),
+        extra=None,
+    ),
+    WSMessage(
+        type=WSMsgType.BINARY,
+        data=gzip.compress(
+            data=json.dumps({
+                'id': 'id',
+                'status': 'ok',
+                'subbed': 'market.btcusdt.kline.1min',
+                'ts': 1,
+            }).encode(),
+        ),
+        extra=None,
+    ),
+    WSMessage(
+        type=WSMsgType.BINARY,
+        data=gzip.compress(
+            data=json.dumps({
+                'ping': 2,
+            }).encode(),
+        ),
+        extra=None,
+    ),
+    WSMessage(
+        type=WSMsgType.BINARY,
+        data=gzip.compress(
+            data=json.dumps({
+                'id': 'id',
+                'status': 'error',
+                'err-code': 'code',
+                'err-msg': 'msg',
+                'ts': 1,
+            }).encode(),
+        ),
+        extra=None,
+    ),
+    WSMessage(
+        type=WSMsgType.CLOSED,
+        extra=None,
+        data=None,
+    ),
+]
+
+NOT_FOUND_TOPIC = [
+    WSMessage(
+        type=WSMsgType.BINARY,
+        data=gzip.compress(
+            data=json.dumps({
+                'ping': 1,
+            }).encode(),
+        ),
+        extra=None,
+    ),
+    WSMessage(
+        type=WSMsgType.BINARY,
+        data=gzip.compress(
+            data=json.dumps({}).encode(),
+        ),
+        extra=None,
+    ),
+    WSMessage(
+        type=WSMsgType.CLOSED,
+        extra=None,
+        data=None,
+    ),
+]
+
 
 class HuobiMarketWebsocketConnectionStub(WebsocketConnectionAbstract):
 
@@ -13,56 +88,7 @@ class HuobiMarketWebsocketConnectionStub(WebsocketConnectionAbstract):
         self._closed = True
         self._position = 0
         self._sent_messages = []
-        self._messages = [
-            WSMessage(
-                type=WSMsgType.BINARY,
-                data=gzip.compress(
-                    data=json.dumps({
-                        'ping': 1,
-                    }).encode(),
-                ),
-                extra=None,
-            ),
-            WSMessage(
-                type=WSMsgType.BINARY,
-                data=gzip.compress(
-                    data=json.dumps({
-                        'id': 'id',
-                        'status': 'ok',
-                        'subbed': 'market.btcusdt.kline.1min',
-                        'ts': 1,
-                    }).encode(),
-                ),
-                extra=None,
-            ),
-            WSMessage(
-                type=WSMsgType.BINARY,
-                data=gzip.compress(
-                    data=json.dumps({
-                        'ping': 2,
-                    }).encode(),
-                ),
-                extra=None,
-            ),
-            WSMessage(
-                type=WSMsgType.BINARY,
-                data=gzip.compress(
-                    data=json.dumps({
-                        'id': 'id',
-                        'status': 'error',
-                        'err-code': 'code',
-                        'err-msg': 'msg',
-                        'ts': 1,
-                    }).encode(),
-                ),
-                extra=None,
-            ),
-            WSMessage(
-                type=WSMsgType.CLOSED,
-                extra=None,
-                data=None,
-            ),
-        ]
+        self._messages = kwargs.get('topics')
 
     @property
     def closed(self) -> bool:
