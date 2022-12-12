@@ -160,11 +160,11 @@ Client supports retrieving information about market data, such as candles, order
 
 ```python
 from asynchuobi.enums import CandleInterval
-from asynchuobi.ws.ws_client import MarketWebsocket
+from asynchuobi.ws.ws_client import WSHuobiMarket
 
 
 async def main():
-    async with MarketWebsocket() as ws:
+    async with WSHuobiMarket() as ws:
         await ws.candlestick('btcusdt', CandleInterval.min_1).sub()
         await ws.market_stats('btcusdt').sub()
         await ws.market_ticker_info('btcusdt').sub()
@@ -179,7 +179,7 @@ You can define callbacks which will called when message was received from websoc
 from typing import Dict
 
 from asynchuobi.exceptions import WSHuobiError
-from asynchuobi.ws.ws_client import MarketWebsocket
+from asynchuobi.ws.ws_client import WSHuobiMarket
 
 
 def callback(msg: Dict):
@@ -190,8 +190,8 @@ def error(e: WSHuobiError):
     print(e)
 
 
-async def candles():
-    async with MarketWebsocket() as ws:
+async def orderbook():
+    async with WSHuobiMarket() as ws:
         await ws.orderbook('btcusdt').sub(callback=callback)
         await ws.run_with_callbacks(error_callback=error)
 ```

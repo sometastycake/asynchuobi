@@ -35,7 +35,7 @@ _CLOSING_STATUSES = (
 
 class _base_stream:
 
-    def __init__(self, ws: 'MarketWebsocket', symbol: str):
+    def __init__(self, ws: 'WSHuobiMarket', symbol: str):
         if not isinstance(symbol, str):
             raise TypeError(f'Symbol {symbol} is not str')
         self._ws = ws
@@ -60,7 +60,7 @@ class _base_stream:
 
 class _candles(_base_stream):
 
-    def __init__(self, ws: 'MarketWebsocket', symbol: str, interval: str):
+    def __init__(self, ws: 'WSHuobiMarket', symbol: str, interval: str):
         super().__init__(ws, symbol)
         self._interval = interval
 
@@ -76,7 +76,7 @@ class _market_ticker_info(_base_stream):
 
 class _orderbook(_base_stream):
 
-    def __init__(self, ws: 'MarketWebsocket', symbol: str, level: DepthLevel):
+    def __init__(self, ws: 'WSHuobiMarket', symbol: str, level: DepthLevel):
         super().__init__(ws, symbol)
         self._level = level
 
@@ -102,13 +102,13 @@ class _market_stats(_base_stream):
         return f'market.{self._symbol}.detail'
 
 
-class MarketWebsocket:
+class WSHuobiMarket:
     """
     Websocket class for retrieving market data.
 
     Usage:
 
-        async with MarketWebsocket() as ws:
+        async with WSHuobiMarket() as ws:
             await ws.candlestick('btcusdt', CandleInterval.min_1).sub()
             await ws.orderbook('btcusdt').sub()
             async for message in ws:
@@ -122,10 +122,9 @@ class MarketWebsocket:
         def error(e: WSHuobiError):
             print(e)
 
-        async def candles():
-            async with MarketWebsocket() as ws:
-                await ws.orderbook('btcusdt').sub(callback=callback)
-                await ws.run_with_callbacks(error_callback=error)
+        async with WSHuobiMarket() as ws:
+            await ws.orderbook('btcusdt').sub(callback=callback)
+            await ws.run_with_callbacks(error_callback=error)
 
         You can also define async callback
 
@@ -219,7 +218,7 @@ class MarketWebsocket:
         """This topic sends the latest market stats with 24h summary."""
         return _market_stats(ws=self, symbol=symbol)
 
-    def __aiter__(self) -> 'MarketWebsocket':
+    def __aiter__(self) -> 'WSHuobiMarket':
         return self
 
     async def __anext__(self) -> WS_MESSAGE_TYPE:

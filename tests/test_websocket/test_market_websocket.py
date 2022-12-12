@@ -6,7 +6,7 @@ import pytest
 
 from asynchuobi.enums import CandleInterval, DepthLevel
 from asynchuobi.exceptions import WSHuobiError
-from asynchuobi.ws.ws_client import MarketWebsocket
+from asynchuobi.ws.ws_client import WSHuobiMarket
 from tests.test_websocket.stubs import NOT_FOUND_TOPIC, TOPICS, HuobiMarketWebsocketConnectionStub
 
 
@@ -24,7 +24,7 @@ def test_default_parameters(market_websocket):
 
 @pytest.mark.asyncio
 async def test_context_manager():
-    async with MarketWebsocket() as ws:
+    async with WSHuobiMarket() as ws:
         assert ws._connection.closed is False
 
 
@@ -186,7 +186,7 @@ async def test_market_stats_unsubscribe(market_websocket):
 @pytest.mark.asyncio
 async def test_market_websocket_iteration():
     received = []
-    async with MarketWebsocket(
+    async with WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
         topics=TOPICS,
     ) as ws:
@@ -217,7 +217,7 @@ async def test_market_websocket_callbacks():
     def error_callback(error: WSHuobiError):
         errors.append(error)
 
-    async with MarketWebsocket(
+    async with WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
         topics=TOPICS,
     ) as ws:
@@ -240,7 +240,7 @@ async def test_market_websocket_not_found_topic():
     def error_callback(error: WSHuobiError):
         ...
 
-    async with MarketWebsocket(
+    async with WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
         topics=NOT_FOUND_TOPIC,
     ) as ws:
@@ -256,7 +256,7 @@ async def test_market_websocket_not_specified_callback():
     def error_callback(error: WSHuobiError):
         ...
 
-    async with MarketWebsocket(
+    async with WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
         topics=TOPICS,
     ) as ws:
@@ -269,7 +269,7 @@ async def test_market_websocket_not_specified_callback():
 
 @pytest.mark.asyncio
 async def test_market_websocket_error_callback_not_callable():
-    async with MarketWebsocket(
+    async with WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
     ) as ws:
         with pytest.raises(TypeError) as err:
