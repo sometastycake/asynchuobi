@@ -7,7 +7,11 @@ import pytest
 from asynchuobi.enums import CandleInterval, DepthLevel
 from asynchuobi.exceptions import WSHuobiError
 from asynchuobi.ws.ws_client import WSHuobiMarket
-from tests.test_websocket.stubs import NOT_FOUND_TOPIC, TOPICS, HuobiMarketWebsocketConnectionStub
+from tests.test_websocket.stubs import (
+    WS_MARKET_MESSAGES,
+    WS_MARKET_MESSAGES_WITHOUT_TOPIC,
+    HuobiMarketWebsocketConnectionStub,
+)
 
 
 def callback(msg: Dict):
@@ -188,7 +192,7 @@ async def test_market_websocket_iteration():
     received = []
     async with WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
-        topics=TOPICS,
+        topics=WS_MARKET_MESSAGES,
     ) as ws:
         await ws.candlestick('btcusdt', '1min').sub()
         async for message in ws:
@@ -219,7 +223,7 @@ async def test_market_websocket_callbacks():
 
     async with WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
-        topics=TOPICS,
+        topics=WS_MARKET_MESSAGES,
     ) as ws:
         await ws.candlestick('btcusdt', '1min').sub(candle_callback)
         await ws.run_with_callbacks(
@@ -242,7 +246,7 @@ async def test_market_websocket_not_found_topic():
 
     async with WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
-        topics=NOT_FOUND_TOPIC,
+        topics=WS_MARKET_MESSAGES_WITHOUT_TOPIC,
     ) as ws:
         with pytest.raises(ValueError) as err:
             await ws.run_with_callbacks(
@@ -258,7 +262,7 @@ async def test_market_websocket_not_specified_callback():
 
     async with WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
-        topics=TOPICS,
+        topics=WS_MARKET_MESSAGES,
     ) as ws:
         with pytest.raises(ValueError) as err:
             await ws.run_with_callbacks(

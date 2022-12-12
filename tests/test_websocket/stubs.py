@@ -6,7 +6,7 @@ from aiohttp import WSMessage, WSMsgType
 
 from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnectionAbstract
 
-TOPICS = [
+WS_MARKET_MESSAGES = [
     WSMessage(
         type=WSMsgType.BINARY,
         data=gzip.compress(
@@ -77,7 +77,7 @@ TOPICS = [
     ),
 ]
 
-NOT_FOUND_TOPIC = [
+WS_MARKET_MESSAGES_WITHOUT_TOPIC = [
     WSMessage(
         type=WSMsgType.BINARY,
         data=gzip.compress(
