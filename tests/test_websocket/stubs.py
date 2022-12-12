@@ -40,6 +40,28 @@ TOPICS = [
         type=WSMsgType.BINARY,
         data=gzip.compress(
             data=json.dumps({
+                'ch': 'market.btcusdt.kline.1min',
+                'ts': 1,
+                'tick': {'open': 1},
+            }).encode(),
+        ),
+        extra=None,
+    ),
+    WSMessage(
+        type=WSMsgType.BINARY,
+        data=gzip.compress(
+            data=json.dumps({
+                'status': 'ok',
+                'unsubbed': 'market.btcusdt.kline.1min',
+                'ts': 1,
+            }).encode(),
+        ),
+        extra=None,
+    ),
+    WSMessage(
+        type=WSMsgType.BINARY,
+        data=gzip.compress(
+            data=json.dumps({
                 'status': 'error',
                 'err-code': 'code',
                 'err-msg': 'msg',

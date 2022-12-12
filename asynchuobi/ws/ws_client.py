@@ -270,8 +270,13 @@ class MarketWebsocket:
                 )
                 await self._exec_callback(error_callback, error)
                 continue
-            topic = message.get('ch') or message.get('subbed')
-            if not topic:
+            if 'ch' in message:
+                topic = message['ch']
+            elif 'subbed' in message:
+                topic = message['subbed']
+            elif 'unsubbed' in message:
+                topic = message['unsubbed']
+            else:
                 raise ValueError(
                     f'Not found topic in {message}',
                 )

@@ -184,7 +184,7 @@ async def test_market_stats_unsubscribe(market_websocket):
 
 
 @pytest.mark.asyncio
-async def test_market_websocket():
+async def test_market_websocket_iteration():
     received = []
     async with MarketWebsocket(
         connection=HuobiMarketWebsocketConnectionStub,
@@ -193,14 +193,16 @@ async def test_market_websocket():
         await ws.candlestick('btcusdt', '1min').sub()
         async for message in ws:
             received.append(message)
-    assert received == [
-        {'status': 'ok', 'subbed': 'market.btcusdt.kline.1min', 'ts': 1},
-        {'status': 'error', 'err-code': 'code', 'err-msg': 'msg', 'ts': 1},
-    ]
     assert ws._connection._sent_messages == [
         {'sub': 'market.btcusdt.kline.1min'},
         {'pong': 1},
         {'pong': 2},
+    ]
+    assert received == [
+        {'status': 'ok', 'subbed': 'market.btcusdt.kline.1min', 'ts': 1},
+        {'ch': 'market.btcusdt.kline.1min', 'ts': 1, 'tick': {'open': 1}},
+        {'status': 'ok', 'unsubbed': 'market.btcusdt.kline.1min', 'ts': 1},
+        {'status': 'error', 'err-code': 'code', 'err-msg': 'msg', 'ts': 1},
     ]
 
 
@@ -225,6 +227,8 @@ async def test_market_websocket_callbacks():
         )
     assert received == [
         {'status': 'ok', 'subbed': 'market.btcusdt.kline.1min', 'ts': 1},
+        {'ch': 'market.btcusdt.kline.1min', 'ts': 1, 'tick': {'open': 1}},
+        {'status': 'ok', 'unsubbed': 'market.btcusdt.kline.1min', 'ts': 1},
     ]
     assert len(errors) == 1
     assert errors[0].err_code == 'code'
