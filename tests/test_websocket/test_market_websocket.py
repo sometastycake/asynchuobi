@@ -1,6 +1,6 @@
 import gzip
 import json
-from typing import Dict, List
+from typing import Dict
 
 import pytest
 
@@ -203,45 +203,79 @@ async def test_market_websocket_iteration():
         {'pong': 2},
     ]
     assert received == [
-        {'status': 'ok', 'subbed': 'market.btcusdt.kline.1min', 'ts': 1},
-        {'ch': 'market.btcusdt.kline.1min', 'ts': 1, 'tick': {'open': 1}},
-        {'status': 'ok', 'unsubbed': 'market.btcusdt.kline.1min', 'ts': 1},
-        {'status': 'error', 'err-code': 'code', 'err-msg': 'msg', 'ts': 1},
+        {
+            'status': 'ok',
+            'subbed': 'market.btcusdt.kline.1min',
+            'ts': 1,
+        },
+        {
+            'ch': 'market.btcusdt.kline.1min',
+            'ts': 1,
+            'tick': {
+                'open': 1,
+            }
+        },
+        {
+            'status': 'ok',
+            'unsubbed': 'market.btcusdt.kline.1min',
+            'ts': 1,
+        },
+        {
+            'status': 'error',
+            'err-code': 'code',
+            'err-msg': 'msg',
+            'ts': 1,
+        },
     ]
 
 
 @pytest.mark.asyncio
 async def test_market_websocket_callbacks():
-    received: List[Dict] = []
-    errors: List[WSHuobiError] = []
+    class Callback:
+        received = []
 
-    def candle_callback(msg: Dict):
-        received.append(msg)
+        def __call__(self, message: Dict):
+            self.received.append(message)
 
-    def error_callback(error: WSHuobiError):
-        errors.append(error)
+    class Error:
+        errors = []
 
-    async with WSHuobiMarket(
+        def __call__(self, error: WSHuobiError):
+            self.errors.append(error)
+
+    ws = WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
         topics=WS_MARKET_MESSAGES,
-    ) as ws:
-        await ws.candlestick('btcusdt', '1min').sub(candle_callback)
-        await ws.run_with_callbacks(
-            error_callback=error_callback,
-        )
-    assert received == [
-        {'status': 'ok', 'subbed': 'market.btcusdt.kline.1min', 'ts': 1},
-        {'ch': 'market.btcusdt.kline.1min', 'ts': 1, 'tick': {'open': 1}},
-        {'status': 'ok', 'unsubbed': 'market.btcusdt.kline.1min', 'ts': 1},
+    )
+    await ws.candlestick('btcusdt', '1min').sub(Callback())
+    await ws.run_with_callbacks(Error())
+    assert Callback.received == [
+        {
+            'status': 'ok',
+            'subbed': 'market.btcusdt.kline.1min',
+            'ts': 1,
+        },
+        {
+            'ch': 'market.btcusdt.kline.1min',
+            'ts': 1,
+            'tick': {
+                'open': 1,
+            },
+        },
+        {
+            'status': 'ok',
+            'unsubbed': 'market.btcusdt.kline.1min',
+            'ts': 1,
+        },
     ]
-    assert len(errors) == 1
-    assert errors[0].err_code == 'code'
-    assert errors[0].err_msg == 'msg'
+    assert len(Error.errors) == 1
+    assert Error.errors[0].err_code == 'code'
+    assert Error.errors[0].err_msg == 'msg'
 
 
 @pytest.mark.asyncio
 async def test_market_websocket_not_found_topic():
-    def error_callback(error: WSHuobiError):
+    async def error_callback(error: WSHuobiError):
         ...
 
     async with WSHuobiMarket(
@@ -257,7 +291,7 @@ async def test_market_websocket_not_found_topic():
 
 @pytest.mark.asyncio
 async def test_market_websocket_not_specified_callback():
-    def error_callback(error: WSHuobiError):
+    async def error_callback(error: WSHuobiError):
         ...
 
     async with WSHuobiMarket(
