@@ -268,9 +268,7 @@ class WSHuobiMarket:
         Run stream with callbacks.
         """
         if not callable(error_callback):
-            raise TypeError(
-                f'Callback {error_callback} is not callable',
-            )
+            raise TypeError(f'Callback {error_callback} is not callable')
         async for message in self:
             message = cast(WS_MESSAGE_TYPE, message)
             status = message.get('status') or ''
@@ -288,13 +286,9 @@ class WSHuobiMarket:
             elif 'unsubbed' in message:
                 topic = message['unsubbed']
             else:
-                raise ValueError(
-                    f'Not found topic in {message}',
-                )
+                raise ValueError(f'Not found topic in {message}')
             if topic not in self._callbacks:
-                raise ValueError(
-                    f'Not specified callback for topic "{topic}"',
-                )
+                raise ValueError(f'Not specified callback for topic "{topic}"')
             await self._exec_callback(
                 callback=self._callbacks[topic],
                 data=message,

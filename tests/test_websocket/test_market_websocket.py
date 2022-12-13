@@ -8,12 +8,13 @@ from asynchuobi.enums import CandleInterval, DepthLevel
 from asynchuobi.exceptions import WSHuobiError
 from asynchuobi.ws.ws_client import (
     WSHuobiMarket,
-    _best_bid_offer,
-    _candles,
-    _latest_trades,
-    _market_stats,
-    _market_ticker_info,
-    _orderbook,
+    _base_stream,         # noqa
+    _best_bid_offer,      # noqa
+    _candles,             # noqa
+    _latest_trades,       # noqa
+    _market_stats,        # noqa
+    _market_ticker_info,  # noqa
+    _orderbook,           # noqa
 )
 from tests.test_websocket.stubs import (
     WS_MARKET_MESSAGES,
@@ -54,6 +55,11 @@ def test_latest_trades_topic(market_websocket):
 def test_market_stats_topic(market_websocket):
     stream = _market_stats(market_websocket, 'btcusdt')
     assert stream.topic == 'market.btcusdt.detail'
+
+
+def test_base_stream_wrong_symbol(market_websocket):
+    with pytest.raises(TypeError):
+        _base_stream(market_websocket, 10)  # type:ignore
 
 
 def test_default_parameters(market_websocket):
