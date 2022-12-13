@@ -140,7 +140,7 @@ class WSHuobiMarket:
         url: str = HUOBI_WS_MARKET_URL,
         loads: LOADS_TYPE = json.loads,
         decompress: DECOMPRESS_TYPE = gzip.decompress,
-        run_callbacks_in_asyncio_tasks: bool = True,
+        run_callbacks_in_asyncio_tasks: bool = False,
         connection: Type[WebsocketConnectionAbstract] = WebsocketConnection,
         **connection_kwargs,
     ):
@@ -243,7 +243,12 @@ class WSHuobiMarket:
             callback: Union[CALLBACK_TYPE, ERROR_CALLBACK_TYPE],
             data: Any,
     ) -> None:
-        if asyncio.iscoroutinefunction(callback):
+        is_async__call__ = (
+            type(type(callback)) is type and
+            hasattr(callback, '__call__') and
+            asyncio.iscoroutinefunction(callback.__call__)
+        )
+        if asyncio.iscoroutinefunction(callback) or is_async__call__:
             if self._run_callbacks_in_asyncio_tasks:
                 asyncio.create_task(callback(data))
             else:
