@@ -41,19 +41,20 @@ class _base_stream:
         self._ws = ws
         self._symbol = symbol
 
+    @property
     def topic(self) -> str:
         raise NotImplementedError
 
     async def sub(self, callback: Optional[CALLBACK_TYPE] = None):
         await self._ws.send_message_handler(
-            topic=self.topic(),
+            topic=self.topic,
             action='sub',
             callback=callback,
         )
 
     async def unsub(self):
         await self._ws.send_message_handler(
-            topic=self.topic(),
+            topic=self.topic,
             action='unsub',
         )
 
@@ -64,12 +65,14 @@ class _candles(_base_stream):
         super().__init__(ws, symbol)
         self._interval = interval
 
+    @property
     def topic(self) -> str:
         return f'market.{self._symbol}.kline.{self._interval}'
 
 
 class _market_ticker_info(_base_stream):
 
+    @property
     def topic(self) -> str:
         return f'market.{self._symbol}.ticker'
 
@@ -80,24 +83,28 @@ class _orderbook(_base_stream):
         super().__init__(ws, symbol)
         self._level = level
 
+    @property
     def topic(self) -> str:
         return f'market.{self._symbol}.depth.{self._level.value}'
 
 
 class _best_bid_offer(_base_stream):
 
+    @property
     def topic(self) -> str:
         return f'market.{self._symbol}.bbo'
 
 
 class _latest_trades(_base_stream):
 
+    @property
     def topic(self) -> str:
         return f'market.{self._symbol}.trade.detail'
 
 
 class _market_stats(_base_stream):
 
+    @property
     def topic(self) -> str:
         return f'market.{self._symbol}.detail'
 

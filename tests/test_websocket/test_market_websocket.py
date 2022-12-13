@@ -6,7 +6,15 @@ import pytest
 
 from asynchuobi.enums import CandleInterval, DepthLevel
 from asynchuobi.exceptions import WSHuobiError
-from asynchuobi.ws.ws_client import WSHuobiMarket
+from asynchuobi.ws.ws_client import (
+    WSHuobiMarket,
+    _best_bid_offer,
+    _candles,
+    _latest_trades,
+    _market_stats,
+    _market_ticker_info,
+    _orderbook,
+)
 from tests.test_websocket.stubs import (
     WS_MARKET_MESSAGES,
     WS_MARKET_MESSAGES_WITHOUT_TOPIC,
@@ -16,6 +24,36 @@ from tests.test_websocket.stubs import (
 
 def _callback(msg: Dict):
     ...
+
+
+def test_candles_topic(market_websocket):
+    stream = _candles(market_websocket, 'btcusdt', '1min')
+    assert stream.topic == 'market.btcusdt.kline.1min'
+
+
+def test_market_ticker_info_topic(market_websocket):
+    stream = _market_ticker_info(market_websocket, 'btcusdt')
+    assert stream.topic == 'market.btcusdt.ticker'
+
+
+def test_orderbook_topic(market_websocket):
+    stream = _orderbook(market_websocket, 'btcusdt', DepthLevel.step0)
+    assert stream.topic == 'market.btcusdt.depth.step0'
+
+
+def test_best_bid_offer_topic(market_websocket):
+    stream = _best_bid_offer(market_websocket, 'btcusdt')
+    assert stream.topic == 'market.btcusdt.bbo'
+
+
+def test_latest_trades_topic(market_websocket):
+    stream = _latest_trades(market_websocket, 'btcusdt')
+    assert stream.topic == 'market.btcusdt.trade.detail'
+
+
+def test_market_stats_topic(market_websocket):
+    stream = _market_stats(market_websocket, 'btcusdt')
+    assert stream.topic == 'market.btcusdt.detail'
 
 
 def test_default_parameters(market_websocket):
@@ -67,40 +105,30 @@ async def test_candlestick_wrong_interval(market_websocket):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('interval', [CandleInterval.min_1, '1min'])
 async def test_candlestick(market_websocket, interval):
-    await market_websocket.candlestick('btcusdt', interval).sub(_callback)
     topic = 'market.btcusdt.kline.1min'
-    market_websocket._connection.send.assert_called_once_with({'sub': topic})
+    # Subscribe
+    await market_websocket.candlestick('btcusdt', interval).sub(_callback)
+    market_websocket._connection.send.assert_called_with({'sub': topic})
     assert market_websocket._subscribed_ch == {topic}
     assert market_websocket._callbacks[topic] == _callback
-
-
-@pytest.mark.asyncio
-async def test_candlestick_unsubscribe(market_websocket):
-    topic = 'market.btcusdt.kline.1min'
-    market_websocket._subscribed_ch = {topic}
-    market_websocket._callbacks[topic] = _callback
-    await market_websocket.candlestick('btcusdt', '1min').unsub()
-    market_websocket._connection.send.assert_called_once_with({'unsub': topic})
+    # Unsubscribe
+    await market_websocket.candlestick('btcusdt', interval).unsub()
+    market_websocket._connection.send.assert_called_with({'unsub': topic})
     assert market_websocket._subscribed_ch == set()
     assert market_websocket._callbacks == {}
 
 
 @pytest.mark.asyncio
 async def test_ticker_info(market_websocket):
-    await market_websocket.market_ticker_info('btcusdt').sub(_callback)
     topic = 'market.btcusdt.ticker'
-    market_websocket._connection.send.assert_called_once_with({'sub': topic})
+    # Subscribe
+    await market_websocket.market_ticker_info('btcusdt').sub(_callback)
+    market_websocket._connection.send.assert_called_with({'sub': topic})
     assert market_websocket._subscribed_ch == {topic}
     assert market_websocket._callbacks[topic] == _callback
-
-
-@pytest.mark.asyncio
-async def test_ticker_info_unsubscribe(market_websocket):
-    topic = 'market.btcusdt.ticker'
-    market_websocket._subscribed_ch = {topic}
-    market_websocket._callbacks[topic] = _callback
+    # Unsubscribe
     await market_websocket.market_ticker_info('btcusdt').unsub()
-    market_websocket._connection.send.assert_called_once_with({'unsub': topic})
+    market_websocket._connection.send.assert_called_with({'unsub': topic})
     assert market_websocket._subscribed_ch == set()
     assert market_websocket._callbacks == {}
 
@@ -108,81 +136,60 @@ async def test_ticker_info_unsubscribe(market_websocket):
 @pytest.mark.asyncio
 async def test_orderbook(market_websocket):
     level = DepthLevel.step0
-    await market_websocket.orderbook('btcusdt').sub(_callback)
     topic = f'market.btcusdt.depth.{level.value}'
-    market_websocket._connection.send.assert_called_once_with({'sub': topic})
+    # Subscribe
+    await market_websocket.orderbook('btcusdt').sub(_callback)
+    market_websocket._connection.send.assert_called_with({'sub': topic})
     assert market_websocket._subscribed_ch == {topic}
     assert market_websocket._callbacks[topic] == _callback
-
-
-@pytest.mark.asyncio
-async def test_orderbook_unsubscribe(market_websocket):
-    level = DepthLevel.step0
-    topic = f'market.btcusdt.depth.{level.value}'
-    market_websocket._subscribed_ch = {topic}
-    market_websocket._callbacks[topic] = _callback
+    # Unsubscribe
     await market_websocket.orderbook('btcusdt').unsub()
-    market_websocket._connection.send.assert_called_once_with({'unsub': topic})
+    market_websocket._connection.send.assert_called_with({'unsub': topic})
     assert market_websocket._subscribed_ch == set()
     assert market_websocket._callbacks == {}
 
 
 @pytest.mark.asyncio
 async def test_best_bid_offer(market_websocket):
-    await market_websocket.best_bid_offer('btcusdt').sub(_callback)
     topic = 'market.btcusdt.bbo'
-    market_websocket._connection.send.assert_called_once_with({'sub': topic})
+    # Subscribe
+    await market_websocket.best_bid_offer('btcusdt').sub(_callback)
+    market_websocket._connection.send.assert_called_with({'sub': topic})
     assert market_websocket._subscribed_ch == {topic}
     assert market_websocket._callbacks[topic] == _callback
-
-
-@pytest.mark.asyncio
-async def test_best_bid_offer_unsubscribe(market_websocket):
-    topic = 'market.btcusdt.bbo'
-    market_websocket._subscribed_ch = {topic}
-    market_websocket._callbacks[topic] = _callback
+    # Unsubscribe
     await market_websocket.best_bid_offer('btcusdt').unsub()
-    market_websocket._connection.send.assert_called_once_with({'unsub': topic})
+    market_websocket._connection.send.assert_called_with({'unsub': topic})
     assert market_websocket._subscribed_ch == set()
     assert market_websocket._callbacks == {}
 
 
 @pytest.mark.asyncio
 async def test_latest_trades(market_websocket):
-    await market_websocket.latest_trades('btcusdt').sub(_callback)
     topic = 'market.btcusdt.trade.detail'
-    market_websocket._connection.send.assert_called_once_with({'sub': topic})
+    # Subscribe
+    await market_websocket.latest_trades('btcusdt').sub(_callback)
+    market_websocket._connection.send.assert_called_with({'sub': topic})
     assert market_websocket._subscribed_ch == {topic}
     assert market_websocket._callbacks[topic] == _callback
-
-
-@pytest.mark.asyncio
-async def test_latest_trades_unsubscribe(market_websocket):
-    topic = 'market.btcusdt.trade.detail'
-    market_websocket._subscribed_ch = {topic}
-    market_websocket._callbacks[topic] = _callback
+    # Unsubscribe
     await market_websocket.latest_trades('btcusdt').unsub()
-    market_websocket._connection.send.assert_called_once_with({'unsub': topic})
+    market_websocket._connection.send.assert_called_with({'unsub': topic})
     assert market_websocket._subscribed_ch == set()
     assert market_websocket._callbacks == {}
 
 
 @pytest.mark.asyncio
 async def test_market_stats(market_websocket):
-    await market_websocket.market_stats('btcusdt').sub(_callback)
     topic = 'market.btcusdt.detail'
-    market_websocket._connection.send.assert_called_once_with({'sub': topic})
+    # Subscribe
+    await market_websocket.market_stats('btcusdt').sub(_callback)
+    market_websocket._connection.send.assert_called_with({'sub': topic})
     assert market_websocket._subscribed_ch == {topic}
     assert market_websocket._callbacks[topic] == _callback
-
-
-@pytest.mark.asyncio
-async def test_market_stats_unsubscribe(market_websocket):
-    topic = 'market.btcusdt.detail'
-    market_websocket._subscribed_ch = {topic}
-    market_websocket._callbacks[topic] = _callback
+    # Unsubscribe
     await market_websocket.market_stats('btcusdt').unsub()
-    market_websocket._connection.send.assert_called_once_with({'unsub': topic})
+    market_websocket._connection.send.assert_called_with({'unsub': topic})
     assert market_websocket._subscribed_ch == set()
     assert market_websocket._callbacks == {}
 
@@ -190,6 +197,7 @@ async def test_market_stats_unsubscribe(market_websocket):
 @pytest.mark.asyncio
 async def test_market_websocket_iteration():
     received = []
+    topic = 'market.btcusdt.kline.1min'
     async with WSHuobiMarket(
         connection=HuobiMarketWebsocketConnectionStub,
         topics=WS_MARKET_MESSAGES,
@@ -198,18 +206,16 @@ async def test_market_websocket_iteration():
         async for message in ws:
             received.append(message)
     assert ws._connection._sent_messages == [
-        {'sub': 'market.btcusdt.kline.1min'},
-        {'pong': 1},
-        {'pong': 2},
+        {'sub': topic}, {'pong': 1}, {'pong': 2},
     ]
     assert received == [
         {
             'status': 'ok',
-            'subbed': 'market.btcusdt.kline.1min',
+            'subbed': topic,
             'ts': 1,
         },
         {
-            'ch': 'market.btcusdt.kline.1min',
+            'ch': topic,
             'ts': 1,
             'tick': {
                 'open': 1,
@@ -217,7 +223,7 @@ async def test_market_websocket_iteration():
         },
         {
             'status': 'ok',
-            'unsubbed': 'market.btcusdt.kline.1min',
+            'unsubbed': topic,
             'ts': 1,
         },
         {
