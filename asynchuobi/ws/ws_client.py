@@ -7,7 +7,7 @@ from aiohttp import WSMsgType
 
 from asynchuobi.auth import WebsocketAuth
 from asynchuobi.enums import CandleInterval, DepthLevel
-from asynchuobi.exceptions import WSConnectionNotAuthorized, WSHuobiError
+from asynchuobi.exceptions import WSAuthenticateError, WSConnectionNotAuthorized, WSHuobiError
 from asynchuobi.urls import HUOBI_WS_ACCOUNT_URL, HUOBI_WS_MARKET_URL
 from asynchuobi.ws.enums import WSTradeDetailMode
 from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnection, WebsocketConnectionAbstract
@@ -396,7 +396,7 @@ class WSHuobiAccount:
         data = self._loads(recv.data)
         code = data['code']
         if code != 200:
-            raise WSHuobiError(
+            raise WSAuthenticateError(
                 err_code=code,
                 err_msg=data['message'],
             )

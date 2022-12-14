@@ -14,3 +14,7 @@ class WSHuobiError(HuobiError):
 
 class WSConnectionNotAuthorized(Exception):
     ...
+
+
+class WSAuthenticateError(WSHuobiError):
+    ...
