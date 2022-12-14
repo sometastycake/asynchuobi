@@ -259,7 +259,7 @@ class WSHuobiMarket:
     ) -> None:
         if asyncio.iscoroutinefunction(callback) or _is_async__call__(callback):
             if self._run_callbacks_in_asyncio_tasks:
-                asyncio.create_task(callback(data))
+                asyncio.create_task(callback(data))  # type:ignore[arg-type]
             else:
                 await callback(data)
         else:
@@ -477,7 +477,7 @@ class WSHuobiAccount:
     ) -> None:
         if asyncio.iscoroutinefunction(callback) or _is_async__call__(callback):
             if self._run_callbacks_in_asyncio_tasks:
-                asyncio.create_task(callback(data))
+                asyncio.create_task(callback(data))  # type:ignore[arg-type]
             else:
                 await callback(data)
         else:

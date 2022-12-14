@@ -102,9 +102,9 @@ WS_MARKET_MESSAGES_WITHOUT_TOPIC = [
 ]
 
 
-class HuobiMarketWebsocketConnectionStub(WebsocketConnectionAbstract):
+class WSHuobiMarketConnectionStub(WebsocketConnectionAbstract):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # noqa
         self._closed = True
         self._position = 0
         self._sent_messages = []
