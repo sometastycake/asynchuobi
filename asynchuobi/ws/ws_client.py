@@ -1,7 +1,6 @@
 import asyncio
 import gzip
 import json
-import warnings
 from typing import Any, Awaitable, Callable, Dict, Optional, Set, Type, Union, cast
 
 from aiohttp import WSMsgType
@@ -31,6 +30,14 @@ _CLOSING_STATUSES = (
     WSMsgType.CLOSING,
     WSMsgType.CLOSED,
 )
+
+
+def _is_async__call__(callback: Union[CALLBACK_TYPE, ERROR_CALLBACK_TYPE]) -> bool:
+    return (
+        type(type(callback)) is type and
+        hasattr(callback, '__call__') and
+        asyncio.iscoroutinefunction(callback.__call__)
+    )
 
 
 class _base_stream:
@@ -250,12 +257,7 @@ class WSHuobiMarket:
             callback: Union[CALLBACK_TYPE, ERROR_CALLBACK_TYPE],
             data: Any,
     ) -> None:
-        is_async__call__ = (
-            type(type(callback)) is type and
-            hasattr(callback, '__call__') and
-            asyncio.iscoroutinefunction(callback.__call__)
-        )
-        if asyncio.iscoroutinefunction(callback) or is_async__call__:
+        if asyncio.iscoroutinefunction(callback) or _is_async__call__(callback):
             if self._run_callbacks_in_asyncio_tasks:
                 asyncio.create_task(callback(data))
             else:
@@ -295,13 +297,13 @@ class WSHuobiMarket:
             )
 
 
-class HuobiAccountWebsocket:
+class WSHuobiAccount:
     """
     Websocket class for retrieving information about orders and account.
 
     Usage:
 
-        async with HuobiAccountWebsocket(
+        async with WSHuobiAccount(
             access_key='access_key',
             secret_key='secret_key',
         ) as ws:
@@ -315,7 +317,7 @@ class HuobiAccountWebsocket:
         def callback_balance_update(message):
             print(message)
 
-        async with HuobiAccountWebsocket(
+        async with WSHuobiAccount(
             access_key='access_key',
             secret_key='secret_key',
         ) as ws:
@@ -331,7 +333,6 @@ class HuobiAccountWebsocket:
         secret_key - Secret key
         url - Websocket url
         loads - Method of json deserialize (default json.loads)
-        raise_if_error - Raise exception if error message was received from websocket
         run_callbacks_in_asyncio_tasks - If True, then callbacks run into asyncio.create_task
         connection - Object for managing websocket connection
     """
@@ -341,8 +342,7 @@ class HuobiAccountWebsocket:
         secret_key: str,
         url: str = HUOBI_WS_ACCOUNT_URL,
         loads: LOADS_TYPE = json.loads,
-        raise_if_error: bool = False,
-        run_callbacks_in_asyncio_tasks: bool = True,
+        run_callbacks_in_asyncio_tasks: bool = False,
         connection: Type[WebsocketConnection] = WebsocketConnection,
         **connection_kwargs,
     ):
@@ -354,11 +354,10 @@ class HuobiAccountWebsocket:
         self._secret_key = secret_key
         self._connection = connection(url=url, **connection_kwargs)
         self._is_auth = False
-        self._raise_if_error = raise_if_error
         self._callbacks: Dict[str, CALLBACK_TYPE] = {}
         self._run_callbacks_in_asyncio_tasks = run_callbacks_in_asyncio_tasks
 
-    async def __aenter__(self) -> 'HuobiAccountWebsocket':
+    async def __aenter__(self) -> 'WSHuobiAccount':
         await self._connection.connect()
         await self.authorize()
         return self
@@ -456,7 +455,7 @@ class HuobiAccountWebsocket:
             callback=callback,
         )
 
-    def __aiter__(self) -> 'HuobiAccountWebsocket':
+    def __aiter__(self) -> 'WSHuobiAccount':
         return self
 
     async def __anext__(self) -> WS_MESSAGE_TYPE:
@@ -464,31 +463,46 @@ class HuobiAccountWebsocket:
             message = await self._connection.receive()
             if message.type in _CLOSING_STATUSES:
                 raise StopAsyncIteration
-            data = self._loads(message.data)
-            action = data.get('action') or ''
+            payload = self._loads(message.data)
+            action = payload.get('action') or ''
             if action == 'ping':
-                await self._pong(data['data']['ts'])
+                await self._pong(payload['data']['ts'])
                 continue
-            code = data.get('code')
-            if code and code != 200 and self._raise_if_error:
-                raise WSHuobiError(
-                    err_code=code,
-                    err_msg=data['message'],
-                )
-            return data
+            return payload
 
-    async def run_with_callbacks(self) -> None:
-        if not self._callbacks:
-            warnings.warn('Callbacks not specified')
-            return
+    async def _exec_callback(
+            self,
+            callback: Union[CALLBACK_TYPE, ERROR_CALLBACK_TYPE],
+            data: Any,
+    ) -> None:
+        if asyncio.iscoroutinefunction(callback) or _is_async__call__(callback):
+            if self._run_callbacks_in_asyncio_tasks:
+                asyncio.create_task(callback(data))
+            else:
+                await callback(data)
+        else:
+            callback(data)
+
+    async def run_with_callbacks(self, error_callback: ERROR_CALLBACK_TYPE) -> None:
+        """
+        Run stream with callbacks.
+        """
+        if not callable(error_callback):
+            raise TypeError(f'Callback {error_callback} is not callable')
         async for message in self:
             message = cast(WS_MESSAGE_TYPE, message)
-            channel = message['ch']
-            callback = self._callbacks[channel]
-            if asyncio.iscoroutinefunction(callback):
-                if self._run_callbacks_in_asyncio_tasks:
-                    asyncio.create_task(callback(message))
-                else:
-                    await callback(message)
-            else:
-                callback(message)
+            code = message.get('code')
+            if code and code != 200:
+                error = WSHuobiError(
+                    err_code=code,
+                    err_msg=message['message'],
+                )
+                await self._exec_callback(error_callback, error)
+                continue
+            topic = message['ch']
+            if topic not in self._callbacks:
+                raise ValueError(f'Not specified callback for topic "{topic}"')
+            await self._exec_callback(
+                callback=self._callbacks[topic],
+                data=message,
+            )

@@ -203,11 +203,11 @@ You can also define async callback
 Authentication is required
 
 ```python
-from asynchuobi.ws.ws_client import HuobiAccountWebsocket
+from asynchuobi.ws.ws_client import WSHuobiAccount
 
 
 async def main():
-    async with HuobiAccountWebsocket(
+    async with WSHuobiAccount(
             access_key='access_key',
             secret_key='secret_key',
     ) as ws:
@@ -224,14 +224,14 @@ async def main():
 With callbacks
 
 ```python
-from asynchuobi.ws.ws_client import HuobiAccountWebsocket
+from asynchuobi.ws.ws_client import WSHuobiAccount
 
 
 async def main():
     def callback_balance_update(message: dict):
         print(message)
 
-    async with HuobiAccountWebsocket(
+    async with WSHuobiAccount(
             access_key='access_key',
             secret_key='secret_key',
     ) as ws:

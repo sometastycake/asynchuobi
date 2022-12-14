@@ -6,16 +6,14 @@ import pytest
 
 from asynchuobi.enums import CandleInterval, DepthLevel
 from asynchuobi.exceptions import WSHuobiError
-from asynchuobi.ws.ws_client import (
-    WSHuobiMarket,
-    _base_stream,         # noqa
-    _best_bid_offer,      # noqa
-    _candles,             # noqa
-    _latest_trades,       # noqa
-    _market_stats,        # noqa
-    _market_ticker_info,  # noqa
-    _orderbook,           # noqa
-)
+from asynchuobi.ws.ws_client import _base_stream         # noqa
+from asynchuobi.ws.ws_client import _best_bid_offer      # noqa
+from asynchuobi.ws.ws_client import _candles             # noqa
+from asynchuobi.ws.ws_client import _latest_trades       # noqa
+from asynchuobi.ws.ws_client import _market_stats        # noqa
+from asynchuobi.ws.ws_client import _market_ticker_info  # noqa
+from asynchuobi.ws.ws_client import _orderbook           # noqa
+from asynchuobi.ws.ws_client import WSHuobiMarket
 from tests.test_websocket.stubs import (
     WS_MARKET_MESSAGES,
     WS_MARKET_MESSAGES_WITHOUT_TOPIC,
