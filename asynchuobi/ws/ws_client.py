@@ -343,7 +343,7 @@ class WSHuobiAccount:
         url: str = HUOBI_WS_ACCOUNT_URL,
         loads: LOADS_TYPE = json.loads,
         run_callbacks_in_asyncio_tasks: bool = False,
-        connection: Type[WebsocketConnection] = WebsocketConnection,
+        connection: Type[WebsocketConnectionAbstract] = WebsocketConnection,
         **connection_kwargs,
     ):
         if not access_key or not secret_key:

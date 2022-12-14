@@ -14,11 +14,8 @@ from asynchuobi.ws.ws_client import _market_stats  # noqa
 from asynchuobi.ws.ws_client import _market_ticker_info  # noqa
 from asynchuobi.ws.ws_client import _orderbook  # noqa
 from asynchuobi.ws.ws_client import WSHuobiMarket
-from tests.test_websocket.stubs.ws_market_stub import (
-    WS_MARKET_MESSAGES,
-    WS_MARKET_MESSAGES_WITHOUT_TOPIC,
-    WSHuobiMarketConnectionStub,
-)
+from tests.test_websocket.stubs.connection import WSConnectionStub
+from tests.test_websocket.stubs.ws_market_msg import WS_MARKET_MESSAGES, WS_MARKET_MESSAGES_WITHOUT_TOPIC
 
 
 def _callback(msg: Dict):
@@ -203,8 +200,8 @@ async def test_market_websocket_iteration():
     received = []
     topic = 'market.btcusdt.kline.1min'
     async with WSHuobiMarket(
-        connection=WSHuobiMarketConnectionStub,
-        topics=WS_MARKET_MESSAGES,
+        connection=WSConnectionStub,
+        messages=WS_MARKET_MESSAGES,
     ) as ws:
         await ws.candlestick('btcusdt', '1min').sub()
         async for message in ws:
@@ -269,9 +266,9 @@ async def test_market_websocket_callbacks(is_async_call):
                 self.errors.append(error)
 
     async with WSHuobiMarket(
-        connection=WSHuobiMarketConnectionStub,
+        connection=WSConnectionStub,
         run_callbacks_in_asyncio_tasks=False,
-        topics=WS_MARKET_MESSAGES,
+        messages=WS_MARKET_MESSAGES,
     ) as ws:
         await ws.candlestick('btcusdt', '1min').sub(Callback())
         await ws.run_with_callbacks(Error())
@@ -319,9 +316,9 @@ async def test_market_websocket_simple_callbacks(is_async_call):
             errors.append(e)
 
     ws = WSHuobiMarket(
-        connection=WSHuobiMarketConnectionStub,
+        connection=WSConnectionStub,
         run_callbacks_in_asyncio_tasks=False,
-        topics=WS_MARKET_MESSAGES,
+        messages=WS_MARKET_MESSAGES,
     )
     await ws.candlestick('btcusdt', '1min').sub(callback)
     await ws.run_with_callbacks(error)
@@ -355,8 +352,8 @@ async def test_market_websocket_not_found_topic():
         ...
 
     async with WSHuobiMarket(
-        connection=WSHuobiMarketConnectionStub,
-        topics=WS_MARKET_MESSAGES_WITHOUT_TOPIC,
+        connection=WSConnectionStub,
+        messages=WS_MARKET_MESSAGES_WITHOUT_TOPIC,
     ) as ws:
         with pytest.raises(ValueError) as err:
             await ws.run_with_callbacks(
@@ -371,8 +368,8 @@ async def test_market_websocket_not_specified_callback():
         ...
 
     async with WSHuobiMarket(
-        connection=WSHuobiMarketConnectionStub,
-        topics=WS_MARKET_MESSAGES,
+        connection=WSConnectionStub,
+        messages=WS_MARKET_MESSAGES,
     ) as ws:
         with pytest.raises(ValueError) as err:
             await ws.run_with_callbacks(
@@ -384,7 +381,7 @@ async def test_market_websocket_not_specified_callback():
 @pytest.mark.asyncio
 async def test_market_websocket_error_callback_not_callable():
     async with WSHuobiMarket(
-        connection=WSHuobiMarketConnectionStub,
+        connection=WSConnectionStub,
     ) as ws:
         with pytest.raises(TypeError) as err:
             await ws.run_with_callbacks(
