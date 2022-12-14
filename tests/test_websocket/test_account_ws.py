@@ -1,7 +1,11 @@
 import json
 from datetime import datetime
 from typing import Dict
-from unittest.mock import AsyncMock
+
+try:
+    from unittest.mock import AsyncMock
+except ImportError:
+    from mock.mock import AsyncMock
 
 import pytest
 from freezegun import freeze_time
