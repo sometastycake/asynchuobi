@@ -31,7 +31,6 @@ def test_wrong_keys(account_ws, access_key, secret_key):
         WSHuobiAccount(access_key=access_key, secret_key=secret_key)
 
 
-
 def test_default_parameters(account_ws):
     assert account_ws._url == HUOBI_WS_ACCOUNT_URL
     assert account_ws._access_key == HUOBI_ACCESS_KEY
