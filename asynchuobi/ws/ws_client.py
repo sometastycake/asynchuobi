@@ -7,7 +7,7 @@ from aiohttp import WSMsgType
 
 from asynchuobi.auth import WebsocketAuth
 from asynchuobi.enums import CandleInterval, DepthLevel
-from asynchuobi.exceptions import WSAuthenticateError, WSConnectionNotAuthorized, WSHuobiError
+from asynchuobi.exceptions import WSAuthenticateError, WSHuobiError, WSNotAuthenticated
 from asynchuobi.urls import HUOBI_WS_ACCOUNT_URL, HUOBI_WS_MARKET_URL
 from asynchuobi.ws.enums import WSTradeDetailMode
 from asynchuobi.ws.ws_connection import WS_MESSAGE_TYPE, WebsocketConnection, WebsocketConnectionAbstract
@@ -408,7 +408,7 @@ class WSHuobiAccount:
         Subscribe to topic.
         """
         if not self._is_auth:
-            raise WSConnectionNotAuthorized('Connection is not authorized')
+            raise WSNotAuthenticated('Connection is not authorized')
         if callback:
             if not callable(callback):
                 raise TypeError(f'Object {callback} is not callable')

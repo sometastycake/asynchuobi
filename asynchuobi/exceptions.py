@@ -12,7 +12,7 @@ class WSHuobiError(HuobiError):
     ...
 
 
-class WSConnectionNotAuthorized(Exception):
+class WSNotAuthenticated(Exception):
     ...
 
 
