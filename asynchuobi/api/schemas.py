@@ -343,3 +343,30 @@ class _QueryConditionalOrderHistory(APIAuth):
 
 class _QueryConditionalOrder(APIAuth):
     clientOrderId: str
+
+
+class _GetLoanInterestRateAndQuota(APIAuth):
+    symbols: Optional[str]
+
+
+class _SearchPastMarginOrders(APIAuth):
+    symbol: str
+    states: Optional[str]
+    start_date: Optional[str] = Field(alias='start-date')
+    end_date: Optional[str] = Field(alias='end-date')
+    from_order_id: Optional[str] = Field(alias='from')
+    direct: Optional[Direct]
+    size: int = 100
+    sub_uid: Optional[int] = Field(alias='sub-uid')
+
+    class Config:
+        use_enum_values = True
+        allow_population_by_field_name = True
+
+
+class _GetBalanceOfMarginLoanAccount(APIAuth):
+    symbol: Optional[str]
+    sub_uid: Optional[int] = Field(alias='sub-uid')
+
+    class Config:
+        allow_population_by_field_name = True
