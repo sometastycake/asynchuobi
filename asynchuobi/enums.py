@@ -101,6 +101,11 @@ class OrderType(Enum):
     sell_stop_limit_fok = 'sell-stop-limit-fok'
 
 
+class ConditionalOrderType(Enum):
+    limit = 'limit'
+    market = 'market'
+
+
 class OrderSource(Enum):
     spot_api = 'spot-api'
     margin_api = 'margin-api'

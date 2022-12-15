@@ -3,7 +3,15 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from asynchuobi.auth import APIAuth
-from asynchuobi.enums import Direct, OperatorCharacterOfStopPrice, OrderSource, OrderType
+from asynchuobi.enums import (
+    ConditionalOrderType,
+    Direct,
+    OperatorCharacterOfStopPrice,
+    OrderSide,
+    OrderSource,
+    OrderType,
+    Sort,
+)
 
 
 class _GetChainsInformationRequest(BaseModel):
@@ -285,3 +293,53 @@ class _SearchMatchResult(APIAuth):
 
 class _GetCurrentFeeRateAppliedToUser(APIAuth):
     symbols: str
+
+
+class _NewConditionalOrder(BaseModel):
+    accountId: int
+    symbol: str
+    orderPrice: Optional[float]
+    orderSide: OrderSide
+    orderSize: Optional[float]
+    orderValue: Optional[float]
+    timeInForce: Optional[str]
+    orderType: ConditionalOrderType
+    clientOrderId: str
+    stopPrice: float
+    trailingRate: Optional[float]
+
+    class Config:
+        use_enum_values = True
+
+
+class _QueryOpenConditionalOrders(APIAuth):
+    accountId: Optional[int]
+    symbol: Optional[str]
+    orderSide: Optional[OrderSide]
+    orderType: Optional[ConditionalOrderType]
+    sorting: Sort = Field(default=Sort.desc, alias='sort')
+    limit: int = 100
+    fromId: Optional[int]
+
+    class Config:
+        use_enum_values = True
+
+
+class _QueryConditionalOrderHistory(APIAuth):
+    accountId: Optional[int]
+    symbol: str
+    orderSide: Optional[OrderSide]
+    orderType: Optional[ConditionalOrderType]
+    sorting: Sort = Field(default=Sort.desc, alias='sort')
+    limit: int = 100
+    fromId: Optional[int]
+    orderStatus: str
+    startTime: Optional[int]
+    endTime: Optional[int]
+
+    class Config:
+        use_enum_values = True
+
+
+class _QueryConditionalOrder(APIAuth):
+    clientOrderId: str
