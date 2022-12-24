@@ -370,3 +370,39 @@ class _GetBalanceOfMarginLoanAccount(APIAuth):
 
     class Config:
         allow_population_by_field_name = True
+
+
+class _SearchPastCrossMarginOrders(APIAuth):
+    currency: Optional[str]
+    state: Optional[str]
+    start_date: Optional[str] = Field(alias='start-date')
+    end_date: Optional[str] = Field(alias='end-date')
+    from_order_id: Optional[str] = Field(alias='from')
+    direct: Optional[Direct]
+    size: int = 100
+    sub_uid: Optional[int] = Field(alias='sub-uid')
+
+    class Config:
+        use_enum_values = True
+        allow_population_by_field_name = True
+
+
+class _GetBalanceOfCrossMarginLoanAccount(APIAuth):
+    sub_uid: Optional[int] = Field(alias='sub-uid')
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+class _RepaymentRecordReference(APIAuth):
+    repayId: Optional[str]
+    accountId: Optional[int]
+    currency: Optional[str]
+    startTime: Optional[int]
+    endTime: Optional[int]
+    soring: Sort = Sort.desc
+    limit: int = 50
+    fromId: Optional[int]
+
+    class Config:
+        use_enum_values = True
