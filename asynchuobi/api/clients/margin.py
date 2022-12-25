@@ -47,7 +47,7 @@ class MarginHuobiClient:
             transact_id: Optional[str] = None,
     ) -> Dict:
         """
-        Repay Margin Loan（Cross/Isolated
+        Repay Margin Loan（Cross/Isolated)
         https://huobiapi.github.io/docs/spot/v1/en/#repay-margin-loan-cross-isolated
 
         :param account_id: Repayment account ID
@@ -60,11 +60,11 @@ class MarginHuobiClient:
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v2/account/repayment')
-        params = {
-            'accountid': account_id,
-            'currency': currency,
-            'amount': amount,
-        }
+        params = dict(
+            accountid=account_id,
+            currency=currency,
+            amount=amount,
+        )
         if transact_id is not None:
             params['transactId'] = transact_id
         return await self._requests.post(
@@ -73,14 +73,19 @@ class MarginHuobiClient:
             json=params,
         )
 
-    async def transfer_asset_from_spot_to_isolated_margin(
+    async def transfer_asset_from_spot_to_isolated_margin_account(
             self,
             symbol: str,
             currency: str,
             amount: float,
     ) -> Dict:
         """
-        Transfer Asset from Spot Trading Account to Isolated Margin Account（Isolated）
+        This endpoint transfers specific asset from spot trading account to
+        isolated margin account.
+
+        :param symbol: The trading symbol, e.g. btcusdt, bccbtc
+        :param currency: The currency to transfer
+        :param amount: The amount of currency to transfer
         """
         auth = APIAuth(
             AccessKeyId=self._access_key,
@@ -97,14 +102,19 @@ class MarginHuobiClient:
             ),
         )
 
-    async def transfer_asset_from_isolated_margin_to_spot(
+    async def transfer_asset_from_isolated_margin_account_to_spot(
             self,
             symbol: str,
             currency: str,
             amount: float,
     ) -> Dict:
         """
-        Transfer Asset from Isolated Margin Account to Spot Trading Account（Isolated
+        This endpoint transfers specific asset from isolated margin
+        account to spot trading account.
+
+        :param symbol: The trading symbol, e.g. btcusdt, bccbtc
+        :param currency: The currency to transfer
+        :param amount: The amount of currency to transfer
         """
         auth = APIAuth(
             AccessKeyId=self._access_key,
@@ -126,7 +136,6 @@ class MarginHuobiClient:
             symbols: Optional[Iterable[str]] = None,
     ) -> Dict:
         """
-        Get Loan Interest Rate and Quota（Isolated）
         The endpoint returns loan interest rates and quota applied on the user.
         https://huobiapi.github.io/docs/spot/v1/en/#get-loan-interest-rate-and-quota-isolated
         """
@@ -143,16 +152,15 @@ class MarginHuobiClient:
             params=params.to_request(url, 'GET'),
         )
 
-    async def get_request_margin_loan(
+    async def request_isolated_margin_loan(
             self,
             symbol: str,
             currency: str,
             amount: float,
     ) -> Dict:
         """
-        Request a Margin Loan（Isolated）
-        https://huobiapi.github.io/docs/spot/v1/en/#request-a-margin-loan-isolated
         This endpoint places an order to apply a margin loan
+        https://huobiapi.github.io/docs/spot/v1/en/#request-a-margin-loan-isolated
 
         :param symbol: The trading symbol to borrow margin, e.g. btcusdt, bccbtc
         :param currency: The currency to borrow
@@ -173,23 +181,25 @@ class MarginHuobiClient:
             ),
         )
 
-    async def repay_isolated_margin_loan_by_order_id(self, amount: float, order_id: str) -> Dict:
+    async def repay_isolated_margin_loan(self, amount: float, loan_order_id: str) -> Dict:
         """
         Repay Margin Loan（Isolated）
         https://huobiapi.github.io/docs/spot/v1/en/#repay-margin-loan-isolated
 
         :param amount: The amount of currency to repay
-        :param order_id: Loan order ID
+        :param loan_order_id: Loan order ID
         """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
         )
-        url = urljoin(self._api, f'/v1/margin/orders/{order_id}/repay')
+        url = urljoin(self._api, f'/v1/margin/orders/{loan_order_id}/repay')
         return await self._requests.post(
             url=url,
             params=auth.to_request(url, 'POST'),
-            json=dict(amount=amount),
+            json=dict(
+                amount=amount,
+            ),
         )
 
     async def search_past_isolated_margin_orders(
@@ -229,7 +239,7 @@ class MarginHuobiClient:
             params=params.to_request(url, 'GET'),
         )
 
-    async def get_balance_of_margin_loan_account(
+    async def get_balance_of_isolated_margin_loan_account(
             self,
             symbol: Optional[str] = None,
             sub_uid: Optional[str] = None,
@@ -288,26 +298,20 @@ class MarginHuobiClient:
             json=dict(currency=currency, amount=amount),
         )
 
-    async def get_cross_loan_interest_rate_and_quota(
-            self,
-            symbols: Optional[Iterable[str]] = None,
-    ) -> Dict:
+    async def get_cross_loan_interest_rate_and_quota(self) -> Dict:
         """
         Get Loan Interest Rate and Quota（Cross）
         The endpoint returns loan interest rates and quota applied on the user.
         https://huobiapi.github.io/docs/spot/v1/en/#get-loan-interest-rate-and-quota-cross
         """
-        if symbols and not isinstance(symbols, Iterable):
-            raise TypeError(f'Iterable type expected for symbols, got "{type(symbols)}"')
-        params = _GetLoanInterestRateAndQuota(
-            symbols=','.join(symbols) if symbols else None,
+        auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
         )
         url = urljoin(self._api, '/v1/cross-margin/loan-info')
         return await self._requests.get(
             url=url,
-            params=params.to_request(url, 'GET'),
+            params=auth.to_request(url, 'GET'),
         )
 
     async def request_cross_margin_loan(self, currency: str, amount: str) -> Dict:
@@ -378,7 +382,6 @@ class MarginHuobiClient:
             url=url,
             params=params.to_request(url, 'GET'),
         )
-
 
     async def get_balance_of_cross_margin_loan_account(
             self,
