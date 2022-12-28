@@ -349,15 +349,15 @@ class _GetLoanInterestRateAndQuota(APIAuth):
     symbols: Optional[str]
 
 
-class _SearchPastMarginOrders(APIAuth):
-    symbol: str
-    states: Optional[str]
-    start_date: Optional[str] = Field(alias='start-date')
+class _SearchPastIsolatedMarginOrders(APIAuth):
+    direct: Optional[Direct]
     end_date: Optional[str] = Field(alias='end-date')
     from_order_id: Optional[str] = Field(alias='from')
-    direct: Optional[Direct]
     size: int = 100
+    start_date: Optional[str] = Field(alias='start-date')
+    states: Optional[str]
     sub_uid: Optional[int] = Field(alias='sub-uid')
+    symbol: str
 
     class Config:
         use_enum_values = True
@@ -374,12 +374,12 @@ class _GetBalanceOfMarginLoanAccount(APIAuth):
 
 class _SearchPastCrossMarginOrders(APIAuth):
     currency: Optional[str]
-    state: Optional[str]
-    start_date: Optional[str] = Field(alias='start-date')
+    direct: Optional[Direct]
     end_date: Optional[str] = Field(alias='end-date')
     from_order_id: Optional[str] = Field(alias='from')
-    direct: Optional[Direct]
-    size: int = 100
+    size: int = 10
+    start_date: Optional[str] = Field(alias='start-date')
+    state: Optional[str]
     sub_uid: Optional[int] = Field(alias='sub-uid')
 
     class Config:
@@ -395,14 +395,14 @@ class _GetBalanceOfCrossMarginLoanAccount(APIAuth):
 
 
 class _RepaymentRecordReference(APIAuth):
-    repayId: Optional[str]
     accountId: Optional[int]
     currency: Optional[str]
-    startTime: Optional[int]
     endTime: Optional[int]
-    soring: Sort = Sort.desc
-    limit: int = 50
     fromId: Optional[int]
+    limit: int = 50
+    repayId: Optional[int]
+    soring: Sort = Sort.desc
+    startTime: Optional[int]
 
     class Config:
         use_enum_values = True
