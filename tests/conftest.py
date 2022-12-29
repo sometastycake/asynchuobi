@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest
 from freezegun import freeze_time
 
+from asynchuobi.api.clients.margin import MarginHuobiClient
 from asynchuobi.ws.ws_client import WSHuobiAccount, WSHuobiMarket
 from tests.keys import HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY
 
@@ -64,6 +65,15 @@ def wallet_client():
 @pytest.fixture
 def subuser_client():
     return SubUserHuobiClient(
+        access_key=HUOBI_ACCESS_KEY,
+        secret_key=HUOBI_SECRET_KEY,
+        request_strategy=AsyncMock(),
+    )
+
+
+@pytest.fixture
+def margin_client():
+    return MarginHuobiClient(
         access_key=HUOBI_ACCESS_KEY,
         secret_key=HUOBI_SECRET_KEY,
         request_strategy=AsyncMock(),

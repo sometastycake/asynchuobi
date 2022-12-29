@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictInt, StrictStr
 
 from asynchuobi.auth import APIAuth
 from asynchuobi.enums import (
@@ -396,13 +396,14 @@ class _GetBalanceOfCrossMarginLoanAccount(APIAuth):
 
 class _RepaymentRecordReference(APIAuth):
     accountId: Optional[int]
-    currency: Optional[str]
-    endTime: Optional[int]
-    fromId: Optional[int]
-    limit: int = 50
+    currency: Optional[StrictStr]
+    endTime: Optional[StrictInt]
+    fromId: Optional[StrictInt]
+    limit: StrictInt = 50
     repayId: Optional[int]
-    soring: Sort = Sort.desc
-    startTime: Optional[int]
+    sorting: Sort = Field(Sort.desc, alias='sort')
+    startTime: Optional[StrictInt]
 
     class Config:
         use_enum_values = True
+        allow_population_by_field_name = True

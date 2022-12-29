@@ -375,7 +375,7 @@ class MarginHuobiClient:
 
     async def get_balance_of_cross_margin_account(
             self,
-            sub_uid: Optional[str] = None,
+            sub_uid: Optional[int] = None,
     ) -> Dict:
         """
         This endpoint returns the balance of the margin loan account
@@ -416,7 +416,7 @@ class MarginHuobiClient:
             currency=currency,
             startTime=start_time,
             endTime=end_time,
-            soring=sorting,
+            sorting=sorting,
             limit=limit,
             fromId=from_id,
             AccessKeyId=self._access_key,
