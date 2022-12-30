@@ -12,6 +12,207 @@ from tests.keys import HUOBI_ACCESS_KEY
 
 @pytest.mark.asyncio
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
+async def test_repay_margin_loan(margin_client):
+    await margin_client.repay_margin_loan(
+        account_id=1,
+        currency='usdt',
+        amount=1.0,
+        transact_id='transact_id',
+    )
+    kwargs = margin_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert margin_client._requests.post.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/account/repayment')
+    assert kwargs['params'] == {
+        'Signature': '0nNPYwL0cKe9ViuB0ylF1hvcY+c7m53reAHqUbsdOY4=',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
+        'SignatureMethod': 'HmacSHA256',
+        'SignatureVersion': '2',
+        'Timestamp': '2023-01-01T00:01:01'
+    }
+    assert kwargs['json'] == {
+        'accountid': 1,
+        'currency': 'usdt',
+        'amount': 1.0,
+        'transactId': 'transact_id',
+    }
+
+
+@pytest.mark.asyncio
+@freeze_time(datetime(2023, 1, 1, 0, 1, 1))
+async def test_transfer_asset_from_spot_to_isolated_margin_account(margin_client):
+    await margin_client.transfer_asset_from_spot_to_isolated_margin_account(
+        symbol='btcusdt',
+        currency='usdt',
+        amount=1.0,
+    )
+    kwargs = margin_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert margin_client._requests.post.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/dw/transfer-in/margin')
+    assert kwargs['params'] == {
+        'Signature': 'zl+rlo8K59tuFwpMkzt/2WvdhgQCtWnLfL13zwuTQKY=',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
+        'SignatureMethod': 'HmacSHA256',
+        'SignatureVersion': '2',
+        'Timestamp': '2023-01-01T00:01:01'
+    }
+    assert kwargs['json'] == {'symbol': 'btcusdt', 'currency': 'usdt', 'amount': 1.0}
+
+
+@pytest.mark.asyncio
+@freeze_time(datetime(2023, 1, 1, 0, 1, 1))
+async def test_transfer_asset_from_isolated_margin_account_to_spot(margin_client):
+    await margin_client.transfer_asset_from_isolated_margin_account_to_spot(
+        symbol='btcusdt',
+        currency='usdt',
+        amount=1.0,
+    )
+    kwargs = margin_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert margin_client._requests.post.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/dw/transfer-out/margin')
+    assert kwargs['params'] == {
+        'Signature': '71sP1aPnutMXNGgK8q9KKJzCWxjW04OP+cr8nSE/rr4=',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
+        'SignatureMethod': 'HmacSHA256',
+        'SignatureVersion': '2',
+        'Timestamp': '2023-01-01T00:01:01'
+    }
+    assert kwargs['json'] == {'symbol': 'btcusdt', 'currency': 'usdt', 'amount': 1.0}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    'symbols, signature', [
+        (None, 'E2+JeG50pGUbUpXkai8+lgApxi4gj4UJ6gpo3BIrWL0='),
+        (('btcusdt', 'ethusdt'), 'R3OjeRLBEoi9t2mIXPzWJCTR11pmgj/aqtzMQOXU1Tg='),
+    ],
+)
+@freeze_time(datetime(2023, 1, 1, 0, 1, 1))
+async def test_get_isolated_loan_interest_rate_and_quota(margin_client, symbols, signature):
+    await margin_client.get_isolated_loan_interest_rate_and_quota(
+        symbols=symbols,
+    )
+    kwargs = margin_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert margin_client._requests.get.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/margin/loan-info')
+    params = {
+        'Signature': signature,
+        'AccessKeyId': HUOBI_ACCESS_KEY,
+        'SignatureMethod': 'HmacSHA256',
+        'SignatureVersion': '2',
+        'Timestamp': '2023-01-01T00:01:01',
+    }
+    if symbols is not None:
+        params['symbols'] = ','.join(symbols)
+    assert kwargs['params'] == params
+
+
+@pytest.mark.asyncio
+async def test_get_isolated_loan_interest_rate_and_quota_wrong_symbols(margin_client):
+    with pytest.raises(TypeError):
+        await margin_client.get_isolated_loan_interest_rate_and_quota(
+            symbols=1,
+        )
+
+
+@pytest.mark.asyncio
+@freeze_time(datetime(2023, 1, 1, 0, 1, 1))
+async def test_request_isolated_margin_loan(margin_client):
+    await margin_client.request_isolated_margin_loan(
+        symbol='btcusdt',
+        currency='usdt',
+        amount=1.0,
+    )
+    kwargs = margin_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert margin_client._requests.post.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/margin/orders')
+    assert kwargs['params'] == {
+        'Signature': 'KEkNgpvmq54pDHQeMVUDCdPVd26yWfoJlPNlmHlFOVM=',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
+        'SignatureMethod': 'HmacSHA256',
+        'SignatureVersion': '2',
+        'Timestamp': '2023-01-01T00:01:01',
+    }
+    assert kwargs['json'] == {'symbol': 'btcusdt', 'currency': 'usdt', 'amount': 1.0}
+
+
+@pytest.mark.asyncio
+@freeze_time(datetime(2023, 1, 1, 0, 1, 1))
+async def test_repay_isolated_margin_loan(margin_client):
+    await margin_client.repay_isolated_margin_loan(
+        amount=1.0,
+        loan_order_id='1',
+    )
+    kwargs = margin_client._requests.post.call_args.kwargs
+    assert len(kwargs) == 3
+    assert margin_client._requests.post.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/margin/orders/1/repay')
+    assert kwargs['params'] == {
+        'Signature': '4jOV/ntGBUpJFyFRDHmmHBnaqkI8MUz8LZO3DlGFA5s=',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
+        'SignatureMethod': 'HmacSHA256',
+        'SignatureVersion': '2',
+        'Timestamp': '2023-01-01T00:01:01',
+    }
+    assert kwargs['json'] == {'amount': 1.0}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    'states, start_date, end_date, from_id, direct, sub_uid, signature', [
+        (('a',), None, '2022-12-30', None, Direct.next, None, 'SfH/QHSkiSjTLIXInoo5+mUpj3mNRn/Mb+YxdqAZiYk='),
+        (('a',), '2022-12-25', '2022-12-27', None, Direct.next, None, 't4LU+tRNvw5anCn9xJ31VnfKd6i38kixNuQ4ywr+VLw='),
+        (('a', 'b'), '2022-12-25', None, None, Direct.prev, None, 'JUPSjWSDxho7EugQRlmKbOXvEKn0YFDS5/F+arNf7No='),
+        (('a',), '2022-12-25', None, None, Direct.next, 1, 'mdX5W0YW1Bobyu1lD+Z8RkPgxQw/mZn0hbuQbej8ZoA='),
+        (('a', 'b'), '2022-12-25', '2022-12-27', '1', Direct.prev, 1, 'IIVSBQLIfAEGmE73O4xSIpcc0thyXtbCtAaWkNBvVDQ='),
+    ],
+)
+@freeze_time(datetime(2023, 1, 1, 0, 1, 1))
+async def test_search_past_isolated_margin_orders(
+        margin_client, states, start_date, end_date, from_id, direct, sub_uid, signature,
+):
+    await margin_client.search_past_isolated_margin_orders(
+        symbol='btcusdt',
+        states=states,
+        start_date=start_date,
+        end_date=end_date,
+        from_order_id=from_id,
+        direct=direct,
+        sub_uid=sub_uid,
+    )
+    kwargs = margin_client._requests.get.call_args.kwargs
+    assert len(kwargs) == 2
+    assert margin_client._requests.get.call_count == 1
+    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v1/margin/loan-orders')
+    params = {
+        'Signature': signature,
+        'AccessKeyId': HUOBI_ACCESS_KEY,
+        'SignatureMethod': 'HmacSHA256',
+        'SignatureVersion': '2',
+        'Timestamp': '2023-01-01T00:01:01',
+        'symbol': 'btcusdt',
+        'size': 100,
+    }
+    if states is not None:
+        params['states'] = ','.join(states)
+    if from_id is not None:
+        params['from'] = from_id
+    if direct is not None:
+        params['direct'] = direct.value
+    if sub_uid is not None:
+        params['sub-uid'] = sub_uid
+    if start_date is not None:
+        params['start-date'] = start_date
+    if end_date is not None:
+        params['end-date'] = end_date
+    assert kwargs['params'] == params
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     'symbol, size', [
         (1, 100),
@@ -27,6 +228,26 @@ async def test_search_past_isolated_margin_orders_wrong_arguments(
         await margin_client.search_past_isolated_margin_orders(
             symbol=symbol,
             size=size,
+        )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('start_date, end_date', [(None, 1), (1, None), (1, 1)])
+async def test_search_past_isolated_margin_orders_wrong_date(margin_client, start_date, end_date):
+    with pytest.raises(TypeError):
+        await margin_client.search_past_isolated_margin_orders(
+            start_date=start_date,
+            end_date=end_date,
+            symbol='btcusdt',
+        )
+
+
+@pytest.mark.asyncio
+async def test_search_past_isolated_margin_orders_wrong_states(margin_client):
+    with pytest.raises(TypeError):
+        await margin_client.search_past_isolated_margin_orders(
+            symbol='btcusdt',
+            states=[1, 2, 3],
         )
 
 

@@ -204,9 +204,9 @@ class MarginHuobiClient:
         """
         if states and not isinstance(states, Iterable):
             raise TypeError(f'Iterable type expected for states, got "{type(states)}"')
-        for date_value in (start_date, end_date):
-            if date_value and not isinstance(date_value, (str, date)):
-                raise TypeError(f'Wrong date value "{date_value}"')
+        for dt in (start_date, end_date):
+            if dt and not isinstance(dt, (str, date)):
+                raise TypeError(f'Wrong date value "{dt}"')
         params = _SearchPastIsolatedMarginOrders(
             symbol=symbol,
             states=','.join(states) if states else None,
@@ -350,9 +350,9 @@ class MarginHuobiClient:
         """
         if size < 10 or size > 100:
             raise ValueError(f'Wrong size value "{size}"')
-        for date_value in (start_date, end_date):
-            if date_value and not isinstance(date_value, (str, date)):
-                raise TypeError(f'Wrong date value "{date_value}"')
+        for dt in (start_date, end_date):
+            if dt and not isinstance(dt, (str, date)):
+                raise TypeError(f'Wrong date value "{dt}"')
         params = _SearchPastCrossMarginOrders(
             currency=currency,
             state=state,
