@@ -202,8 +202,6 @@ class MarginHuobiClient:
         This endpoint returns margin orders based on a specific searching criteria
         https://huobiapi.github.io/docs/spot/v1/en/#search-past-margin-orders-isolated
         """
-        if size < 1 or size > 100:
-            raise ValueError(f'Wrong size value "{size}"')
         if states and not isinstance(states, Iterable):
             raise TypeError(f'Iterable type expected for states, got "{type(states)}"')
         for date_value in (start_date, end_date):

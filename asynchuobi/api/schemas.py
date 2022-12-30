@@ -351,13 +351,13 @@ class _GetLoanInterestRateAndQuota(APIAuth):
 
 class _SearchPastIsolatedMarginOrders(APIAuth):
     direct: Optional[Direct]
-    end_date: Optional[str] = Field(alias='end-date')
+    end_date: Optional[StrictStr] = Field(alias='end-date')
     from_order_id: Optional[str] = Field(alias='from')
-    size: int = 100
-    start_date: Optional[str] = Field(alias='start-date')
-    states: Optional[str]
+    size: int = Field(ge=1, le=100)
+    start_date: Optional[StrictStr] = Field(alias='start-date')
+    states: Optional[StrictStr]
     sub_uid: Optional[int] = Field(alias='sub-uid')
-    symbol: str
+    symbol: StrictStr
 
     class Config:
         use_enum_values = True
@@ -373,13 +373,13 @@ class _GetBalanceOfMarginLoanAccount(APIAuth):
 
 
 class _SearchPastCrossMarginOrders(APIAuth):
-    currency: Optional[str]
+    currency: Optional[StrictStr]
     direct: Optional[Direct]
-    end_date: Optional[str] = Field(alias='end-date')
+    end_date: Optional[StrictStr] = Field(alias='end-date')
     from_order_id: Optional[str] = Field(alias='from')
-    size: int = 10
-    start_date: Optional[str] = Field(alias='start-date')
-    state: Optional[str]
+    size: StrictInt = 10
+    start_date: Optional[StrictStr] = Field(alias='start-date')
+    state: Optional[StrictStr]
     sub_uid: Optional[int] = Field(alias='sub-uid')
 
     class Config:
