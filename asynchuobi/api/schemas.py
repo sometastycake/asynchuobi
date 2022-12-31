@@ -297,7 +297,7 @@ class _GetCurrentFeeRateAppliedToUser(APIAuth):
 
 class _NewConditionalOrder(BaseModel):
     accountId: int
-    symbol: str
+    symbol: StrictStr
     orderPrice: Optional[float]
     orderSide: OrderSide
     orderSize: Optional[float]
