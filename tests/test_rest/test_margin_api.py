@@ -426,12 +426,18 @@ async def test_search_past_cross_margin_orders_wrong_types(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     'currency, state, start_date, end_date, from_id, direct, sub_uid, signature', [
-        (None, None, None, None, None, Direct.next, None, 'KoIShQISf6EM0wsizmx6VzG3lWmiNpSrQ+ErQALYF/Q='),
-        ('usdt', None, None, None, None, Direct.next, None, 'Dtc570yfJTYtvO2FxA6oWdZbuSKhr88JHWXQwiq4Atc='),
-        ('usdt', 'state', None, '2022-12-26', '1', Direct.next, None, 'vMZpWxpxiC34S1xSUA+teQi/RWCorY9TAeSb9Xx1vKg='),
-        (None, None, '2022-12-25', '2022-12-26', None, Direct.prev, None, 'a1FmwoQTwwFkW9jjbtshLNdUMnwkKXZMQZQPl2unHfo='),
-        (None, None, '2022-12-25', '2022-12-26', '1', Direct.prev, None, 'yHACJxqrVTRul/K+4bbOcYm9kFwiSvlcrx5QOR+tHF8='),
-        ('usdt', 'state', '2022-12-25', '2022-12-26', '1', Direct.prev, 20, 'N90LQ/Efej8LVw20musyl/sSGQ/694corCkXODoAd+M=')
+        (None, None, None, None, None, Direct.next, None,
+         'KoIShQISf6EM0wsizmx6VzG3lWmiNpSrQ+ErQALYF/Q='),
+        ('usdt', None, None, None, None, Direct.next, None,
+         'Dtc570yfJTYtvO2FxA6oWdZbuSKhr88JHWXQwiq4Atc='),
+        ('usdt', 'state', None, '2022-12-26', '1', Direct.next, None,
+         'vMZpWxpxiC34S1xSUA+teQi/RWCorY9TAeSb9Xx1vKg='),
+        (None, None, '2022-12-25', '2022-12-26', None, Direct.prev, None,
+         'a1FmwoQTwwFkW9jjbtshLNdUMnwkKXZMQZQPl2unHfo='),
+        (None, None, '2022-12-25', '2022-12-26', '1', Direct.prev, None,
+         'yHACJxqrVTRul/K+4bbOcYm9kFwiSvlcrx5QOR+tHF8='),
+        ('usdt', 'state', '2022-12-25', '2022-12-26', '1', Direct.prev, 20,
+         'N90LQ/Efej8LVw20musyl/sSGQ/694corCkXODoAd+M=')
     ],
 )
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
