@@ -140,7 +140,7 @@ async def test_query_open_conditional_orders(
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/algo-orders/opening')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -217,7 +217,7 @@ async def test_query_conditional_order_history(
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/algo-orders/history')
     params = {
         'Signature': signature,
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
@@ -251,7 +251,7 @@ async def test_query_conditional_order(algo_client):
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/v2/algo-orders/specific')
     assert kwargs['params'] == {
         'Signature': 'fY8erEcrmzD5Yb1in9nEKdrIXyJa1fuiKGFgctTcn7s=',
-        'AccessKeyId': 'HUOBI_ACCESS_KEY',
+        'AccessKeyId': HUOBI_ACCESS_KEY,
         'SignatureMethod': 'HmacSHA256',
         'SignatureVersion': '2',
         'Timestamp': '2023-01-01T00:01:01',
