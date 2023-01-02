@@ -314,12 +314,12 @@ class _NewConditionalOrder(BaseModel):
 
 class _QueryOpenConditionalOrders(APIAuth):
     accountId: Optional[int]
-    symbol: Optional[StrictStr]
+    fromId: Optional[int]
+    limit: int = 100
     orderSide: Optional[OrderSide]
     orderType: Optional[ConditionalOrderType]
     sorting: Sort = Field(default=Sort.desc, alias='sort')
-    limit: int = 100
-    fromId: Optional[int]
+    symbol: Optional[StrictStr]
 
     class Config:
         use_enum_values = True
@@ -327,15 +327,15 @@ class _QueryOpenConditionalOrders(APIAuth):
 
 class _QueryConditionalOrderHistory(APIAuth):
     accountId: Optional[int]
-    symbol: str
+    endTime: Optional[int]
+    fromId: Optional[int]
+    limit: int = 100
     orderSide: Optional[OrderSide]
+    orderStatus: str
     orderType: Optional[ConditionalOrderType]
     sorting: Sort = Field(default=Sort.desc, alias='sort')
-    limit: int = 100
-    fromId: Optional[int]
-    orderStatus: str
     startTime: Optional[int]
-    endTime: Optional[int]
+    symbol: str
 
     class Config:
         use_enum_values = True
