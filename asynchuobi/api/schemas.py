@@ -314,7 +314,7 @@ class _NewConditionalOrder(BaseModel):
 
 class _QueryOpenConditionalOrders(APIAuth):
     accountId: Optional[int]
-    symbol: Optional[str]
+    symbol: Optional[StrictStr]
     orderSide: Optional[OrderSide]
     orderType: Optional[ConditionalOrderType]
     sorting: Sort = Field(default=Sort.desc, alias='sort')
