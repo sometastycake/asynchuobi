@@ -14,10 +14,10 @@ from asynchuobi.enums import (
 )
 
 
-class _GetChainsInformationRequest(BaseModel):
+class _GetChainsInformation(BaseModel):
     show_desc: Optional[int] = Field(default=None, alias='show-desc')
     ts: Optional[int] = None
-    currency: Optional[str] = None
+    currency: Optional[StrictStr] = None
 
     class Config:
         allow_population_by_field_name = True
@@ -25,28 +25,28 @@ class _GetChainsInformationRequest(BaseModel):
 
 class _GetMarketSymbolsSettings(BaseModel):
     ts: Optional[int] = None
-    symbols: Optional[str] = None
+    symbols: Optional[StrictStr] = None
 
 
 class _GetTotalValuationPlatformAssets(APIAuth):
     accountType: Optional[int]
-    valuationCurrency: Optional[str]
+    valuationCurrency: Optional[StrictStr]
 
 
 class _GetTotalValuation(APIAuth):
     accountType: str
     subUid: Optional[int]
-    valuationCurrency: Optional[str]
+    valuationCurrency: Optional[StrictStr]
 
 
 class _AssetTransfer(BaseModel):
     amount: float
-    currency: str
+    currency: StrictStr
     from_account: int = Field(alias='from-account')
-    from_account_type: str = Field(alias='from-account-type')
+    from_account_type: StrictStr = Field(alias='from-account-type')
     from_user: int = Field(alias='from-user')
     to_account: int = Field(alias='to-account')
-    to_account_type: str = Field(alias='to-account-type')
+    to_account_type: StrictStr = Field(alias='to-account-type')
     to_user: int = Field(alias='to-user')
 
     class Config:
@@ -55,75 +55,77 @@ class _AssetTransfer(BaseModel):
 
 class _GetAccountHistory(APIAuth):
     account_id: int = Field(alias='account-id')
-    currency: Optional[str]
+    currency: Optional[StrictStr]
     end_time: Optional[int] = Field(alias='end-time')
     from_id: Optional[int] = Field(alias='from-id')
     size: int = 100
-    sorting: str = Field(alias='sort', default='asc')
+    sorting: Sort = Field(alias='sort', default=Sort.asc)
     start_time: Optional[int] = Field(alias='start-time')
-    transact_types: Optional[str] = Field(alias='transact-types')
+    transact_types: Optional[StrictStr] = Field(alias='transact-types')
 
     class Config:
         allow_population_by_field_name = True
+        use_enum_values = True
 
 
 class _GetPointBalance(APIAuth):
-    subUid: Optional[str] = None
+    subUid: Optional[int] = None
 
 
 class _GetAccountLedger(APIAuth):
     accountId: int
-    currency: Optional[str]
+    currency: Optional[StrictStr]
     endTime: Optional[int]
     fromId: Optional[int]
     limit: int = 100
-    sorting: str = Field(alias='sort', default='asc')
+    sorting: Sort = Field(alias='sort', default=Sort.asc)
     startTime: Optional[int]
-    transactTypes: Optional[str]
+    transactTypes: Optional[StrictStr]
 
     class Config:
         allow_population_by_field_name = True
+        use_enum_values = True
 
 
 class _QueryDepositAddress(APIAuth):
-    currency: str
+    currency: StrictStr
 
 
 class _QueryWithdrawQuota(APIAuth):
-    currency: str
+    currency: StrictStr
 
 
 class _QueryWithdrawAddress(APIAuth):
-    chain: Optional[str]
-    currency: str
+    chain: Optional[StrictStr]
+    currency: StrictStr
     fromId: Optional[int]
     limit: int
-    note: Optional[str]
+    note: Optional[StrictStr]
 
 
 class _CreateWithdrawRequest(BaseModel):
-    address: str
-    currency: str
+    address: StrictStr
+    currency: StrictStr
     amount: float
     fee: Optional[float] = None
-    chain: Optional[str] = None
-    addr_tag: Optional[str] = Field(default=None, alias='addr-tag')
-    client_order_id: Optional[str] = Field(default=None, alias='client-order-id')
+    chain: Optional[StrictStr] = None
+    addr_tag: Optional[StrictStr] = Field(default=None, alias='addr-tag')
+    client_order_id: Optional[StrictStr] = Field(default=None, alias='client-order-id')
 
     class Config:
         allow_population_by_field_name = True
 
 
 class _QueryWithdrawalOrderByClientOrderId(APIAuth):
-    clientOrderId: str
+    clientOrderId: StrictStr
 
 
 class _SearchExistedWithdrawsAndDeposits(APIAuth):
-    currency: Optional[str]
+    currency: Optional[StrictStr]
     direct: Direct
     from_transfer_id: Optional[str] = Field(alias='from')
     size: int
-    transfer_type: str = Field(alias='type')
+    transfer_type: StrictStr = Field(alias='type')
 
     class Config:
         allow_population_by_field_name = True
@@ -132,12 +134,12 @@ class _SearchExistedWithdrawsAndDeposits(APIAuth):
 
 class _APIKeyQuery(APIAuth):
     uid: int
-    accessKey: Optional[str]
+    accessKey: Optional[StrictStr]
 
 
 class SubUser(BaseModel):
-    userName: str
-    note: Optional[str]
+    userName: StrictStr
+    note: Optional[StrictStr]
 
 
 class SubUserCreation(BaseModel):
@@ -157,37 +159,38 @@ class _GetSubUsersAccountList(APIAuth):
 
 
 class _SubUserApiKeyCreation(BaseModel):
-    otpToken: Optional[str]
+    otpToken: Optional[StrictStr]
     subUid: int
-    note: str
-    permission: str
-    ipAddresses: Optional[str]
+    note: StrictStr
+    permission: StrictStr
+    ipAddresses: Optional[StrictStr]
 
 
 class _SubUserApiKeyModification(BaseModel):
     subUid: int
-    accessKey: str
-    note: Optional[str]
-    permission: Optional[str]
-    ipAddresses: Optional[str]
+    accessKey: StrictStr
+    note: Optional[StrictStr]
+    permission: Optional[StrictStr]
+    ipAddresses: Optional[StrictStr]
 
 
 class _QueryDepositAddressOfSubUser(APIAuth):
-    currency: str
+    currency: StrictStr
     subUid: int
 
 
 class _QueryDepositHistoryOfSubUser(APIAuth):
-    currency: Optional[str]
+    currency: Optional[StrictStr]
     endTime: Optional[int]
     fromId: Optional[int]
     limit: int = 100
-    sorting: str = Field(alias='sort', default='asc')
+    sorting: Sort = Field(alias='sort', default=Sort.asc)
     startTime: Optional[int]
     subUid: int
 
     class Config:
         allow_population_by_field_name = True
+        use_enum_values = True
 
 
 class _GetAccountBalanceOfSubUser(APIAuth):
@@ -207,7 +210,7 @@ class NewOrder(BaseModel):
     self_match_prevent: int = Field(default=0, alias='self-match-prevent')
     source: OrderSource = OrderSource.spot_api
     stop_price: Optional[float] = Field(None, alias='stop-price')
-    symbol: str
+    symbol: StrictStr
 
     class Config:
         allow_population_by_field_name = True
@@ -216,7 +219,7 @@ class NewOrder(BaseModel):
 
 class _CancelOrder(BaseModel):
     order_id: str = Field(alias='order-id')
-    symbol: Optional[str]
+    symbol: Optional[StrictStr]
 
     class Config:
         allow_population_by_field_name = True
@@ -225,10 +228,10 @@ class _CancelOrder(BaseModel):
 class _GetAllOpenOrders(APIAuth):
     account_id: Optional[int] = Field(None, alias='account-id')
     direct: Optional[Direct]
-    side: Optional[str]
+    side: Optional[OrderSide]
     size: int
     start_order_id: Optional[str] = Field(alias='from')
-    symbol: Optional[str]
+    symbol: Optional[StrictStr]
 
     class Config:
         allow_population_by_field_name = True
@@ -237,13 +240,14 @@ class _GetAllOpenOrders(APIAuth):
 
 class _BatchCancelOpenOrders(BaseModel):
     account_id: Optional[str] = Field(None, alias='account-id')
-    side: Optional[str] = None
+    side: Optional[OrderSide] = None
     size: int
-    symbol: Optional[str] = None
-    order_types: Optional[str] = Field(None, alias='types')
+    symbol: Optional[StrictStr] = None
+    order_types: Optional[StrictStr] = Field(None, alias='types')
 
     class Config:
         allow_population_by_field_name = True
+        use_enum_values = True
 
 
 class _GetOrderDetailByClientOrderId(APIAuth):
@@ -256,9 +260,9 @@ class _SearchPastOrder(APIAuth):
     from_order_id: Optional[str] = Field(None, alias='from')
     size: int
     start_time: Optional[int] = Field(None, alias='start-time')
-    states: str
-    symbol: str
-    order_types: Optional[str] = Field(None, alias='types')
+    states: StrictStr
+    symbol: StrictStr
+    order_types: Optional[StrictStr] = Field(None, alias='types')
 
     class Config:
         allow_population_by_field_name = True
@@ -270,7 +274,7 @@ class _SearchHistoricalOrdersWithin48Hours(APIAuth):
     end_time: Optional[int] = Field(None, alias='end-time')
     size: int
     start_time: Optional[int] = Field(None, alias='start-time')
-    symbol: Optional[str]
+    symbol: Optional[StrictStr]
 
     class Config:
         allow_population_by_field_name = True
@@ -283,8 +287,8 @@ class _SearchMatchResult(APIAuth):
     from_order_id: Optional[str] = Field(None, alias='from')
     size: int
     start_time: Optional[int] = Field(None, alias='start-time')
-    symbol: str
-    order_types: Optional[str] = Field(None, alias='types')
+    symbol: StrictStr
+    order_types: Optional[StrictStr] = Field(None, alias='types')
 
     class Config:
         allow_population_by_field_name = True
@@ -335,7 +339,7 @@ class _QueryConditionalOrderHistory(APIAuth):
     orderType: Optional[ConditionalOrderType]
     sorting: Sort = Field(default=Sort.desc, alias='sort')
     startTime: Optional[int]
-    symbol: str
+    symbol: StrictStr
 
     class Config:
         use_enum_values = True
@@ -346,7 +350,7 @@ class _QueryConditionalOrder(APIAuth):
 
 
 class _GetLoanInterestRateAndQuota(APIAuth):
-    symbols: Optional[str]
+    symbols: Optional[StrictStr]
 
 
 class _SearchPastIsolatedMarginOrders(APIAuth):
@@ -365,7 +369,7 @@ class _SearchPastIsolatedMarginOrders(APIAuth):
 
 
 class _GetBalanceOfMarginLoanAccount(APIAuth):
-    symbol: Optional[str]
+    symbol: Optional[StrictStr]
     sub_uid: Optional[int] = Field(alias='sub-uid')
 
     class Config:

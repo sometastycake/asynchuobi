@@ -472,7 +472,7 @@ class SubUserHuobiClient:
             currency=currency,
             startTime=start_time,
             endTime=end_time,
-            sorting=str(sorting.value),
+            sorting=sorting,
             limit=limit,
             fromId=from_id,
             AccessKeyId=self._access_key,

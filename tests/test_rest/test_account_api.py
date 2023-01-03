@@ -312,7 +312,7 @@ async def test_transfer_fund_between_spot_and_futures(account_client):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('sub_user_id, signature', [
     (None, 'HkdmPHG99UWNbubkEBGLR04fmH77/higXfrxHyMGfr8='),
-    ('1', 'NaisJp3h6Rsji4s4Q3WEUkL6YlWrVIpuKzdVMS48/Es=')
+    (1, 'NaisJp3h6Rsji4s4Q3WEUkL6YlWrVIpuKzdVMS48/Es=')
 ])
 @freeze_time(datetime(2023, 1, 1, 0, 1, 1))
 async def test_get_point_balance(account_client, sub_user_id, signature):

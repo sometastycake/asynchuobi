@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 
 from asynchuobi.api.request.abstract import RequestStrategyAbstract
 from asynchuobi.api.request.strategy import BaseRequestStrategy
-from asynchuobi.api.schemas import _GetChainsInformationRequest, _GetMarketSymbolsSettings
+from asynchuobi.api.schemas import _GetChainsInformation, _GetMarketSymbolsSettings
 from asynchuobi.urls import HUOBI_API_URL
 
 
@@ -150,7 +150,7 @@ class GenericHuobiClient:
         :param timestamp_milliseconds: timestamp to get incremental data
         :param currency: currency
         """
-        params = _GetChainsInformationRequest(
+        params = _GetChainsInformation(
             show_desc=show_desc,
             ts=timestamp_milliseconds,
             currency=currency,

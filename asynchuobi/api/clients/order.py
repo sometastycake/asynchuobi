@@ -178,7 +178,7 @@ class OrderHuobiClient:
         params = _GetAllOpenOrders(
             account_id=account_id,
             symbol=symbol,
-            side=side.value if side else None,
+            side=side,
             start_order_id=start_order_id,
             direct=direct,
             size=size,
@@ -224,7 +224,7 @@ class OrderHuobiClient:
             account_id=account_id,
             symbol=','.join(symbols) if symbols else None,
             order_types=types,
-            side=str(side.value) if side else None,
+            side=side,
             size=size,
         )
         auth = APIAuth(
