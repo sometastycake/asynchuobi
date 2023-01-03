@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 import pytest
 from freezegun import freeze_time
 
+from asynchuobi.api.clients.subuser import SubUserHuobiClient
 from asynchuobi.api.schemas import SubUser, SubUserCreation
 from asynchuobi.enums import (
     ApiKeyPermission,
@@ -16,6 +17,13 @@ from asynchuobi.enums import (
 )
 from asynchuobi.urls import HUOBI_API_URL
 from tests.keys import HUOBI_ACCESS_KEY
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('access_key, secret_key', [('key', ''), ('', 'key')])
+async def test_subuser_api_wrong_keys(access_key, secret_key):
+    with pytest.raises(ValueError):
+        SubUserHuobiClient(access_key=access_key, secret_key=secret_key)
 
 
 @pytest.mark.asyncio

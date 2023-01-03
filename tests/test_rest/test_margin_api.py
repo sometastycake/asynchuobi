@@ -5,9 +5,17 @@ import pytest
 from freezegun import freeze_time
 from pydantic import ValidationError
 
+from asynchuobi.api.clients.margin import MarginHuobiClient
 from asynchuobi.enums import Direct, Sort
 from asynchuobi.urls import HUOBI_API_URL
 from tests.keys import HUOBI_ACCESS_KEY
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('access_key, secret_key', [('key', ''), ('', 'key')])
+async def test_margin_api_wrong_keys(access_key, secret_key):
+    with pytest.raises(ValueError):
+        MarginHuobiClient(access_key=access_key, secret_key=secret_key)
 
 
 @pytest.mark.asyncio

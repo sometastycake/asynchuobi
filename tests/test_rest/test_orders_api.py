@@ -4,10 +4,18 @@ from urllib.parse import urljoin
 import pytest
 from freezegun import freeze_time
 
+from asynchuobi.api.clients.order import OrderHuobiClient
 from asynchuobi.api.schemas import NewOrder
 from asynchuobi.enums import Direct, OperatorCharacterOfStopPrice, OrderSide, OrderSource, OrderType
 from asynchuobi.urls import HUOBI_API_URL
 from tests.keys import HUOBI_ACCESS_KEY
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('access_key, secret_key', [('key', ''), ('', 'key')])
+async def test_orders_api_wrong_keys(access_key, secret_key):
+    with pytest.raises(ValueError):
+        OrderHuobiClient(access_key=access_key, secret_key=secret_key)
 
 
 @pytest.mark.asyncio

@@ -4,9 +4,17 @@ from urllib.parse import urljoin
 import pytest
 from freezegun import freeze_time
 
+from asynchuobi.api.clients.wallet import WalletHuobiClient
 from asynchuobi.enums import Direct
 from asynchuobi.urls import HUOBI_API_URL
 from tests.keys import HUOBI_ACCESS_KEY
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('access_key, secret_key', [('key', ''), ('', 'key')])
+async def test_wallet_api_wrong_keys(access_key, secret_key):
+    with pytest.raises(ValueError):
+        WalletHuobiClient(access_key=access_key, secret_key=secret_key)
 
 
 @pytest.mark.asyncio

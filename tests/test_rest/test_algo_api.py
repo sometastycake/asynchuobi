@@ -4,9 +4,17 @@ from urllib.parse import urljoin
 import pytest
 from freezegun import freeze_time
 
+from asynchuobi.api.clients.algo import AlgoHuobiClient
 from asynchuobi.enums import ConditionalOrderType, OrderSide, Sort
 from asynchuobi.urls import HUOBI_API_URL
 from tests.keys import HUOBI_ACCESS_KEY
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('access_key, secret_key', [('key', ''), ('', 'key')])
+async def test_algo_api_wrong_keys(access_key, secret_key):
+    with pytest.raises(ValueError):
+        AlgoHuobiClient(access_key=access_key, secret_key=secret_key)
 
 
 @pytest.mark.asyncio
