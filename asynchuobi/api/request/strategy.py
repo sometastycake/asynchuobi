@@ -7,8 +7,8 @@ from asynchuobi.api.request.abstract import RequestStrategyAbstract
 
 class BaseRequestStrategy(RequestStrategyAbstract):
 
-    def __init__(self, **kwargs):
-        self._kwargs = kwargs
+    def __init__(self, **session_kwargs: Any):
+        self._session_kwargs = session_kwargs
         self._session: Optional[aiohttp.ClientSession] = None
 
     async def close(self) -> None:
@@ -16,7 +16,7 @@ class BaseRequestStrategy(RequestStrategyAbstract):
             await self._session.close()
 
     def _create_session(self) -> aiohttp.ClientSession:
-        kwargs = self._kwargs
+        kwargs = self._session_kwargs
         if 'connector' not in kwargs:
             kwargs['connector'] = aiohttp.TCPConnector(ssl=False)
         return aiohttp.ClientSession(**kwargs)
@@ -24,10 +24,6 @@ class BaseRequestStrategy(RequestStrategyAbstract):
     async def request(self, url: str, method: str, **kwargs: Any) -> Any:
         if self._session is None:
             self._session = self._create_session()
-        if 'headers' not in kwargs:
-            kwargs['headers'] = {
-                'Content-Type': 'application/json',
-            }
         response = await self._session.request(
             url=url,
             method=method,
