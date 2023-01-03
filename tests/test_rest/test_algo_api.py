@@ -238,8 +238,7 @@ async def test_query_conditional_order_history(
         params['startTime'] = start_time
     if end_time is not None:
         params['endTime'] = end_time
-    print(kwargs['params']['Signature'])
-    # assert kwargs['params'] == params
+    assert kwargs['params'] == params
 
 
 @pytest.mark.asyncio
