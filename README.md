@@ -20,7 +20,6 @@ async def main():
     async with GenericHuobiClient() as client:
         current_timestamp = await client.get_current_timestamp()
         trading_symbols = await client.get_all_supported_trading_symbols()
-        chains = await client.get_chains_information_v2()
         system_status = await client.get_system_status()
 ```
 
@@ -35,7 +34,6 @@ async def main():
     async with MarketHuobiClient() as client:
         candles = await client.get_candles('btcusdt', CandleInterval.min_1)
         orderbook = await client.get_market_depth('btcusdt')
-        summary = await client.get_last_market_summary('btcusdt')
         recent_trades = await client.get_most_recent_trades('btcusdt')
 ```
 
@@ -55,18 +53,11 @@ async def main():
         for subuser in subusers['data']:
             keys = await client.api_key_query(subuser['uid'])
             status = await client.get_sub_user_status(subuser['uid'])
-            sub_user_accounts = await client.get_sub_users_account_list(subuser['uid'])
-            deposit_address = await client.query_deposit_address_of_sub_user(subuser['uid'], 'usdt')
-            deposit_history = await client.query_deposit_history_of_sub_user(subuser['uid'])
             balance = await client.get_account_balance_of_sub_user(subuser['uid'])
             api_key = await client.sub_user_api_key_creation(
                 sub_uid=subuser['uid'],
                 note='Test api',
                 permissions=[ApiKeyPermission.readOnly, ApiKeyPermission.trade],
-            )
-            api_key_deletion = await client.sub_user_api_key_deletion(
-                sub_uid=subuser['uid'],
-                access_key=api_key['data']['accessKey'],
             )
 ```
 
@@ -83,7 +74,6 @@ async def main():
     ) as client:
         deposit_address = await client.query_deposit_address('usdt')
         withdraw_address = await client.query_withdraw_address('usdt')
-        withdraw_quota = await client.query_withdraw_quota('usdt')
         withdraw_response = await client.create_withdraw_request(
             address='address',
             currency='usdt',
@@ -139,7 +129,6 @@ async def main():
             price=0.0660,
         )
         if response['status'] == 'ok':
-            # Cancel order
             order_id = response['data']
             cancelling = await client.cancel_order(
                 order_id=order_id,
@@ -148,6 +137,23 @@ async def main():
         active_orders = await client.get_all_open_orders()
         order_detail = await client.get_order_detail_by_client_order_id(
             client_order_id=client_order_id,
+        )
+```
+
+## Margin API
+
+```python
+from asynchuobi.api.clients.margin import MarginHuobiClient
+
+
+async def main():
+    async with MarginHuobiClient(
+        access_key='access_key',
+        secret_key='secret_key',
+    ) as client:
+        cross_margin_balance = await client.get_balance_of_cross_margin_account()
+        isolated_margin_balance = await client.get_balance_of_isolated_margin_account(
+            symbol='btcusdt',
         )
 ```
 
