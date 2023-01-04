@@ -11,6 +11,11 @@ class BaseRequestStrategy(RequestStrategyAbstract):
         self._session_kwargs = session_kwargs
         self._session: Optional[aiohttp.ClientSession] = None
 
+    def __del__(self):
+        if self._session and self._session.connector:
+            if not self._session.connector.closed:
+                self._session.connector.close()
+
     async def close(self) -> None:
         if self._session and not self._session.closed:
             await self._session.close()
