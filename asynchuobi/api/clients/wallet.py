@@ -23,14 +23,14 @@ class WalletHuobiClient:
         access_key: str,
         secret_key: str,
         api_url: str = HUOBI_API_URL,
-        request_strategy: RequestStrategyAbstract = BaseRequestStrategy(),
+        requests: Optional[RequestStrategyAbstract] = None,
     ):
         if not access_key or not secret_key:
             raise ValueError('Access key or secret key can not be empty')
         self._api = api_url
         self._access_key = access_key
         self._secret_key = secret_key
-        self._requests = request_strategy
+        self._requests = requests if requests is not None else BaseRequestStrategy()
 
     async def __aenter__(self) -> 'WalletHuobiClient':
         return self

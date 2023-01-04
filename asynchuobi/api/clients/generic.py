@@ -12,10 +12,10 @@ class GenericHuobiClient:
     def __init__(
         self,
         api_url: str = HUOBI_API_URL,
-        request_strategy: RequestStrategyAbstract = BaseRequestStrategy(),
+        requests: Optional[RequestStrategyAbstract] = None,
     ):
         self._api = api_url
-        self._requests = request_strategy
+        self._requests = requests if requests is not None else BaseRequestStrategy()
 
     async def __aenter__(self) -> 'GenericHuobiClient':
         return self

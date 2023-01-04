@@ -25,14 +25,14 @@ from asynchuobi.auth import APIAuth, WebsocketAuth
 @pytest.fixture
 def generic_client():
     return GenericHuobiClient(
-        request_strategy=AsyncMock(),
+        requests=AsyncMock(),
     )
 
 
 @pytest.fixture
 def market_client():
     return MarketHuobiClient(
-        request_strategy=AsyncMock(),
+        requests=AsyncMock(),
     )
 
 
@@ -41,7 +41,7 @@ def account_client():
     return AccountHuobiClient(
         access_key=HUOBI_ACCESS_KEY,
         secret_key=HUOBI_SECRET_KEY,
-        request_strategy=AsyncMock(),
+        requests=AsyncMock(),
     )
 
 
@@ -50,7 +50,7 @@ def order_client():
     return OrderHuobiClient(
         access_key=HUOBI_ACCESS_KEY,
         secret_key=HUOBI_SECRET_KEY,
-        request_strategy=AsyncMock(),
+        requests=AsyncMock(),
     )
 
 
@@ -59,7 +59,7 @@ def wallet_client():
     return WalletHuobiClient(
         access_key=HUOBI_ACCESS_KEY,
         secret_key=HUOBI_SECRET_KEY,
-        request_strategy=AsyncMock(),
+        requests=AsyncMock(),
     )
 
 
@@ -68,7 +68,7 @@ def subuser_client():
     return SubUserHuobiClient(
         access_key=HUOBI_ACCESS_KEY,
         secret_key=HUOBI_SECRET_KEY,
-        request_strategy=AsyncMock(),
+        requests=AsyncMock(),
     )
 
 
@@ -77,7 +77,7 @@ def margin_client():
     return MarginHuobiClient(
         access_key=HUOBI_ACCESS_KEY,
         secret_key=HUOBI_SECRET_KEY,
-        request_strategy=AsyncMock(),
+        requests=AsyncMock(),
     )
 
 
@@ -86,7 +86,7 @@ def algo_client():
     return AlgoHuobiClient(
         access_key=HUOBI_ACCESS_KEY,
         secret_key=HUOBI_SECRET_KEY,
-        request_strategy=AsyncMock(),
+        requests=AsyncMock(),
     )
 
 
