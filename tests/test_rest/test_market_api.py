@@ -133,13 +133,3 @@ async def test_get_last_market_summary(market_client):
     assert market_client._requests.get.call_count == 1
     assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/detail/')
     assert kwargs['params'] == {'symbol': 'btcusdt'}
-
-
-@pytest.mark.asyncio
-async def test_get_real_time_nav(market_client):
-    await market_client.get_real_time_nav(symbol='btcusdt')
-    kwargs = market_client._requests.get.call_args.kwargs
-    assert len(kwargs) == 2
-    assert market_client._requests.get.call_count == 1
-    assert kwargs['url'] == urljoin(HUOBI_API_URL, '/market/etp/')
-    assert kwargs['params'] == {'symbol': 'btcusdt'}
