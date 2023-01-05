@@ -228,9 +228,9 @@ class _CancelOrder(BaseModel):
 class _GetAllOpenOrders(APIAuth):
     account_id: Optional[int] = Field(None, alias='account-id')
     direct: Optional[Direct]
+    start_order_id: Optional[str] = Field(alias='from')
     side: Optional[OrderSide]
     size: int
-    start_order_id: Optional[str] = Field(alias='from')
     symbol: Optional[StrictStr]
 
     class Config:
