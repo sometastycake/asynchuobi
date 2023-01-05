@@ -46,15 +46,6 @@ class MarginHuobiClient:
             amount: float,
             transact_id: Optional[str] = None,
     ) -> Dict:
-        """
-        Repay Margin Loan（Cross/Isolated)
-        https://huobiapi.github.io/docs/spot/v1/en/#repay-margin-loan-cross-isolated
-
-        :param account_id: Repayment account ID
-        :param currency: Repayment currency
-        :param amount: Repayment amount
-        :param transact_id: Loan transaction ID
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -79,10 +70,6 @@ class MarginHuobiClient:
             currency: str,
             amount: float,
     ) -> Dict:
-        """
-        This endpoint transfers specific asset from spot trading account to
-        isolated margin account.
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -104,10 +91,6 @@ class MarginHuobiClient:
             currency: str,
             amount: float,
     ) -> Dict:
-        """
-        This endpoint transfers specific asset from isolated margin
-        account to spot trading account.
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -127,10 +110,6 @@ class MarginHuobiClient:
             self,
             symbols: Optional[Iterable[str]] = None,
     ) -> Dict:
-        """
-        The endpoint returns loan interest rates and quota applied on the user.
-        https://huobiapi.github.io/docs/spot/v1/en/#get-loan-interest-rate-and-quota-isolated
-        """
         if symbols and not isinstance(symbols, Iterable):
             raise TypeError(f'Iterable type expected for symbols, got "{type(symbols)}"')
         params = _GetLoanInterestRateAndQuota(
@@ -150,10 +129,6 @@ class MarginHuobiClient:
             currency: str,
             amount: float,
     ) -> Dict:
-        """
-        This endpoint places an order to apply a margin loan
-        https://huobiapi.github.io/docs/spot/v1/en/#request-a-margin-loan-isolated
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -170,10 +145,6 @@ class MarginHuobiClient:
         )
 
     async def repay_isolated_margin_loan(self, amount: float, loan_order_id: str) -> Dict:
-        """
-        This endpoint repays margin loan with your asset in your margin account.
-        https://huobiapi.github.io/docs/spot/v1/en/#repay-margin-loan-isolated
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -198,10 +169,6 @@ class MarginHuobiClient:
             size: int = 100,
             sub_uid: Optional[int] = None,
     ) -> Dict:
-        """
-        This endpoint returns margin orders based on a specific searching criteria
-        https://huobiapi.github.io/docs/spot/v1/en/#search-past-margin-orders-isolated
-        """
         if states and not isinstance(states, Iterable):
             raise TypeError(f'Iterable type expected for states, got "{type(states)}"')
         for dt in (start_date, end_date):
@@ -230,10 +197,6 @@ class MarginHuobiClient:
             symbol: Optional[str] = None,
             sub_uid: Optional[str] = None,
     ) -> Dict:
-        """
-        This endpoint returns the balance of the margin loan account.
-        https://huobiapi.github.io/docs/spot/v1/en/#get-the-balance-of-the-margin-loan-account-isolated
-        """
         params = _GetBalanceOfMarginLoanAccount(
             symbol=symbol,
             sub_uid=sub_uid,
@@ -251,10 +214,6 @@ class MarginHuobiClient:
             currency: str,
             amount: float,
     ) -> Dict:
-        """
-        This endpoint transfers specific asset from spot trading
-        account to cross margin account.
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -271,10 +230,6 @@ class MarginHuobiClient:
             currency: str,
             amount: float,
     ) -> Dict:
-        """
-        This endpoint transfers specific asset from cross margin
-        account to spot trading account.
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -287,10 +242,6 @@ class MarginHuobiClient:
         )
 
     async def get_cross_loan_interest_rate_and_quota(self) -> Dict:
-        """
-        The endpoint returns loan interest rates and quota applied on the user.
-        https://huobiapi.github.io/docs/spot/v1/en/#get-loan-interest-rate-and-quota-cross
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -302,10 +253,6 @@ class MarginHuobiClient:
         )
 
     async def request_cross_margin_loan(self, currency: str, amount: float) -> Dict:
-        """
-        This endpoint places an order to apply for a margin loan.
-        https://huobiapi.github.io/docs/spot/v1/en/#request-a-margin-loan-cross
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -318,10 +265,6 @@ class MarginHuobiClient:
         )
 
     async def repay_cross_margin_loan(self, loan_order_id: str, amount: float) -> Dict:
-        """
-        This endpoint repays margin loan with you asset in your margin account.
-        https://huobiapi.github.io/docs/spot/v1/en/#repay-margin-loan-cross
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -344,10 +287,6 @@ class MarginHuobiClient:
             size: int = 10,
             sub_uid: Optional[int] = None,
     ) -> Dict:
-        """
-        This endpoint returns margin orders based on a specific searching criteria
-        https://huobiapi.github.io/docs/spot/v1/en/#search-past-margin-orders-cross
-        """
         if size < 10 or size > 100:
             raise ValueError(f'Wrong size value "{size}"')
         for dt in (start_date, end_date):
@@ -375,10 +314,6 @@ class MarginHuobiClient:
             self,
             sub_uid: Optional[int] = None,
     ) -> Dict:
-        """
-        This endpoint returns the balance of the margin loan account
-        https://huobiapi.github.io/docs/spot/v1/en/#get-the-balance-of-the-margin-loan-account-cross
-        """
         params = _GetBalanceOfCrossMarginLoanAccount(
             sub_uid=sub_uid,
             AccessKeyId=self._access_key,
@@ -401,11 +336,6 @@ class MarginHuobiClient:
             limit: int = 50,
             from_id: Optional[int] = None,
     ) -> Dict:
-        """
-        Repayment Record Reference
-        Available Accounts: Main and Sub-Accounts
-        https://huobiapi.github.io/docs/spot/v1/en/#repayment-record-reference
-        """
         if limit < 1 or limit > 100:
             raise ValueError(f'Wrong limit value "{limit}"')
         params = _RepaymentRecordReference(

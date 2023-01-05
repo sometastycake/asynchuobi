@@ -51,13 +51,6 @@ class SubUserHuobiClient:
         await self._requests.close()
 
     async def set_deduction_for_parent_and_sub_user(self, sub_uids: Iterable[int], deduct_mode: DeductMode) -> Dict:
-        """
-        This interface is to set the deduction fee for parent and sub user (HT or point)
-        https://huobiapi.github.io/docs/spot/v1/en/#set-a-deduction-for-parent-and-sub-user
-
-        :param sub_uids: sub user's UID list (maximum 50 UIDs)
-        :param deduct_mode: deduct mode
-        """
         if not isinstance(sub_uids, Iterable):
             raise TypeError(f'Iterable type expected for sub_uids, got "{type(sub_uids)}"')
         auth = APIAuth(
@@ -75,15 +68,6 @@ class SubUserHuobiClient:
         )
 
     async def api_key_query(self, uid: int, access_key: Optional[str] = None) -> Dict:
-        """
-        This endpoint is used by the parent user to query their own API key information,
-        and the parent user to query their sub user's API key information
-        https://huobiapi.github.io/docs/spot/v1/en/#api-key-query
-
-        :param uid: parent user uid , sub user uid
-        :param access_key: the access key of the API key, if not specified,
-            it will return all API keys belong to the UID.
-        """
         params = _APIKeyQuery(
             uid=uid,
             accessKey=access_key,
@@ -97,10 +81,6 @@ class SubUserHuobiClient:
         )
 
     async def get_uid(self) -> Dict:
-        """
-        This endpoint allow users to view the user ID of the account easily
-        https://huobiapi.github.io/docs/spot/v1/en/#get-uid
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -112,10 +92,6 @@ class SubUserHuobiClient:
         )
 
     async def sub_user_creation(self, request: SubUserCreation) -> Dict:
-        """
-        This endpoint is used by the parent user to create sub users, up to 50 at a time
-        https://huobiapi.github.io/docs/spot/v1/en/#sub-user-creation
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -128,13 +104,6 @@ class SubUserHuobiClient:
         )
 
     async def get_sub_users_list(self, from_id: Optional[int] = None) -> Dict:
-        """
-        Via this endpoint parent user is able to query a full list of sub
-        user's UID as well as their status
-        https://huobiapi.github.io/docs/spot/v1/en/#get-sub-user-39-s-list
-
-        :param from_id: First record ID in next page
-        """
         params = _GetSubUsersList(
             fromId=from_id,
             AccessKeyId=self._access_key,
@@ -147,13 +116,6 @@ class SubUserHuobiClient:
         )
 
     async def lock_unlock_sub_user(self, sub_uid: int, action: LockSubUserAction) -> Dict:
-        """
-        This endpoint allows parent user to lock or unlock a specific sub user
-        https://huobiapi.github.io/docs/spot/v1/en/#lock-unlock-sub-user
-
-        :param sub_uid: Sub user UID
-        :param action: Action type
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -169,13 +131,6 @@ class SubUserHuobiClient:
         )
 
     async def get_sub_user_status(self, sub_uid: int) -> Dict:
-        """
-        Via this endpoint, parent user is able to query sub user's
-        status by specifying a UID
-        https://huobiapi.github.io/docs/spot/v1/en/#get-sub-user-39-s-status
-
-        :param sub_uid: Sub user's UID
-        """
         params = _GetSubUserStatus(
             subUid=sub_uid,
             AccessKeyId=self._access_key,
@@ -193,16 +148,6 @@ class SubUserHuobiClient:
             account_type: MarginAccountType,
             activation: MarginAccountActivation,
     ) -> Dict:
-        """
-        Parent user is able to set tradable market for a batch of sub users through this
-        endpoint. By default, sub user’s trading permission in
-        spot market is activated
-        https://huobiapi.github.io/docs/spot/v1/en/#set-tradable-market-for-sub-users
-
-        :param sub_uids: Sub user's UID list
-        :param account_type: Account type (isolated-margin,cross-margin)
-        :param activation: Account activation (activated,deactivated)
-        """
         if not isinstance(sub_uids, Iterable):
             raise TypeError(f'Iterable type expected for sub_uids, got "{type(sub_uids)}"')
         auth = APIAuth(
@@ -226,16 +171,6 @@ class SubUserHuobiClient:
             transferrable: bool,
             account_type: str = 'spot',
     ) -> Dict:
-        """
-        Parent user is able to set asset transfer permission for a batch of sub users.
-        By default, the asset transfer from sub user’s spot account to
-        parent user’s spot account is allowed
-        https://huobiapi.github.io/docs/spot/v1/en/#set-asset-transfer-permission-for-sub-users
-
-        :param sub_uids: Sub user's UID list
-        :param transferrable: Transferrablility
-        :param account_type: Account type
-        """
         if not isinstance(sub_uids, Iterable):
             raise TypeError(f'Iterable type expected for sub_uids, got "{type(sub_uids)}"')
         auth = APIAuth(
@@ -254,13 +189,6 @@ class SubUserHuobiClient:
         )
 
     async def get_sub_users_account_list(self, sub_uid: int) -> Dict:
-        """
-        Via this endpoint parent user is able to query account list of
-        sub user by specifying a UID
-        https://huobiapi.github.io/docs/spot/v1/en/#get-sub-user-39-s-account-list
-
-        :param sub_uid: Sub User's UID
-        """
         params = _GetSubUsersAccountList(
             subUid=sub_uid,
             AccessKeyId=self._access_key,
@@ -280,17 +208,6 @@ class SubUserHuobiClient:
             ip_addresses: Optional[Iterable[str]] = None,
             otp_token: Optional[str] = None,
     ) -> Dict:
-        """
-        This endpoint is used by the parent user to create the API key of the sub user
-        https://huobiapi.github.io/docs/spot/v1/en/#sub-user-api-key-creation
-
-        :param sub_uid: Sub user UID
-        :param note: API keynote
-        :param permissions: API key permissions
-        :param ip_addresses: The IPv4/IPv6 host address or IPv4 network address bound to the API key
-        :param otp_token: Google verification code of the parent user, the parent user must be
-            bound to Google Authenticator for verification on the web
-        """
         if not isinstance(permissions, list):
             raise TypeError(f'List expected for permissions, got "{type(permissions)}"')
         if ip_addresses is not None:
@@ -327,17 +244,6 @@ class SubUserHuobiClient:
             permissions: Optional[Iterable[ApiKeyPermission]] = None,
             ip_addresses: Optional[Iterable[str]] = None,
     ) -> Dict:
-        """
-        This endpoint is used by the parent user to modify the API key of the sub user
-        https://huobiapi.github.io/docs/spot/v1/en/#sub-user-api-key-modification
-
-        :param sub_uid: sub user uid
-        :param access_key: Access key for sub user API key
-        :param note: API keynote for sub user API key
-        :param permissions: API key permission for sub user API key
-        :param ip_addresses: At most 20 IPv4/IPv6 host address(es) and/or
-            IPv4 network address(es) can bind with one API key
-        """
         if ip_addresses is not None:
             if not isinstance(ip_addresses, Iterable):
                 raise TypeError(f'Iterable type expected for ip addresses, got "{type(ip_addresses)}"')
@@ -365,13 +271,6 @@ class SubUserHuobiClient:
         )
 
     async def sub_user_api_key_deletion(self, sub_uid: int, access_key: str) -> Dict:
-        """
-        This endpoint is used by the parent user to delete the API key of the sub user
-        https://huobiapi.github.io/docs/spot/v1/en/#sub-user-api-key-deletion
-
-        :param sub_uid: sub user uid
-        :param access_key Access key for sub user API key
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -393,15 +292,6 @@ class SubUserHuobiClient:
             amount: float,
             transfer_type: TransferTypeBetweenParentAndSubUser,
     ) -> Dict:
-        """
-        This endpoint allows user to transfer asset between parent and subaccount
-        https://huobiapi.github.io/docs/spot/v1/en/#transfer-asset-between-parent-and-sub-account
-
-        :param sub_uid: The subaccount's uid to transfer to or from
-        :param currency: The type of currency to transfer
-        :param amount: The amount of asset to transfer
-        :param transfer_type: The type of transfer
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -418,19 +308,7 @@ class SubUserHuobiClient:
             },
         )
 
-    async def query_deposit_address_of_sub_user(
-            self,
-            sub_uid: int,
-            currency: str,
-    ) -> Dict:
-        """
-        Parent user could query sub user's deposit address on corresponding chain,
-        for a specific cryptocurrency (except IOTA)
-        https://huobiapi.github.io/docs/spot/v1/en/#query-deposit-address-of-sub-user
-
-        :param sub_uid: Sub user UID
-        :param currency: Cryptocurrency
-        """
+    async def query_deposit_address_of_sub_user(self, sub_uid: int, currency: str) -> Dict:
         params = _QueryDepositAddressOfSubUser(
             subUid=sub_uid,
             currency=currency,
@@ -453,18 +331,6 @@ class SubUserHuobiClient:
             limit: int = 100,
             from_id: Optional[int] = None,
     ) -> Dict:
-        """
-        Parent user could query sub user's deposit history via this endpoint
-        https://huobiapi.github.io/docs/spot/v1/en/#query-deposit-history-of-sub-user
-
-        :param sub_uid: Sub user UID
-        :param currency: Cryptocurrency (default value: all)
-        :param start_time: Farthest time
-        :param end_time: Nearest time
-        :param sorting: Sorting order
-        :param limit: Maximum number of items in one page
-        :param from_id: First record ID in this query
-        """
         if limit < 1 or limit > 500:
             raise ValueError(f'Wrong limit value "{limit}"')
         params = _QueryDepositHistoryOfSubUser(
@@ -485,10 +351,6 @@ class SubUserHuobiClient:
         )
 
     async def get_aggregated_balance_of_all_sub_users(self) -> Dict:
-        """
-        This endpoint returns the aggregated balance from all the sub-users
-        https://huobiapi.github.io/docs/spot/v1/en/#get-the-aggregated-balance-of-all-sub-users
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -500,12 +362,6 @@ class SubUserHuobiClient:
         )
 
     async def get_account_balance_of_sub_user(self, sub_uid: int) -> Dict:
-        """
-        This endpoint returns the balance of a sub-user specified by sub-uid
-        https://huobiapi.github.io/docs/spot/v1/en/#get-account-balance-of-a-sub-user
-
-        :param sub_uid: The specified sub user id to get balance for.
-        """
         params = _GetAccountBalanceOfSubUser(
             sub_uid=sub_uid,
             AccessKeyId=self._access_key,

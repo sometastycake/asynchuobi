@@ -117,38 +117,6 @@ class _market_stats(_base_stream):
 
 
 class WSHuobiMarket:
-    """
-    Websocket class for retrieving market data.
-
-    Usage:
-
-        async with WSHuobiMarket() as ws:
-            await ws.candlestick('btcusdt', CandleInterval.min_1).sub()
-            await ws.orderbook('btcusdt').sub()
-            async for message in ws:
-                ...
-
-    You can define callbacks which will called when message was received from Huobi websocket:
-
-        def callback(msg: Dict):
-            print(msg)
-
-        def error(e: WSHuobiError):
-            print(e)
-
-        async with WSHuobiMarket() as ws:
-            await ws.orderbook('btcusdt').sub(callback=callback)
-            await ws.run_with_callbacks(error_callback=error)
-
-        You can also define async callback
-
-    Parameters:
-        url - Websocket url
-        loads - Method of json deserialize (default json.loads)
-        decompress - Method of gzip decompress (default gzip.decompress)
-        run_callbacks_in_asyncio_tasks - If True, then callbacks are run into asyncio.create_task
-        connection - Object for managing websocket connection
-    """
     def __init__(
         self,
         url: str = HUOBI_WS_MARKET_URL,
@@ -266,9 +234,6 @@ class WSHuobiMarket:
             callback(data)
 
     async def run_with_callbacks(self, error_callback: ERROR_CALLBACK_TYPE) -> None:
-        """
-        Run stream with callbacks.
-        """
         if not callable(error_callback):
             raise TypeError(f'Callback {error_callback} is not callable')
         async for message in self:
@@ -298,44 +263,6 @@ class WSHuobiMarket:
 
 
 class WSHuobiAccount:
-    """
-    Websocket class for retrieving information about orders and account.
-
-    Usage:
-
-        async with WSHuobiAccount(
-            access_key='access_key',
-            secret_key='secret_key',
-        ) as ws:
-            await ws.subscribe_account_change()
-            await ws.subscribe_order_updates('btcusdt')
-            async for message in ws:
-                ...
-
-    You can define callbacks which will called when message was received from Huobi websocket:
-
-        def callback_balance_update(message):
-            print(message)
-
-        async with WSHuobiAccount(
-            access_key='access_key',
-            secret_key='secret_key',
-        ) as ws:
-            await ws.subscribe_account_change(
-                callback=callback_balance_update,
-            )
-            await ws.run_with_callbacks()
-
-        You can also define async callback
-
-    Parameters:
-        access_key - Access key
-        secret_key - Secret key
-        url - Websocket url
-        loads - Method of json deserialize (default json.loads)
-        run_callbacks_in_asyncio_tasks - If True, then callbacks run into asyncio.create_task
-        connection - Object for managing websocket connection
-    """
     def __init__(
         self,
         access_key: str,
@@ -379,9 +306,6 @@ class WSHuobiAccount:
             await self._connection.close()
 
     async def authorize(self) -> None:
-        """
-        Authenticate the connection.
-        """
         auth = WebsocketAuth(
             SecretKey=self._secret_key,
             accessKey=self._access_key,
@@ -404,9 +328,6 @@ class WSHuobiAccount:
             self._is_auth = True
 
     async def subscribe(self, topic: str, callback: Optional[CALLBACK_TYPE] = None) -> None:
-        """
-        Subscribe to topic.
-        """
         if not self._is_auth:
             raise WSNotAuthenticated('Connection is not authorized')
         if callback:
@@ -484,9 +405,6 @@ class WSHuobiAccount:
             callback(data)
 
     async def run_with_callbacks(self, error_callback: ERROR_CALLBACK_TYPE) -> None:
-        """
-        Run stream with callbacks.
-        """
         if not callable(error_callback):
             raise TypeError(f'Callback {error_callback} is not callable')
         async for message in self:

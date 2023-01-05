@@ -39,10 +39,6 @@ class AccountHuobiClient:
         await self._requests.close()
 
     async def accounts(self) -> Dict:
-        """
-        Get all Accounts of the Current User
-        https://huobiapi.github.io/docs/spot/v1/en/#get-all-accounts-of-the-current-user
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -54,13 +50,6 @@ class AccountHuobiClient:
         )
 
     async def account_balance(self, account_id: int) -> Dict:
-        """
-        Get Account Balance of a Specific Account
-        https://huobiapi.github.io/docs/spot/v1/en/#get-account-balance-of-a-specific-account
-
-        :param account_id: The specified account id to get balance for,
-            can be found by query '/v1/account/accounts' endpoint.
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -79,10 +68,6 @@ class AccountHuobiClient:
         """
         Obtain the total asset valuation of the platform account according
         to the BTC or legal currency denominated unit
-        https://huobiapi.github.io/docs/spot/v1/en/#get-the-total-valuation-of-platform-assets
-
-        :param account_type_code: Account type code
-        :param valuation_currency: If not filled, the default is BTC
         """
         params = _GetTotalValuationPlatformAssets(
             accountType=account_type_code.value if account_type_code else None,
@@ -105,11 +90,6 @@ class AccountHuobiClient:
         """
         This endpoint returns the valuation of the total assets of
         the account in btc or fiat currency
-        See https://huobiapi.github.io/docs/spot/v1/en/#get-asset-valuation
-
-        :param account_type: Account type
-        :param valuation_currency: The valuation according to the certain fiat currency
-        :param sub_uid: Sub User's UID
         """
         params = _GetTotalValuation(
             accountType=account_type,
@@ -135,19 +115,6 @@ class AccountHuobiClient:
             currency: str,
             amount: float,
     ) -> Dict:
-        """
-        This endpoint allows parent user and sub user to transfer asset between accounts
-        https://huobiapi.github.io/docs/spot/v1/en/#asset-transfer
-
-        :param from_user: Transfer out user uid
-        :param from_account_type: 	Transfer out account type
-        :param from_account: Transfer out account id
-        :param to_user: Transfer in user uid
-        :param to_account_type: Transfer in account type
-        :param to_account: Transfer in account id
-        :param currency: Currency name
-        :param amount: 	Amount of fund to transfer
-        """
         params = _AssetTransfer(
             from_user=from_user,
             from_account_type=from_account_type,
@@ -180,19 +147,6 @@ class AccountHuobiClient:
             sorting: Sort = Sort.asc,
             from_id: Optional[int] = None,
     ) -> Dict:
-        """
-        This endpoint returns the amount changes of a specified user's account
-        https://huobiapi.github.io/docs/spot/v1/en/#get-account-history
-
-        :param account_id: Account id, refer to GET /v1/account/accounts
-        :param currency: Currency name
-        :param transact_types: Transact types
-        :param start_time: The start time of the query window (unix time in millisecond)
-        :param end_time: The end time of the query window (unix time in millisecond)
-        :param size: Maximum number of items in each response
-        :param sorting: Sorting order
-        :param from_id: First record ID in this query
-        """
         if transact_types is not None:
             if not isinstance(transact_types, Iterable):
                 raise TypeError(f'Iterable type expected for transact types, got "{type(transact_types)}"')
@@ -230,19 +184,6 @@ class AccountHuobiClient:
             limit: int = 100,
             from_id: Optional[int] = None,
     ):
-        """
-        This endpoint returns the amount changes of specified user's account
-        https://huobiapi.github.io/docs/spot/v1/en/#get-account-ledger
-
-        :param account_id: Account id
-        :param currency: Cryptocurrency
-        :param transact_types: Transaction types
-        :param start_time: Farthest time
-        :param end_time: Nearest time
-        :param sorting: Sorting order
-        :param limit: Maximum number of items in one page
-        :param from_id: First record ID in this quer
-        """
         if limit < 1 or limit > 500:
             raise ValueError(f'Wrong limit value "{limit}"')
         params = _GetAccountLedger(
@@ -269,16 +210,6 @@ class AccountHuobiClient:
             amount: float,
             transfer_type: str,
     ) -> Dict:
-        """
-        Transferring from a spot account to a contract account, the type
-        is pro-to-futures; transferring from a contract account to a spot account,
-        the type is futures-to-pro
-        https://huobiapi.github.io/docs/spot/v1/en/#transfer-fund-between-spot-account-and-future-contract-account
-
-        :param currency: Currency name
-        :param amount: Amount of fund to transfer
-        :param transfer_type: Type of the transfer
-        """
         auth = APIAuth(
             AccessKeyId=self._access_key,
             SecretKey=self._secret_key,
@@ -295,12 +226,6 @@ class AccountHuobiClient:
         )
 
     async def get_point_balance(self, sub_user_id: Optional[str] = None) -> Dict:
-        """
-        https://huobiapi.github.io/docs/spot/v1/en/#get-point-balance
-
-        :param sub_user_id: Sub user’s UID (only valid for scenario of parent user
-            querying sub user’s point balance)
-        """
         params = _GetPointBalance(
             subUid=sub_user_id,
             AccessKeyId=self._access_key,
@@ -312,22 +237,10 @@ class AccountHuobiClient:
             params=params.to_request(url, 'GET'),
         )
 
-    async def point_transfer(
-            self,
-            from_uid: str,
-            to_uid: str,
-            group_id: int,
-            amount: float,
-    ) -> Dict:
+    async def point_transfer(self, from_uid: str, to_uid: str, group_id: int, amount: float) -> Dict:
         """
         Via this endpoint, parent user should be able to transfer points between parent
         user and sub user, sub user should be able to transfer point to parent user.
-        https://huobiapi.github.io/docs/spot/v1/en/#point-transfer
-
-        :param from_uid: Transferer’s UID
-        :param to_uid: Transferee’s UID
-        :param group_id: Group ID
-        :param amount: Transfer amount (precision: maximum 8 decimal places)
         """
         auth = APIAuth(
             AccessKeyId=self._access_key,

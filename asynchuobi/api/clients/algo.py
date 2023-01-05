@@ -50,22 +50,6 @@ class AlgoHuobiClient:
             time_in_force: Optional[str] = None,
             trailing_rate: Optional[float] = None,
     ) -> Dict:
-        """
-        Place a conditional order.
-        https://huobiapi.github.io/docs/spot/v1/en/#place-a-conditional-order
-
-        :param account_id: Account ID
-        :param symbol: Trading symbol
-        :param order_side: Order side (buy, sell)
-        :param order_type: Order type (limit, market)
-        :param client_order_id: Client order ID (max length 64-char)
-        :param stop_price: Stop price
-        :param order_price: Order price (invalid for market order)
-        :param order_size: Order size (invalid for market buy order)
-        :param order_value: Order value (only valid for market buy order)
-        :param time_in_force: Time in force
-        :param trailing_rate: Trailing rate (only valid for trailing stop order)
-        """
         auth = APIAuth(
             SecretKey=self._secret_key,
             AccessKeyId=self._access_key,
@@ -91,12 +75,6 @@ class AlgoHuobiClient:
         )
 
     async def cancel_conditional_orders(self, client_order_ids: Iterable[str]) -> Dict:
-        """
-        Cancel conditional orders (before triggering)
-        https://huobiapi.github.io/docs/spot/v1/en/#cancel-conditional-orders-before-triggering
-
-        :param client_order_ids: Client order ID
-        """
         if not isinstance(client_order_ids, Iterable):
             raise TypeError(f'Iterable type expected for client_order_ids, got "{type(client_order_ids)}"')
         auth = APIAuth(
@@ -122,10 +100,6 @@ class AlgoHuobiClient:
             limit: int = 100,
             from_id: Optional[int] = None,
     ) -> Dict:
-        """
-        Query open conditional orders
-        https://huobiapi.github.io/docs/spot/v1/en/#query-open-conditional-orders-before-triggering
-        """
         if limit < 1 or limit > 500:
             raise ValueError(f'Wrong limit value "{limit}"')
         params = _QueryOpenConditionalOrders(
@@ -158,10 +132,6 @@ class AlgoHuobiClient:
             limit: int = 100,
             from_id: Optional[int] = None,
     ) -> Dict:
-        """
-        Query conditional order history
-        https://huobiapi.github.io/docs/spot/v1/en/#query-conditional-order-history
-        """
         if limit < 1 or limit > 500:
             raise ValueError(f'Wrong limit value "{limit}"')
         if order_status not in ('canceled', 'rejected', 'triggered'):
@@ -186,10 +156,6 @@ class AlgoHuobiClient:
         )
 
     async def query_conditional_order(self, client_order_id: str) -> Dict:
-        """
-        Query a specific conditional order
-        https://huobiapi.github.io/docs/spot/v1/en/#query-a-specific-conditional-order
-        """
         params = _QueryConditionalOrder(
             clientOrderId=client_order_id,
             AccessKeyId=self._access_key,

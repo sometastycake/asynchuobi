@@ -24,19 +24,11 @@ class GenericHuobiClient:
         await self._requests.close()
 
     async def get_system_status(self) -> Dict:
-        """
-        This endpoint allows users to get system status, Incidents and planned maintenance
-        https://huobiapi.github.io/docs/spot/v1/en/#get-system-status
-        """
         return await self._requests.get(
             url='https://status.huobigroup.com/api/v2/summary.json',
         )
 
     async def get_market_status(self) -> Dict:
-        """
-        The endpoint returns current market status
-        https://huobiapi.github.io/docs/spot/v1/en/#get-market-status
-        """
         return await self._requests.get(
             url=urljoin(self._api, '/v2/market-status'),
         )
@@ -45,12 +37,6 @@ class GenericHuobiClient:
             self,
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
-        """
-        Get all Supported Trading Symbol
-        https://huobiapi.github.io/docs/spot/v1/en/#get-all-supported-trading-symbol-v2
-
-        :param timestamp_milliseconds: timestamp to get incremental data
-        """
         params = {}
         if timestamp_milliseconds is not None:
             params['ts'] = timestamp_milliseconds
@@ -63,12 +49,6 @@ class GenericHuobiClient:
             self,
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
-        """
-        Get all Supported Currencies
-        https://huobiapi.github.io/docs/spot/v1/en/#get-all-supported-currencies-v2
-
-        :param timestamp_milliseconds: timestamp to get incremental data
-        """
         params = {}
         if timestamp_milliseconds is not None:
             params['ts'] = timestamp_milliseconds
@@ -81,12 +61,6 @@ class GenericHuobiClient:
             self,
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
-        """
-        Get Currencies Settings
-        https://huobiapi.github.io/docs/spot/v1/en/#get-currencys-settings
-
-        :param timestamp_milliseconds: timestamp to get incremental data
-        """
         params = {}
         if timestamp_milliseconds is not None:
             params['ts'] = timestamp_milliseconds
@@ -99,12 +73,6 @@ class GenericHuobiClient:
             self,
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
-        """
-        Get Symbols Settings
-        https://huobiapi.github.io/docs/spot/v1/en/#get-symbols-setting
-
-        :param timestamp_milliseconds: timestamp to get incremental data
-        """
         params = {}
         if timestamp_milliseconds is not None:
             params['ts'] = timestamp_milliseconds
@@ -118,13 +86,6 @@ class GenericHuobiClient:
             symbols: Optional[Iterable[str]] = None,
             timestamp_milliseconds: Optional[int] = None,
     ) -> Dict:
-        """
-        Get Market Symbols Setting
-        https://huobiapi.github.io/docs/spot/v1/en/#get-market-symbols-setting
-
-        :param symbols: symbols
-        :param timestamp_milliseconds: timestamp to get incremental data
-        """
         if symbols is not None and not isinstance(symbols, Iterable):
             raise TypeError(f'Iterable type expected for symbols, got "{type(symbols)}"')
         params = _GetMarketSymbolsSettings(
@@ -142,14 +103,6 @@ class GenericHuobiClient:
             timestamp_milliseconds: Optional[int] = None,
             currency: Optional[str] = None,
     ) -> Dict:
-        """
-        Get Chains Information
-        https://huobiapi.github.io/docs/spot/v1/en/#get-chains-information
-
-        :param show_desc: show desc, 0: no, 1: all, 2: suspend deposit/withdrawal and chain exchange
-        :param timestamp_milliseconds: timestamp to get incremental data
-        :param currency: currency
-        """
         params = _GetChainsInformation(
             show_desc=show_desc,
             ts=timestamp_milliseconds,
@@ -165,11 +118,6 @@ class GenericHuobiClient:
             currency: Optional[str] = None,
             authorized_user: bool = True,
     ) -> Dict:
-        """
-        API user could query static reference information for each currency,
-        as well as its corresponding chain(s)
-        https://huobiapi.github.io/docs/spot/v1/en/#apiv2-currency-amp-chains
-        """
         params = {
             'authorizedUser': str(authorized_user).lower(),
         }
@@ -181,11 +129,6 @@ class GenericHuobiClient:
         )
 
     async def get_current_timestamp(self) -> Dict:
-        """
-        This endpoint returns the current timestamp, i.e. the number of
-        milliseconds that have elapsed since 00:00:00 UTC on 1 January 1970.
-        https://huobiapi.github.io/docs/spot/v1/en/#get-current-timestamp
-        """
         return await self._requests.get(
             url=urljoin(self._api, '/v1/common/timestamp'),
         )
