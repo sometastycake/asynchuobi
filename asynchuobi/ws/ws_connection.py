@@ -43,6 +43,11 @@ class WebsocketConnection(WebsocketConnectionAbstract):
         self._session = session(**session_kwargs)
         self._socket: Optional[ClientWebSocketResponse] = None
 
+    def __del__(self):
+        if self._session and self._session.connector:
+            if not self._session.connector.closed:
+                self._session.connector.close()
+
     @property
     def closed(self) -> bool:
         if self._socket is None:
