@@ -113,9 +113,6 @@ class OrderHuobiClient:
         """
         This endpoint submits a request to cancel an order.
         https://huobiapi.github.io/docs/spot/v1/en/#submit-cancel-for-an-order
-
-        :param order_id: The previously returned order id when order was created
-        :param symbol: Symbol which needs to be filled in the URL
         """
         params = _CancelOrder(
             order_id=order_id,
@@ -165,13 +162,6 @@ class OrderHuobiClient:
         """
         This endpoint returns all open orders which have not been filled completely
         https://huobiapi.github.io/docs/spot/v1/en/#get-all-open-orders
-
-        :param account_id: The account id used for this trade
-        :param symbol: The trading symbol to trade
-        :param side: Filter on the direction of the trade
-        :param start_order_id: Start order ID the searching to begin with
-        :param direct: Searching direction
-        :param size: The number of orders to return
         """
         if size < 1 or size > 500:
             raise ValueError(f'Wrong size value "{size}"')
@@ -203,12 +193,6 @@ class OrderHuobiClient:
         This endpoint submit cancellation for multiple orders (not exceeding 100 orders
         per request) at once with given criteria
         https://huobiapi.github.io/docs/spot/v1/en/#submit-cancel-for-multiple-orders-by-criteria
-
-        :param account_id: The account id used for this cancel
-        :param symbols: The trading symbol list
-        :param order_types: One or more types of order to include in the search
-        :param side: Filter on the direction of the trade
-        :param size: The number of orders to cancel
         """
         if size < 1 or size > 100:
             raise ValueError(f'Wrong size value "{size}"')
@@ -251,9 +235,6 @@ class OrderHuobiClient:
         It is suggested to use order-ids instead of client-order-ids, so that the cancellation
         is faster, more accurate and more stable
         https://huobiapi.github.io/docs/spot/v1/en/#submit-cancel-for-multiple-orders-by-ids
-
-        :param order_ids: The order ids to cancel
-        :param client_order_ids: The client order ids to cancel
         """
         params = {}
 
@@ -285,8 +266,6 @@ class OrderHuobiClient:
         The Dead man’s switch protects the user’s assets when the connection to the exchange is
         lost due to network or system errors
         https://huobiapi.github.io/docs/spot/v1/en/#dead-man-s-switch
-
-        :param timeout: Time out duration (unit：second)
         """
         auth = APIAuth(
             AccessKeyId=self._access_key,
@@ -306,8 +285,6 @@ class OrderHuobiClient:
         This endpoint returns the detail of a specific order. If an order is created via API,
         then it's no longer queryable after being cancelled for 2 hours
         https://huobiapi.github.io/docs/spot/v1/en/#get-the-order-detail-of-an-order
-
-        :param order_id: Order id when order was created
         """
         auth = APIAuth(
             AccessKeyId=self._access_key,
@@ -339,8 +316,6 @@ class OrderHuobiClient:
         """
         This endpoint returns the match result of an order
         https://huobiapi.github.io/docs/spot/v1/en/#get-the-match-result-of-an-order
-
-        :param order_id: Order id
         """
         auth = APIAuth(
             AccessKeyId=self._access_key,
@@ -415,12 +390,6 @@ class OrderHuobiClient:
         """
         This endpoint returns orders based on a specific searching criteria
         https://huobiapi.github.io/docs/spot/v1/en/#search-historical-orders-within-48-hours
-
-        :param symbol: The trading symbol to trade
-        :param start_time_ms: Start time
-        :param end_time_ms: End time
-        :param direct: Direction of the query
-        :param size: Number of items in each response
         """
         if size < 10 or size > 1000:
             raise ValueError(f'Wrong size value "{size}"')
@@ -453,16 +422,6 @@ class OrderHuobiClient:
         This endpoint returns the match results of past and current filled, or partially
         filled orders based on specific search criteria
         https://huobiapi.github.io/docs/spot/v1/en/#search-match-results
-
-        :param symbol: The trading symbol to trade
-        :param order_types: The types of order to include in the search
-        :param start_time_ms: Far point of time of the query window
-            (unix time in millisecond)
-        :param end_time_ms: Near point of time of the query window
-            (unix time in millisecond)
-        :param from_order_id: Search internal id to begin with
-        :param size: The number of orders to return
-        :param direct: Search direction when 'from' is used
         """
         if size < 1 or size > 500:
             raise ValueError(f'Wrong size value "{size}"')
@@ -493,8 +452,6 @@ class OrderHuobiClient:
         """
         This endpoint returns the current transaction fee rate applied to the user
         https://huobiapi.github.io/docs/spot/v1/en/#get-current-fee-rate-applied-to-the-user
-
-        :param symbols: The trading symbols to query
         """
         if not isinstance(symbols, Iterable):
             raise TypeError(f'Iterable type expected for symbols, got "{type(symbols)}"')
