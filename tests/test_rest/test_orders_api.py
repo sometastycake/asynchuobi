@@ -238,9 +238,7 @@ async def test_get_all_open_orders(
         request['from'] = str(start_order_id)
     if symbol is not None:
         request['symbol'] = symbol
-    if start_order_id is not None:
-        print(kwargs['params']['Signature'])
-    # assert kwargs['params'] == request
+    assert kwargs['params'] == request
 
 
 @pytest.mark.asyncio
