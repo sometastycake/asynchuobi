@@ -9,6 +9,7 @@ on:
       - 'release_*'
 
 jobs:
+  runs-on: ubuntu-latest
   build:
     strategy:
       matrix:
