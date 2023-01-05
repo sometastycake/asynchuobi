@@ -1,4 +1,4 @@
-# Unofficial asynchronous python client for Huobi cryptoexchange
+# Unofficial asynchronous python client for Huobi
 
 [![CI](https://github.com/sometastycake/asynchuobi/actions/workflows/ci.yml/badge.svg)](https://github.com/sometastycake/asynchuobi/actions/workflows/ci.yml)
 [![Python: versions](
@@ -213,16 +213,9 @@ from asynchuobi.ws.ws_client import WSHuobiAccount
 
 
 async def main():
-    async with WSHuobiAccount(
-            access_key='access_key',
-            secret_key='secret_key',
-    ) as ws:
-        # The topic updates account change details.
+    async with WSHuobiAccount('access_key', 'secret_key') as ws:
         await ws.subscribe_account_change()
-
-        # Retrieving information about order cancelling, order creating, order matching
         await ws.subscribe_order_updates('btcusdt')
-
         async for message in ws:
             ...
 ```
@@ -231,18 +224,21 @@ With callbacks
 
 ```python
 from asynchuobi.ws.ws_client import WSHuobiAccount
+from asynchuobi.exceptions import WSHuobiError
+
+
+def callback(message: dict):
+    print(message)
+
+
+def error(e: WSHuobiError):
+    print(e)
 
 
 async def main():
-    def callback_balance_update(message: dict):
-        print(message)
-
-    async with WSHuobiAccount(
-            access_key='access_key',
-            secret_key='secret_key',
-    ) as ws:
+    async with WSHuobiAccount('access_key', 'secret_key') as ws:
         await ws.subscribe_account_change(
-            callback=callback_balance_update,
+            callback=callback,
         )
-        await ws.run_with_callbacks()
+        await ws.run_with_callbacks(error_callback=error)
 ```
