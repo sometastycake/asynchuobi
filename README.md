@@ -1,4 +1,4 @@
-# Unofficial asynchronous python client for Huobi
+# Unofficial python SDK for Huobi API
 
 [![CI](https://github.com/sometastycake/asynchuobi/actions/workflows/ci.yml/badge.svg)](https://github.com/sometastycake/asynchuobi/actions/workflows/ci.yml)
 [![Python: versions](
@@ -21,9 +21,7 @@ from asynchuobi.api.clients.generic import GenericHuobiClient
 
 async def main():
     async with GenericHuobiClient() as client:
-        current_timestamp = await client.get_current_timestamp()
         trading_symbols = await client.get_all_supported_trading_symbols()
-        system_status = await client.get_system_status()
 ```
 
 ## Market API
@@ -37,7 +35,6 @@ async def main():
     async with MarketHuobiClient() as client:
         candles = await client.get_candles('btcusdt', CandleInterval.min_1)
         orderbook = await client.get_market_depth('btcusdt')
-        recent_trades = await client.get_most_recent_trades('btcusdt')
 ```
 
 ## Subuser API
@@ -57,11 +54,6 @@ async def main():
             keys = await client.api_key_query(subuser['uid'])
             status = await client.get_sub_user_status(subuser['uid'])
             balance = await client.get_account_balance_of_sub_user(subuser['uid'])
-            api_key = await client.sub_user_api_key_creation(
-                sub_uid=subuser['uid'],
-                note='Test api',
-                permissions=[ApiKeyPermission.readOnly, ApiKeyPermission.trade],
-            )
 ```
 
 ## Wallet API
@@ -75,8 +67,6 @@ async def main():
         access_key='access_key',
         secret_key='secret_key',
     ) as client:
-        deposit_address = await client.query_deposit_address('usdt')
-        withdraw_address = await client.query_withdraw_address('usdt')
         withdraw_response = await client.create_withdraw_request(
             address='address',
             currency='usdt',
@@ -99,13 +89,6 @@ async def main():
         accounts = await client.accounts()
         for account in accounts['data']:
             balances = await client.account_balance(account_id=account['id'])
-            history = await client.get_account_history(
-                account_id=account['id'],
-                currency='usdt',
-                transact_types=['deposit', 'withdraw'],
-                sorting=Sort.desc,
-            )
-
         for account_type in (AccountTypeCode.spot, AccountTypeCode.flat):
             total_valuation = await client.get_total_valuation_of_platform_assets(
                 account_type_code=account_type,
@@ -136,11 +119,6 @@ async def main():
             cancelling = await client.cancel_order(
                 order_id=order_id,
             )
-    
-        active_orders = await client.get_all_open_orders()
-        order_detail = await client.get_order_detail_by_client_order_id(
-            client_order_id=client_order_id,
-        )
 ```
 
 ## Margin API
@@ -245,3 +223,7 @@ async def main():
         )
         await ws.run_with_callbacks(error_callback=error)
 ```
+
+## License
+
+MIT
